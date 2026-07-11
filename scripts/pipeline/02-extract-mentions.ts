@@ -3,7 +3,7 @@ import { fetchTranscript, chunkTranscript } from "@/lib/pipeline/transcript";
 import { callClaudeJSON } from "@/lib/pipeline/llm";
 import type { MentionExtraction } from "@/lib/pipeline/types";
 
-const EXTRACTION_SYSTEM_PROMPT = `You extract structured film/TV mentions from a movie/TV curator's spoken video transcript.
+export const EXTRACTION_SYSTEM_PROMPT = `You extract structured film/TV mentions from a movie/TV curator's spoken video transcript.
 
 Return ONLY a JSON array (no prose, no markdown fences) of mention objects — one per distinct movie, TV show, or documentary discussed. If the same title comes up more than once in this transcript, merge it into a single object. If nothing is mentioned, return [].
 

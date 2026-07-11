@@ -86,6 +86,59 @@ export async function listTopComments(videoId: string, maxResults = 50): Promise
   }));
 }
 
+export interface ChannelSearchResult {
+  channelId: string;
+}
+
+/** Searches for channels matching a query — used by the discovery engine to find new candidates. */
+export async function searchChannels(
+  query: string,
+  maxResults = 25,
+): Promise<ChannelSearchResult[]> {
+  const data = await ytFetch<{ items?: { snippet: { channelId: string } }[] }>("/search", {
+    part: "snippet",
+    type: "channel",
+    q: query,
+    maxResults: String(maxResults),
+  });
+  return (data.items ?? []).map((i) => ({ channelId: i.snippet.channelId }));
+}
+
+export interface ChannelStats {
+  title: string;
+  subscriberCount: number;
+}
+
+/** Basic channel stats for the discovery engine's quality gates. Returns null if the channel doesn't exist. */
+export async function getChannelStats(channelId: string): Promise<ChannelStats | null> {
+  const data = await ytFetch<{
+    items?: { snippet: { title: string }; statistics: { subscriberCount?: string } }[];
+  }>("/channels", { part: "snippet,statistics", id: channelId });
+  const item = data.items?.[0];
+  if (!item) return null;
+  return {
+    title: item.snippet.title,
+    subscriberCount: Number(item.statistics.subscriberCount ?? 0),
+  };
+}
+
+/** Lists only the N most recent uploads (single page, no pagination) — for cheap sampling during evaluation. */
+export async function listRecentVideos(channelId: string, limit = 3): Promise<RawVideo[]> {
+  const playlistId = await getUploadsPlaylistId(channelId);
+  const data = await ytFetch<{
+    items?: {
+      contentDetails: { videoId: string; videoPublishedAt: string };
+      snippet: { title: string; description: string };
+    }[];
+  }>("/playlistItems", { part: "contentDetails,snippet", playlistId, maxResults: String(limit) });
+  return (data.items ?? []).map((item) => ({
+    youtubeVideoId: item.contentDetails.videoId,
+    title: item.snippet.title,
+    publishedAt: item.contentDetails.videoPublishedAt,
+    description: item.snippet.description,
+  }));
+}
+
 /** Lists every video on a channel's uploads playlist, paginating to the end. */
 export async function listUploadedVideos(channelId: string): Promise<RawVideo[]> {
   const playlistId = await getUploadsPlaylistId(channelId);

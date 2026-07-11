@@ -17,6 +17,8 @@
     "ratings:sync": "bun run scripts/pipeline/ratings-sync.ts",
     "reddit:ingest": "bun run scripts/pipeline/05-ingest-reddit.ts",
     "reddit:extract": "bun run scripts/pipeline/06-extract-reddit-mentions.ts",
+    "discover:channels": "bun run scripts/pipeline/07-discover-channels.ts",
+    "discover:evaluate": "bun run scripts/pipeline/08-evaluate-candidates.ts",
     "report": "bun run scripts/pipeline/report.ts"
   },
   "dependencies": {
