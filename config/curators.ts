@@ -18,6 +18,12 @@ export const curators: CuratorConfig[] = [
     url: "https://www.darrenvandam.com/blog/rental-gems-for-your-next-movie-night",
     active: true,
   },
-  // Add the remaining 3 curators here — same shape, active: true to include
+  {
+    name: "The Cine Club TV",
+    youtubeHandle: "@TheCineClubTV",
+    url: "https://www.youtube.com/@TheCineClubTV",
+    active: true,
+  },
+  // Add the remaining 2 curators here — same shape, active: true to include
   // them in the next pipeline run.
 ];
