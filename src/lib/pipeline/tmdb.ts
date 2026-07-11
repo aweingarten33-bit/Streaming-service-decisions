@@ -113,3 +113,15 @@ export async function getDetails(
     director,
   };
 }
+
+/** Fetches the IMDb id for a title, for joining against IMDb's own ratings dataset. */
+export async function getExternalIds(
+  tmdbId: number,
+  mediaType: ResolvedMediaType,
+): Promise<string | null> {
+  const data = await tmdbFetch<{ imdb_id?: string | null }>(
+    `/${mediaType}/${tmdbId}/external_ids`,
+    {},
+  );
+  return data.imdb_id ?? null;
+}

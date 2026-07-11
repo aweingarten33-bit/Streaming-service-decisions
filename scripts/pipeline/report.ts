@@ -29,8 +29,16 @@ export async function printReport(curatorId?: string) {
     .in("video_id", videoIds.length > 0 ? videoIds : ["00000000-0000-0000-0000-000000000000"]);
   const rows = (mentions ?? []) as MentionRow[];
 
-  const { data: titles } = await supabase.from("titles").select("tmdb_id, title");
+  const { data: titles } = await supabase
+    .from("titles")
+    .select("tmdb_id, title, imdb_rating, imdb_votes");
   const titleById = new Map((titles ?? []).map((t) => [t.tmdb_id as number, t.title as string]));
+  const ratingsById = new Map(
+    (titles ?? []).map((t) => [
+      t.tmdb_id as number,
+      { rating: t.imdb_rating as number | null, votes: t.imdb_votes as number | null },
+    ]),
+  );
 
   console.log("=== Mentions per curator ===");
   const perCurator = new Map<string, number>();
@@ -59,6 +67,22 @@ export async function printReport(curatorId?: string) {
   if (topTitles.length === 0) console.log("  (none yet)");
   for (const [tmdbId, curatorSet] of topTitles) {
     console.log(`  ${titleById.get(tmdbId) ?? `tmdb:${tmdbId}`} — ${curatorSet.size} curator(s)`);
+  }
+
+  console.log("\n=== Curator favorites vs. IMDb (2+ curators, sorted by curator count) ===");
+  const favorites = [...curatorsByTitle.entries()]
+    .filter(([, curatorSet]) => curatorSet.size >= 2)
+    .sort((a, b) => b[1].size - a[1].size);
+  if (favorites.length === 0) console.log("  (none yet)");
+  for (const [tmdbId, curatorSet] of favorites) {
+    const r = ratingsById.get(tmdbId);
+    const ratingStr =
+      r?.rating != null
+        ? `IMDb ${r.rating} (${(r.votes ?? 0).toLocaleString()} votes)`
+        : "IMDb: no rating yet";
+    console.log(
+      `  ${titleById.get(tmdbId) ?? `tmdb:${tmdbId}`} — ${curatorSet.size} curator(s), ${ratingStr}`,
+    );
   }
 
   console.log("\n=== Hidden gems (tagged hidden_gem by 2+ curators) ===");
@@ -91,6 +115,12 @@ export async function printReport(curatorId?: string) {
   console.log(`  disambiguated: ${counts.disambiguated} (${pct(counts.disambiguated)}%)`);
   console.log(`  unresolved: ${counts.unresolved} (${pct(counts.unresolved)}%)`);
   if (counts.pending > 0) console.log(`  pending resolution: ${counts.pending}`);
+
+  console.log("\n=== IMDb rating coverage ===");
+  const titleCount = titles?.length ?? 0;
+  const withRating = (titles ?? []).filter((t) => t.imdb_rating !== null).length;
+  const coveragePct = titleCount > 0 ? ((withRating / titleCount) * 100).toFixed(1) : "0.0";
+  console.log(`  ${withRating}/${titleCount} titles have an IMDb rating (${coveragePct}%)`);
 
   console.log("\n=== Average audience comment sentiment per curator ===");
   const sentimentByCurator = new Map<string, number[]>();
