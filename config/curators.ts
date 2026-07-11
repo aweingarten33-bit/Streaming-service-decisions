@@ -42,4 +42,10 @@ export const curators: CuratorConfig[] = [
     url: "https://www.youtube.com/@IVectinIol",
     active: true,
   },
+  {
+    name: "Dan Murrell",
+    youtubeHandle: "@DanMurrellMovies",
+    url: "https://www.youtube.com/@DanMurrellMovies",
+    active: true,
+  },
 ];
