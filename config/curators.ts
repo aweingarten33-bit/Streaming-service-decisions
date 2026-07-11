@@ -24,6 +24,12 @@ export const curators: CuratorConfig[] = [
     url: "https://www.youtube.com/@TheCineClubTV",
     active: true,
   },
-  // Add the remaining 2 curators here — same shape, active: true to include
-  // them in the next pipeline run.
+  {
+    name: "CineGold Presents",
+    youtubeHandle: "@CineGoldPresents",
+    url: "https://www.youtube.com/@CineGoldPresents",
+    active: true,
+  },
+  // Add the remaining curator here — same shape, active: true to include
+  // it in the next pipeline run.
 ];
