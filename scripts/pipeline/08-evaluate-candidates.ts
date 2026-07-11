@@ -5,8 +5,7 @@ import { callClaudeJSON } from "@/lib/pipeline/llm";
 import { EXTRACTION_SYSTEM_PROMPT } from "./02-extract-mentions";
 import type { MentionExtraction } from "@/lib/pipeline/types";
 
-const MIN_SUBSCRIBERS = 200;
-const MAX_SUBSCRIBERS = 5_000_000;
+const MIN_AVG_VIEWS = 500;
 const MAX_DAYS_SINCE_UPLOAD = 180;
 const SAMPLE_SIZE = 3;
 // Average mentions per sampled video required to promote — the strongest signal
@@ -19,6 +18,7 @@ interface EvaluationResult {
   status: "promoted" | "rejected";
   channelTitle: string | null;
   subscriberCount: number | null;
+  avgViewCount: number | null;
   yieldScore: number | null;
   rejectReason: string | null;
 }
@@ -31,17 +31,9 @@ async function evaluateCandidate(channelId: string): Promise<EvaluationResult> {
       status: "rejected",
       channelTitle: null,
       subscriberCount: null,
+      avgViewCount: null,
       yieldScore: null,
       rejectReason: "channel_not_found",
-    };
-  }
-  if (stats.subscriberCount < MIN_SUBSCRIBERS || stats.subscriberCount > MAX_SUBSCRIBERS) {
-    return {
-      status: "rejected",
-      channelTitle: stats.title,
-      subscriberCount: stats.subscriberCount,
-      yieldScore: null,
-      rejectReason: "subscriber_count_out_of_range",
     };
   }
 
@@ -51,6 +43,7 @@ async function evaluateCandidate(channelId: string): Promise<EvaluationResult> {
       status: "rejected",
       channelTitle: stats.title,
       subscriberCount: stats.subscriberCount,
+      avgViewCount: null,
       yieldScore: null,
       rejectReason: "no_videos",
     };
@@ -63,8 +56,22 @@ async function evaluateCandidate(channelId: string): Promise<EvaluationResult> {
       status: "rejected",
       channelTitle: stats.title,
       subscriberCount: stats.subscriberCount,
+      avgViewCount: null,
       yieldScore: null,
       rejectReason: "inactive_channel",
+    };
+  }
+
+  const avgViewCount =
+    recentVideos.reduce((sum, v) => sum + (v.viewCount ?? 0), 0) / recentVideos.length;
+  if (avgViewCount < MIN_AVG_VIEWS) {
+    return {
+      status: "rejected",
+      channelTitle: stats.title,
+      subscriberCount: stats.subscriberCount,
+      avgViewCount,
+      yieldScore: null,
+      rejectReason: "low_view_count",
     };
   }
 
@@ -90,6 +97,7 @@ async function evaluateCandidate(channelId: string): Promise<EvaluationResult> {
       status: "rejected",
       channelTitle: stats.title,
       subscriberCount: stats.subscriberCount,
+      avgViewCount,
       yieldScore: null,
       rejectReason: "no_transcripts_available",
     };
@@ -100,6 +108,7 @@ async function evaluateCandidate(channelId: string): Promise<EvaluationResult> {
     status: yieldScore >= YIELD_THRESHOLD ? "promoted" : "rejected",
     channelTitle: stats.title,
     subscriberCount: stats.subscriberCount,
+    avgViewCount,
     yieldScore,
     rejectReason: yieldScore >= YIELD_THRESHOLD ? null : "low_yield",
   };
@@ -167,6 +176,7 @@ async function main() {
           status: result.status,
           channel_title: result.channelTitle,
           subscriber_count: result.subscriberCount,
+          avg_view_count: result.avgViewCount,
           yield_score: result.yieldScore,
           reject_reason: result.rejectReason,
           evaluated_at: new Date().toISOString(),
