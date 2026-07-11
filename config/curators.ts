@@ -30,6 +30,10 @@ export const curators: CuratorConfig[] = [
     url: "https://www.youtube.com/@CineGoldPresents",
     active: true,
   },
-  // Add the remaining curator here — same shape, active: true to include
-  // it in the next pipeline run.
+  {
+    name: "Chris Stuckmann",
+    youtubeHandle: "@ChrisStuckmann",
+    url: "https://www.youtube.com/@ChrisStuckmann",
+    active: true,
+  },
 ];
