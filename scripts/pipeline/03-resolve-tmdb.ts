@@ -39,6 +39,7 @@ async function disambiguate(
   const { data } = await callClaudeJSON<{ chosen_index: number | null }>({
     system: DISAMBIGUATION_SYSTEM_PROMPT,
     user,
+    model: "claude-haiku-4-5-20251001",
     maxTokens: 100,
   });
   if (data.chosen_index === null || data.chosen_index === undefined) return null;
