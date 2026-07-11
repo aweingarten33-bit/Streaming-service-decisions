@@ -122,6 +122,20 @@ export async function getChannelStats(channelId: string): Promise<ChannelStats |
   };
 }
 
+/** Fetches view counts for a batch of videos (YouTube caps `id` at 50 per call). */
+async function getVideoViewCounts(videoIds: string[]): Promise<Map<string, number>> {
+  const counts = new Map<string, number>();
+  if (videoIds.length === 0) return counts;
+  const data = await ytFetch<{ items?: { id: string; statistics: { viewCount?: string } }[] }>(
+    "/videos",
+    { part: "statistics", id: videoIds.join(",") },
+  );
+  for (const item of data.items ?? []) {
+    counts.set(item.id, Number(item.statistics.viewCount ?? 0));
+  }
+  return counts;
+}
+
 /** Lists only the N most recent uploads (single page, no pagination) — for cheap sampling during evaluation. */
 export async function listRecentVideos(channelId: string, limit = 3): Promise<RawVideo[]> {
   const playlistId = await getUploadsPlaylistId(channelId);
@@ -131,12 +145,15 @@ export async function listRecentVideos(channelId: string, limit = 3): Promise<Ra
       snippet: { title: string; description: string };
     }[];
   }>("/playlistItems", { part: "contentDetails,snippet", playlistId, maxResults: String(limit) });
-  return (data.items ?? []).map((item) => ({
+  const videos = (data.items ?? []).map((item) => ({
     youtubeVideoId: item.contentDetails.videoId,
     title: item.snippet.title,
     publishedAt: item.contentDetails.videoPublishedAt,
     description: item.snippet.description,
   }));
+
+  const viewCounts = await getVideoViewCounts(videos.map((v) => v.youtubeVideoId));
+  return videos.map((v) => ({ ...v, viewCount: viewCounts.get(v.youtubeVideoId) ?? 0 }));
 }
 
 /** Lists every video on a channel's uploads playlist, paginating to the end. */

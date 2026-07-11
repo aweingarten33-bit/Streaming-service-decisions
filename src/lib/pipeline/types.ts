@@ -22,6 +22,7 @@ export interface RawVideo {
   title: string;
   publishedAt: string;
   description: string;
+  viewCount?: number;
 }
 
 export interface VideoRecord {
