@@ -3,18 +3,26 @@ import { supabase } from "@/lib/pipeline/supabase";
 import { resolveChannelId, listUploadedVideos } from "@/lib/pipeline/youtube";
 import type { CuratorConfig } from "@/lib/pipeline/types";
 
+// Cap on how many videos back a curator's first-ever ingestion pulls, so a
+// prolific channel with a decade of uploads doesn't backfill its entire
+// history in one run — only their most recent videos are used to start.
+const FIRST_INGEST_VIDEO_LIMIT = 200;
+
 /** Lists a channel's videos and inserts any not already stored for that curator. */
 export async function ingestVideosForCurator(
   curatorId: string,
   channelId: string,
 ): Promise<number> {
-  const videos = await listUploadedVideos(channelId);
-
   const { data: existing } = await supabase
     .from("videos")
     .select("youtube_video_id")
     .eq("curator_id", curatorId);
   const existingIds = new Set((existing ?? []).map((v) => v.youtube_video_id as string));
+
+  const videos = await listUploadedVideos(
+    channelId,
+    existingIds.size === 0 ? FIRST_INGEST_VIDEO_LIMIT : undefined,
+  );
 
   const newVideos = videos.filter((v) => !existingIds.has(v.youtubeVideoId));
   if (newVideos.length > 0) {
