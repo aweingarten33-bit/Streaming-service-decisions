@@ -41,6 +41,51 @@ async function getUploadsPlaylistId(channelId: string): Promise<string> {
   return playlistId;
 }
 
+async function ytFetchAllowDisabled<T>(
+  path: string,
+  params: Record<string, string>,
+): Promise<T | null> {
+  const url = new URL(`${BASE}${path}`);
+  url.searchParams.set("key", env.YOUTUBE_API_KEY);
+  for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
+
+  for (let attempt = 0; ; attempt++) {
+    const res = await fetch(url.toString());
+    if (res.ok) return (await res.json()) as T;
+    if (res.status === 403) return null; // comments disabled on this video
+    if ((res.status === 429 || res.status >= 500) && attempt < MAX_ATTEMPTS - 1) {
+      await new Promise((r) => setTimeout(r, 2 ** attempt * 1000));
+      continue;
+    }
+    throw new Error(`YouTube API ${res.status} on ${path}: ${await res.text()}`);
+  }
+}
+
+export interface RawComment {
+  text: string;
+  likeCount: number;
+}
+
+/** Fetches top-level comments ordered by relevance. Returns [] if comments are disabled for the video. */
+export async function listTopComments(videoId: string, maxResults = 50): Promise<RawComment[]> {
+  const data = await ytFetchAllowDisabled<{
+    items?: {
+      snippet: { topLevelComment: { snippet: { textOriginal: string; likeCount: number } } };
+    }[];
+  }>("/commentThreads", {
+    part: "snippet",
+    videoId,
+    order: "relevance",
+    maxResults: String(maxResults),
+    textFormat: "plainText",
+  });
+  if (!data) return [];
+  return (data.items ?? []).map((item) => ({
+    text: item.snippet.topLevelComment.snippet.textOriginal,
+    likeCount: item.snippet.topLevelComment.snippet.likeCount,
+  }));
+}
+
 /** Lists every video on a channel's uploads playlist, paginating to the end. */
 export async function listUploadedVideos(channelId: string): Promise<RawVideo[]> {
   const playlistId = await getUploadsPlaylistId(channelId);

@@ -3,6 +3,7 @@ import { supabase } from "@/lib/pipeline/supabase";
 import { ingestCurator } from "./01-ingest-videos";
 import { extractVideo } from "./02-extract-mentions";
 import { resolveMention } from "./03-resolve-tmdb";
+import { analyzeVideoComments } from "./04-analyze-comments";
 import { printReport } from "./report";
 
 /** Runs ingest -> extract -> resolve for exactly one curator, then prints the sanity-check report. */
@@ -46,6 +47,19 @@ async function main() {
     process.stdout.write(`  "${mention.title_mentioned}"... `);
     const result = await resolveMention(mention);
     console.log(result);
+  }
+  console.log();
+
+  console.log("=== Step 4: analyze audience comments ===");
+  const { data: unanalyzed } = await supabase
+    .from("videos")
+    .select("id, youtube_video_id, title")
+    .eq("curator_id", curatorId)
+    .is("comments_analyzed_at", null);
+  for (const video of unanalyzed ?? []) {
+    process.stdout.write(`  "${video.title}"... `);
+    await analyzeVideoComments(video);
+    console.log("done.");
   }
 
   console.log(`\n=== Report (${config.name} only) ===`);

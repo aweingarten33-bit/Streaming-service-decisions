@@ -12,6 +12,7 @@
     "pipeline:ingest": "bun run scripts/pipeline/01-ingest-videos.ts",
     "pipeline:extract": "bun run scripts/pipeline/02-extract-mentions.ts",
     "pipeline:resolve": "bun run scripts/pipeline/03-resolve-tmdb.ts",
+    "pipeline:comments": "bun run scripts/pipeline/04-analyze-comments.ts",
     "pipeline:one": "bun run scripts/pipeline/run-one-curator.ts",
     "report": "bun run scripts/pipeline/report.ts"
   },

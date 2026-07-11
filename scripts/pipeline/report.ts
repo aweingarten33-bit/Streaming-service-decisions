@@ -15,7 +15,7 @@ export async function printReport(curatorId?: string) {
   const { data: curators } = await supabase.from("curators").select("id, name");
   const curatorById = new Map((curators ?? []).map((c) => [c.id as string, c.name as string]));
 
-  let videoQuery = supabase.from("videos").select("id, curator_id");
+  let videoQuery = supabase.from("videos").select("id, curator_id, audience_sentiment_score");
   if (curatorId) videoQuery = videoQuery.eq("curator_id", curatorId);
   const { data: videos } = await videoQuery;
   const curatorByVideoId = new Map(
@@ -91,6 +91,20 @@ export async function printReport(curatorId?: string) {
   console.log(`  disambiguated: ${counts.disambiguated} (${pct(counts.disambiguated)}%)`);
   console.log(`  unresolved: ${counts.unresolved} (${pct(counts.unresolved)}%)`);
   if (counts.pending > 0) console.log(`  pending resolution: ${counts.pending}`);
+
+  console.log("\n=== Average audience comment sentiment per curator ===");
+  const sentimentByCurator = new Map<string, number[]>();
+  for (const v of videos ?? []) {
+    if (v.audience_sentiment_score === null || v.audience_sentiment_score === undefined) continue;
+    const cId = v.curator_id as string;
+    if (!sentimentByCurator.has(cId)) sentimentByCurator.set(cId, []);
+    sentimentByCurator.get(cId)!.push(v.audience_sentiment_score as number);
+  }
+  if (sentimentByCurator.size === 0) console.log("  (none yet)");
+  for (const [cId, scores] of sentimentByCurator.entries()) {
+    const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
+    console.log(`  ${curatorById.get(cId) ?? cId}: ${avg.toFixed(2)} (${scores.length} video(s))`);
+  }
 }
 
 async function main() {
