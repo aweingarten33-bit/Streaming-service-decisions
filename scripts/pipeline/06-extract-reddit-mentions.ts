@@ -22,7 +22,7 @@ Each object must match exactly:
   "year_hint": number or null,
   "context_clues": string (director, actors, plot details mentioned nearby),
   "sentiment": "enthusiastic_rec" | "qualified_rec" | "notable_mention" | "pan" | "neutral_reference" | "taste_anchor",
-  "descriptors": string[],
+  "descriptors": string[] (short tags — use any that fit: hidden_gem, comfort_watch, great_ending, weak_ending, slow_burn, visually_stunning, gets_good_immediately, slow_start_worth_it, complete_story, canceled_on_cliffhanger, phone_down_tv, background_watchable, date_night_safe, parents_safe, suspense_no_gore, aged_well, aged_poorly, rewatchable, divisive),
   "quote_free_summary": string, at most 15 words, written entirely in YOUR OWN words,
   "source_score": number — copy the upvote count from the "[..., N upvotes]" prefix of whichever post/comment this mention came from
 }
@@ -127,9 +127,49 @@ export async function extractThread(
 const INPUT_COST_PER_MTOK = 3;
 const OUTPUT_COST_PER_MTOK = 15;
 
+/**
+ * Prints an estimated cost for re-extracting already-processed threads, based
+ * on historical per-thread cost from past runs — no LLM calls made.
+ */
+async function estimateReextractionCost(): Promise<void> {
+  const { count: totalThreads } = await supabase
+    .from("reddit_threads")
+    .select("id", { count: "exact", head: true })
+    .not("extracted_at", "is", null);
+
+  const { data: pastRuns } = await supabase
+    .from("pipeline_runs")
+    .select("rows_updated, cost_estimate")
+    .eq("run_type", "reddit_extraction")
+    .gt("rows_updated", 0);
+
+  const pastThreads = (pastRuns ?? []).reduce((sum, r) => sum + (r.rows_updated ?? 0), 0);
+  const pastCost = (pastRuns ?? []).reduce((sum, r) => sum + (r.cost_estimate ?? 0), 0);
+
+  if (pastThreads === 0) {
+    console.log("No historical extraction runs yet — can't estimate. Run a small batch first.");
+    return;
+  }
+
+  const avgCostPerThread = pastCost / pastThreads;
+  const estimatedCost = avgCostPerThread * (totalThreads ?? 0);
+  console.log(
+    `Re-extraction (--force) would reprocess ${totalThreads} already-extracted thread(s).`,
+  );
+  console.log(
+    `Based on $${avgCostPerThread.toFixed(4)}/thread average across ${pastThreads} historically processed thread(s):`,
+  );
+  console.log(`  Estimated cost: ~$${estimatedCost.toFixed(2)}`);
+}
+
 async function main() {
   const force = process.argv.includes("--force");
   const only = process.argv.find((a) => a.startsWith("--subreddit="))?.split("=")[1];
+
+  if (process.argv.includes("--estimate")) {
+    await estimateReextractionCost();
+    return;
+  }
 
   const thresholdBySubreddit = new Map(subredditConfigs.map((c) => [c.name, c.upvoteThreshold]));
 

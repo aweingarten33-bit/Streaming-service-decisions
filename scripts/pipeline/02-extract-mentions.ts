@@ -14,7 +14,7 @@ Each object must match exactly:
   "year_hint": number or null (only if the curator mentions a year or era),
   "context_clues": string (director, actors, plot details mentioned nearby — used later to disambiguate against a database),
   "sentiment": "enthusiastic_rec" | "qualified_rec" | "notable_mention" | "pan" | "neutral_reference",
-  "descriptors": string[] (short tags such as hidden_gem, comfort_watch, great_ending, slow_burn, visually_stunning),
+  "descriptors": string[] (short tags — use any that fit: hidden_gem, comfort_watch, great_ending, weak_ending, slow_burn, visually_stunning, gets_good_immediately, slow_start_worth_it, complete_story, canceled_on_cliffhanger, phone_down_tv, background_watchable, date_night_safe, parents_safe, suspense_no_gore, aged_well, aged_poorly, rewatchable, divisive),
   "quote_free_summary": string, at most 15 words, written entirely in YOUR OWN words describing why it was mentioned
 }
 
@@ -99,9 +99,48 @@ export async function extractVideo(video: {
   return { mentionsExtracted: mentions.length, inputTokens, outputTokens };
 }
 
+/**
+ * Prints an estimated cost for re-extracting already-processed videos (e.g.
+ * after a taxonomy change), based on historical per-video cost from past
+ * runs — no LLM calls made. Use before deciding whether --force is worth it.
+ */
+async function estimateReextractionCost(): Promise<void> {
+  const { count: totalVideos } = await supabase
+    .from("videos")
+    .select("id", { count: "exact", head: true })
+    .not("extracted_at", "is", null);
+
+  const { data: pastRuns } = await supabase
+    .from("pipeline_runs")
+    .select("videos_processed, cost_estimate")
+    .eq("run_type", "youtube_extraction")
+    .gt("videos_processed", 0);
+
+  const pastVideos = (pastRuns ?? []).reduce((sum, r) => sum + (r.videos_processed ?? 0), 0);
+  const pastCost = (pastRuns ?? []).reduce((sum, r) => sum + (r.cost_estimate ?? 0), 0);
+
+  if (pastVideos === 0) {
+    console.log("No historical extraction runs yet — can't estimate. Run a small batch first.");
+    return;
+  }
+
+  const avgCostPerVideo = pastCost / pastVideos;
+  const estimatedCost = avgCostPerVideo * (totalVideos ?? 0);
+  console.log(`Re-extraction (--force) would reprocess ${totalVideos} already-extracted video(s).`);
+  console.log(
+    `Based on $${avgCostPerVideo.toFixed(4)}/video average across ${pastVideos} historically processed video(s):`,
+  );
+  console.log(`  Estimated cost: ~$${estimatedCost.toFixed(2)}`);
+}
+
 async function main() {
   const force = process.argv.includes("--force");
   const curatorId = process.argv.find((a) => a.startsWith("--curator-id="))?.split("=")[1];
+
+  if (process.argv.includes("--estimate")) {
+    await estimateReextractionCost();
+    return;
+  }
 
   let query = supabase.from("videos").select("id, youtube_video_id, title, curator_id");
   if (!force) query = query.is("extracted_at", null);
