@@ -36,4 +36,10 @@ export const curators: CuratorConfig[] = [
     url: "https://www.youtube.com/@ChrisStuckmann",
     active: true,
   },
+  {
+    name: "IVectinIol",
+    youtubeHandle: "@IVectinIol",
+    url: "https://www.youtube.com/@IVectinIol",
+    active: true,
+  },
 ];
