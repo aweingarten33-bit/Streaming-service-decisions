@@ -156,8 +156,11 @@ export async function listRecentVideos(channelId: string, limit = 3): Promise<Ra
   return videos.map((v) => ({ ...v, viewCount: viewCounts.get(v.youtubeVideoId) ?? 0 }));
 }
 
-/** Lists every video on a channel's uploads playlist, paginating to the end. */
-export async function listUploadedVideos(channelId: string): Promise<RawVideo[]> {
+/** Lists videos on a channel's uploads playlist, paginating to the end (or until `maxVideos` is reached). */
+export async function listUploadedVideos(
+  channelId: string,
+  maxVideos?: number,
+): Promise<RawVideo[]> {
   const playlistId = await getUploadsPlaylistId(channelId);
   const videos: RawVideo[] = [];
   let pageToken: string | undefined;
@@ -176,6 +179,7 @@ export async function listUploadedVideos(channelId: string): Promise<RawVideo[]>
       ...(pageToken ? { pageToken } : {}),
     });
     for (const item of data.items ?? []) {
+      if (maxVideos !== undefined && videos.length >= maxVideos) break;
       videos.push({
         youtubeVideoId: item.contentDetails.videoId,
         title: item.snippet.title,
@@ -184,7 +188,7 @@ export async function listUploadedVideos(channelId: string): Promise<RawVideo[]>
       });
     }
     pageToken = data.nextPageToken;
-  } while (pageToken);
+  } while (pageToken && (maxVideos === undefined || videos.length < maxVideos));
 
   return videos;
 }
