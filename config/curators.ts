@@ -48,4 +48,10 @@ export const curators: CuratorConfig[] = [
     url: "https://www.youtube.com/@DanMurrellMovies",
     active: true,
   },
+  {
+    name: "WWNonYT",
+    youtubeHandle: "@WWNonYT",
+    url: "https://www.youtube.com/@WWNonYT",
+    active: true,
+  },
 ];
