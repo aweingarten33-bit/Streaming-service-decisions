@@ -5,7 +5,7 @@ import { callClaudeJSON } from "@/lib/pipeline/llm";
 import { EXTRACTION_SYSTEM_PROMPT } from "./02-extract-mentions";
 import type { MentionExtraction } from "@/lib/pipeline/types";
 
-const MIN_SUBSCRIBERS = 1_000;
+const MIN_SUBSCRIBERS = 200;
 const MAX_SUBSCRIBERS = 5_000_000;
 const MAX_DAYS_SINCE_UPLOAD = 180;
 const SAMPLE_SIZE = 3;
