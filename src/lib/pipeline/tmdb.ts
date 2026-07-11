@@ -73,6 +73,8 @@ export interface TmdbDetails extends TmdbCandidate {
   genres: string[];
   runtime: number | null;
   director: string | null;
+  voteAverage: number | null;
+  voteCount: number | null;
 }
 
 /** Fetches full details for disambiguation and storage, including director/creator for context. */
@@ -93,6 +95,8 @@ export async function getDetails(
     episode_run_time?: number[];
     created_by?: { name: string }[];
     credits?: { crew: { job: string; name: string }[] };
+    vote_average?: number;
+    vote_count?: number;
   }>(`/${mediaType}/${tmdbId}`, { append_to_response: "credits" });
 
   const dateStr = data.release_date || data.first_air_date;
@@ -111,6 +115,8 @@ export async function getDetails(
     genres: data.genres.map((g) => g.name),
     runtime: data.runtime ?? data.episode_run_time?.[0] ?? null,
     director,
+    voteAverage: data.vote_average ?? null,
+    voteCount: data.vote_count ?? null,
   };
 }
 

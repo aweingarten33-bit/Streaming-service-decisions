@@ -8,6 +8,13 @@ interface MentionRow {
   video_id: string;
 }
 
+interface RedditMentionRow {
+  tmdb_id: number | null;
+  sentiment: string;
+  weight: number | null;
+  reddit_thread_id: string;
+}
+
 const REC_SENTIMENTS = new Set(["enthusiastic_rec", "qualified_rec"]);
 
 /** Prints the sanity-check queries used to judge whether the pipeline's output is worth building on. */
@@ -28,6 +35,17 @@ export async function printReport(curatorId?: string) {
     .select("tmdb_id, sentiment, descriptors, resolution_confidence, video_id")
     .in("video_id", videoIds.length > 0 ? videoIds : ["00000000-0000-0000-0000-000000000000"]);
   const rows = (mentions ?? []) as MentionRow[];
+
+  const { data: redditThreads } = await supabase.from("reddit_threads").select("id, subreddit");
+  const subredditByThreadId = new Map(
+    (redditThreads ?? []).map((t) => [t.id as string, t.subreddit as string]),
+  );
+
+  const { data: redditMentions } = await supabase
+    .from("mentions")
+    .select("tmdb_id, sentiment, weight, reddit_thread_id")
+    .not("reddit_thread_id", "is", null);
+  const redditRows = (redditMentions ?? []) as RedditMentionRow[];
 
   const { data: titles } = await supabase
     .from("titles")
@@ -98,6 +116,50 @@ export async function printReport(curatorId?: string) {
   if (hiddenGems.length === 0) console.log("  (none yet)");
   for (const [tmdbId, curatorSet] of hiddenGems) {
     console.log(`  ${titleById.get(tmdbId) ?? `tmdb:${tmdbId}`} — ${curatorSet.size} curator(s)`);
+  }
+
+  console.log("\n=== Mentions per subreddit ===");
+  const perSubreddit = new Map<string, number>();
+  for (const m of redditRows) {
+    const subreddit = subredditByThreadId.get(m.reddit_thread_id);
+    if (!subreddit) continue;
+    perSubreddit.set(subreddit, (perSubreddit.get(subreddit) ?? 0) + 1);
+  }
+  if (perSubreddit.size === 0) console.log("  (none yet)");
+  for (const [subreddit, count] of [...perSubreddit.entries()].sort((a, b) => b[1] - a[1])) {
+    console.log(`  r/${subreddit}: ${count}`);
+  }
+
+  console.log("\n=== Top 20 titles by weighted Reddit consensus ===");
+  const redditWeightByTitle = new Map<number, number>();
+  const redditThreadsByTitle = new Map<number, Set<string>>();
+  for (const m of redditRows) {
+    if (!m.tmdb_id || !REC_SENTIMENTS.has(m.sentiment)) continue;
+    redditWeightByTitle.set(m.tmdb_id, (redditWeightByTitle.get(m.tmdb_id) ?? 0) + (m.weight ?? 1));
+    if (!redditThreadsByTitle.has(m.tmdb_id)) redditThreadsByTitle.set(m.tmdb_id, new Set());
+    redditThreadsByTitle.get(m.tmdb_id)!.add(m.reddit_thread_id);
+  }
+  const topRedditTitles = [...redditWeightByTitle.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 20);
+  if (topRedditTitles.length === 0) console.log("  (none yet)");
+  for (const [tmdbId, weight] of topRedditTitles) {
+    console.log(`  ${titleById.get(tmdbId) ?? `tmdb:${tmdbId}`} — weight ${weight.toFixed(1)}`);
+  }
+
+  console.log(
+    "\n=== Crossover: 2+ curators AND strong Reddit consensus (highest-confidence tier) ===",
+  );
+  const crossover = [...curatorsByTitle.entries()].filter(([tmdbId, curatorSet]) => {
+    const threadCount = redditThreadsByTitle.get(tmdbId)?.size ?? 0;
+    return curatorSet.size >= 2 && threadCount >= 2;
+  });
+  if (crossover.length === 0) console.log("  (none yet)");
+  for (const [tmdbId, curatorSet] of crossover) {
+    const threadCount = redditThreadsByTitle.get(tmdbId)?.size ?? 0;
+    console.log(
+      `  ${titleById.get(tmdbId) ?? `tmdb:${tmdbId}`} — ${curatorSet.size} curator(s), ${threadCount} Reddit thread(s)`,
+    );
   }
 
   console.log("\n=== Resolution rate ===");

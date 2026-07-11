@@ -15,6 +15,8 @@
     "pipeline:comments": "bun run scripts/pipeline/04-analyze-comments.ts",
     "pipeline:one": "bun run scripts/pipeline/run-one-curator.ts",
     "ratings:sync": "bun run scripts/pipeline/ratings-sync.ts",
+    "reddit:ingest": "bun run scripts/pipeline/05-ingest-reddit.ts",
+    "reddit:extract": "bun run scripts/pipeline/06-extract-reddit-mentions.ts",
     "report": "bun run scripts/pipeline/report.ts"
   },
   "dependencies": {

@@ -2,7 +2,7 @@ import { createGunzip } from "node:zlib";
 import { createInterface } from "node:readline";
 import { Readable } from "node:stream";
 import { supabase } from "@/lib/pipeline/supabase";
-import { getExternalIds } from "@/lib/pipeline/tmdb";
+import { getExternalIds, getDetails } from "@/lib/pipeline/tmdb";
 import type { ResolvedMediaType } from "@/lib/pipeline/types";
 
 const RATINGS_URL = "https://datasets.imdbws.com/title.ratings.tsv.gz";
@@ -82,6 +82,34 @@ async function joinRatings(): Promise<number> {
   return matches.length;
 }
 
+/**
+ * Refreshes TMDB's own vote_average/vote_count for every title, from the same
+ * details call the pipeline already makes elsewhere — a second, free
+ * general-audience rating source alongside IMDb's, useful when IMDb coverage
+ * is thin. Re-run safe: just overwrites with current numbers.
+ */
+async function refreshTmdbRatings(): Promise<number> {
+  const { data: titles, error } = await supabase.from("titles").select("tmdb_id, media_type");
+  if (error) throw new Error(`Failed to load titles: ${error.message}`);
+
+  let updated = 0;
+  for (const t of titles ?? []) {
+    try {
+      const details = await getDetails(t.tmdb_id, t.media_type as ResolvedMediaType);
+      if (details.voteAverage !== null) {
+        await supabase
+          .from("titles")
+          .update({ tmdb_rating: details.voteAverage, tmdb_vote_count: details.voteCount })
+          .eq("tmdb_id", t.tmdb_id);
+        updated++;
+      }
+    } catch (err) {
+      console.log(`  Failed to refresh TMDB rating for tmdb:${t.tmdb_id}: ${String(err)}`);
+    }
+  }
+  return updated;
+}
+
 async function main() {
   const start = Date.now();
 
@@ -92,6 +120,10 @@ async function main() {
   console.log("Step 2: joining IMDb ratings dataset...");
   const rowsUpdated = await joinRatings();
   console.log(`  Updated ${rowsUpdated} title(s) with ratings.\n`);
+
+  console.log("Step 3: refreshing TMDB's own rating/vote count...");
+  const tmdbRefreshed = await refreshTmdbRatings();
+  console.log(`  Updated ${tmdbRefreshed} title(s) with TMDB's own rating.\n`);
 
   const durationMs = Date.now() - start;
   await supabase.from("pipeline_runs").insert({
