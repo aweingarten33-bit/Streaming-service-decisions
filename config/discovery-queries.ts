@@ -7,4 +7,8 @@ export const discoveryQueries: string[] = [
   "best documentaries nobody talks about",
   "movie recommendations hidden gems",
   "underrated films director",
+  "movie podcast recommendations",
+  "film discussion podcast hidden gems",
+  "best movie review podcast",
+  "TV show recap podcast recommendations",
 ];
