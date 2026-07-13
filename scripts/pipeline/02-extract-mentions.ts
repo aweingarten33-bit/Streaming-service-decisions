@@ -254,7 +254,23 @@ async function main() {
 
   let query = supabase.from("videos").select("id, youtube_video_id, title, curator_id");
   if (!force) query = query.is("extracted_at", null);
-  if (curatorId) query = query.eq("curator_id", curatorId);
+  if (curatorId) {
+    query = query.eq("curator_id", curatorId);
+  } else {
+    // Default runs only extract from currently-active curators -- deactivating
+    // a curator should also stop spending time/tokens on its existing backlog,
+    // not just stop future ingestion. Pass --curator-id to target one
+    // explicitly (including an inactive one) if you ever need to override this.
+    const { data: activeCurators, error: curatorsError } = await supabase
+      .from("curators")
+      .select("id")
+      .eq("active", true);
+    if (curatorsError) throw new Error(`Failed to load curators: ${curatorsError.message}`);
+    query = query.in(
+      "curator_id",
+      (activeCurators ?? []).map((c) => c.id),
+    );
+  }
   const { data: videos, error } = await query;
   if (error) throw new Error(`Failed to load videos: ${error.message}`);
 
