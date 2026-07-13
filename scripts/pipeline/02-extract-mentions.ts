@@ -20,9 +20,13 @@ Each object must match exactly:
 
 Hard rule: never copy a sentence or distinctive phrase from the transcript into any field, especially quote_free_summary — always paraphrase. Only include actual films, TV shows, or documentaries — skip books, games, podcasts, and unrelated chatter.`;
 
-// Rough per-token pricing for claude-sonnet-4-6, in USD per million tokens — update if pricing changes.
-const INPUT_COST_PER_MTOK = 3;
-const OUTPUT_COST_PER_MTOK = 15;
+// Extraction runs on Haiku: pulling explicitly-discussed titles out of a
+// transcript is mechanical enough that the ~10x cheaper model holds up.
+const EXTRACTION_MODEL = "claude-haiku-4-5-20251001";
+
+// Rough per-token pricing for claude-haiku-4-5, in USD per million tokens — update if pricing changes.
+const INPUT_COST_PER_MTOK = 1;
+const OUTPUT_COST_PER_MTOK = 5;
 
 function normalizeKey(title: string): string {
   return title.trim().toLowerCase();
@@ -36,6 +40,7 @@ async function extractFromChunk(
   const { data, inputTokens, outputTokens } = await callClaudeJSON<MentionExtraction[]>({
     system: EXTRACTION_SYSTEM_PROMPT,
     user,
+    model: EXTRACTION_MODEL,
     maxTokens: 4000,
   });
   return { mentions: Array.isArray(data) ? data : [], inputTokens, outputTokens };
