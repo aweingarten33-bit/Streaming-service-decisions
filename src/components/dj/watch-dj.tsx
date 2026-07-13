@@ -53,7 +53,8 @@ export function WatchDj({ backdrops }: { backdrops: string[] }) {
   const [loading, setLoading] = useState(false);
   const [turns, setTurns] = useState<Turn[]>([]);
   const [listening, setListening] = useState(false);
-  const [detail, setDetail] = useState<{ tmdbId: number; mediaType: string } | null>(null);
+  // Navigation stack so hopping through More Like This can step back page by page.
+  const [detailStack, setDetailStack] = useState<{ tmdbId: number; mediaType: string }[]>([]);
   const shownIds = useRef<number[]>([]);
   const lastFilters = useRef<ParsedFilters | null>(null);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
@@ -245,7 +246,9 @@ export function WatchDj({ backdrops }: { backdrops: string[] }) {
                       <PickCard
                         key={pick.tmdbId}
                         pick={pick}
-                        onOpen={() => setDetail({ tmdbId: pick.tmdbId, mediaType: pick.mediaType })}
+                        onOpen={() =>
+                          setDetailStack([{ tmdbId: pick.tmdbId, mediaType: pick.mediaType }])
+                        }
                         onNotForMe={() => ask("Something different, please")}
                       />
                     ))}
@@ -280,12 +283,12 @@ export function WatchDj({ backdrops }: { backdrops: string[] }) {
         </div>
       )}
 
-      {detail && (
+      {detailStack.length > 0 && (
         <TitleDetail
-          tmdbId={detail.tmdbId}
-          mediaType={detail.mediaType}
-          onClose={() => setDetail(null)}
-          onSwap={(tmdbId, mediaType) => setDetail({ tmdbId, mediaType })}
+          tmdbId={detailStack[detailStack.length - 1].tmdbId}
+          mediaType={detailStack[detailStack.length - 1].mediaType}
+          onClose={() => setDetailStack((s) => s.slice(0, -1))}
+          onSwap={(tmdbId, mediaType) => setDetailStack((s) => [...s, { tmdbId, mediaType }])}
         />
       )}
     </div>
