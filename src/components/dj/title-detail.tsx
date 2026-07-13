@@ -48,11 +48,13 @@ export function TitleDetail({
   const [detail, setDetail] = useState<DetailTitle | null>(null);
   const [similar, setSimilar] = useState<SimilarTitle[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [playing, setPlaying] = useState(false);
 
   useEffect(() => {
     setDetail(null);
     setSimilar([]);
     setError(null);
+    setPlaying(false);
     fetch(`/api/title/${tmdbId}?type=${mediaType}`)
       .then(async (res) => {
         const data = await res.json();
@@ -103,25 +105,35 @@ export function TitleDetail({
       {detail && (
         <div className="mx-auto w-full max-w-xl pb-16">
           <div className="relative h-64 w-full sm:h-80">
-            {detail.backdropPath ? (
-              <img
-                src={`${TMDB_IMG}/w1280${detail.backdropPath}`}
-                alt=""
-                className="h-full w-full object-cover"
+            {playing && detail.trailerKey ? (
+              <iframe
+                src={`https://www.youtube-nocookie.com/embed/${detail.trailerKey}?autoplay=1&playsinline=1`}
+                title={`${detail.title} trailer`}
+                allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+                allowFullScreen
+                className="h-full w-full border-0"
               />
             ) : (
-              <div className="h-full w-full bg-gradient-to-br from-[#1a0a14] to-[#0e1420]" />
-            )}
-            <div className="absolute inset-0 bg-gradient-to-t from-[#08080c] via-transparent to-black/40" />
-            {detail.trailerKey && (
-              <a
-                href={`https://www.youtube.com/watch?v=${detail.trailerKey}`}
-                target="_blank"
-                rel="noreferrer"
-                className="absolute bottom-4 right-4 flex items-center gap-2 rounded-full bg-black/60 px-4 py-2 text-xs font-medium text-white backdrop-blur-md transition-colors hover:bg-black/80"
-              >
-                <Play size={13} /> Play Trailer
-              </a>
+              <>
+                {detail.backdropPath ? (
+                  <img
+                    src={`${TMDB_IMG}/w1280${detail.backdropPath}`}
+                    alt=""
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div className="h-full w-full bg-gradient-to-br from-[#1a0a14] to-[#0e1420]" />
+                )}
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#08080c] via-transparent to-black/40" />
+                {detail.trailerKey && (
+                  <button
+                    onClick={() => setPlaying(true)}
+                    className="absolute bottom-4 right-4 flex items-center gap-2 rounded-full bg-black/60 px-4 py-2 text-xs font-medium text-white backdrop-blur-md transition-colors hover:bg-black/80"
+                  >
+                    <Play size={13} /> Play Trailer
+                  </button>
+                )}
+              </>
             )}
           </div>
 
