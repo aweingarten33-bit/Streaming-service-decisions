@@ -48,7 +48,15 @@ interface ViewerPreferences {
   streaming_services: string[];
   favorite_genres: string[];
   avoid_genres: string[];
+  watches_with: string | null;
 }
+
+// Who someone usually watches with maps onto vibe descriptors the curators
+// already tag — a soft boost, never a hard filter.
+const WATCHES_WITH_DESCRIPTOR: Record<string, string> = {
+  Partner: "date_night_safe",
+  Family: "parents_safe",
+};
 
 const SENTIMENT_WEIGHT: Record<string, number> = {
   enthusiastic_rec: 3,
@@ -108,7 +116,7 @@ export async function POST(req: NextRequest) {
   if (deviceId) {
     const { data } = await supabase
       .from("viewer_preferences")
-      .select("streaming_services, favorite_genres, avoid_genres")
+      .select("streaming_services, favorite_genres, avoid_genres, watches_with")
       .eq("device_id", deviceId)
       .maybeSingle();
     preferences = data;
@@ -184,7 +192,15 @@ export async function POST(req: NextRequest) {
       const rating = row.imdb_rating ?? row.tmdb_rating ?? 0;
       const sentimentScore = Math.max(...qualifying.map((m) => SENTIMENT_WEIGHT[m.sentiment] ?? 0));
       const favoriteBoost = row.genres.some((g) => favoriteGenres.includes(g)) ? 1.5 : 0;
-      const score = sentimentScore * 2 + rating + favoriteBoost + Math.random() * 1.5;
+      const companionDescriptor = preferences?.watches_with
+        ? WATCHES_WITH_DESCRIPTOR[preferences.watches_with]
+        : undefined;
+      const companionBoost =
+        companionDescriptor && qualifying.some((m) => m.descriptors.includes(companionDescriptor))
+          ? 1.5
+          : 0;
+      const score =
+        sentimentScore * 2 + rating + favoriteBoost + companionBoost + Math.random() * 1.5;
 
       return { row: { ...row, mentions: qualifying }, score, matchedDescriptors };
     })

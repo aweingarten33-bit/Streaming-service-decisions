@@ -5,7 +5,6 @@ import { streamingServices } from "../../../config/streaming-services";
 import { genres } from "../../../config/genres";
 import { getDeviceId } from "@/lib/device-id";
 
-const AGE_RANGES = ["Under 18", "18-24", "25-34", "35-44", "45-54", "55+"];
 const WATCHES_WITH = ["Solo", "Partner", "Family", "Friends", "Roommates"];
 
 function Chip({
@@ -32,11 +31,10 @@ function Chip({
   );
 }
 
-const STEPS = ["age", "watchesWith", "services", "favoriteGenres", "avoidGenres"] as const;
+const STEPS = ["watchesWith", "services", "favoriteGenres", "avoidGenres"] as const;
 
 export function Onboarding({ onDone }: { onDone: () => void }) {
   const [step, setStep] = useState(0);
-  const [ageRange, setAgeRange] = useState<string | null>(null);
   const [watchesWith, setWatchesWith] = useState<string | null>(null);
   const [services, setServices] = useState<string[]>([]);
   const [favoriteGenres, setFavoriteGenres] = useState<string[]>([]);
@@ -56,7 +54,6 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           deviceId,
-          ageRange,
           watchesWith,
           streamingServices: services,
           favoriteGenres,
@@ -73,7 +70,6 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
   }
 
   const canAdvance =
-    (STEPS[step] === "age" && ageRange !== null) ||
     (STEPS[step] === "watchesWith" && watchesWith !== null) ||
     STEPS[step] === "services" ||
     STEPS[step] === "favoriteGenres" ||
@@ -82,19 +78,6 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
   return (
     <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-xl flex-col items-center justify-center px-6 py-16">
       <div className="w-full">
-        {STEPS[step] === "age" && (
-          <>
-            <h2 className="font-display text-2xl text-[#F5EEDC]">How old are you?</h2>
-            <div className="mt-5 flex flex-wrap gap-2">
-              {AGE_RANGES.map((r) => (
-                <Chip key={r} selected={ageRange === r} onClick={() => setAgeRange(r)}>
-                  {r}
-                </Chip>
-              ))}
-            </div>
-          </>
-        )}
-
         {STEPS[step] === "watchesWith" && (
           <>
             <h2 className="font-display text-2xl text-[#F5EEDC]">Who do you usually watch with?</h2>
