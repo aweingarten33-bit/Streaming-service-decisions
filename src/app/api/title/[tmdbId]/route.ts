@@ -77,10 +77,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ tmdb
       .overlaps("genres", genres)
       .neq("tmdb_id", tmdbId)
       .order("imdb_votes", { ascending: false, nullsFirst: false })
-      .limit(40);
+      .limit(60);
     similar = ((sim ?? []) as unknown as SimilarRow[])
       .filter((s) => s.mentions.some((m) => QUALIFYING.includes(m.sentiment)))
-      .slice(0, 6);
+      .slice(0, 10);
   }
 
   return NextResponse.json({
