@@ -230,6 +230,21 @@ function titleGenresFromReference(row: ReferenceTitleSignal): string[] {
   return title?.genres ?? [];
 }
 
+}
+
+function topDescriptors(counts: Record<string, number> | null, limit: number): string[] {
+  return Object.entries(counts ?? {})
+    .filter(([descriptor]) => allDescriptors.includes(descriptor))
+    .sort((a, b) => Number(b[1]) - Number(a[1]))
+    .slice(0, limit)
+    .map(([descriptor]) => descriptor);
+}
+
+function titleGenresFromReference(row: ReferenceTitleSignal): string[] {
+  const title = Array.isArray(row.titles) ? row.titles[0] : row.titles;
+  return title?.genres ?? [];
+}
+
 function strongestSentimentScore(row: SignalRow): number {
   return row.strongest_sentiment ? (SENTIMENT_WEIGHT[row.strongest_sentiment] ?? 0) : 0;
 }
@@ -417,6 +432,27 @@ export async function POST(req: NextRequest) {
       );
     }
     candidateSource = "raw_mentions_fallback";
+    return fetchRawMentionCandidates(genreFilter);
+  }
+
+  }
+
+  async function fetchCandidates(genreFilter: string[]): Promise<SignalRow[]> {
+    const { data, error } = await fetchSummaryCandidates(genreFilter);
+    if (!error && (data ?? []).length > 0) return (data ?? []) as unknown as SignalRow[];
+
+    if (error) {
+      console.warn(
+        "recommend: title_signal_summary unavailable; falling back to raw YouTube mentions:",
+        error.message,
+        error.details,
+        error.hint,
+      );
+    } else {
+      console.warn(
+        "recommend: title_signal_summary is empty; falling back to raw YouTube mentions",
+      );
+    }
     return fetchRawMentionCandidates(genreFilter);
   }
 
