@@ -2,7 +2,7 @@ import { createGunzip } from "node:zlib";
 import { createInterface } from "node:readline";
 import { Readable } from "node:stream";
 import { supabase } from "@/lib/pipeline/supabase";
-import { getExternalIds, getDetails } from "@/lib/pipeline/tmdb";
+import { getExternalIds, getDetails, getWatchProviders } from "@/lib/pipeline/tmdb";
 import type { ResolvedMediaType } from "@/lib/pipeline/types";
 
 const RATINGS_URL = "https://datasets.imdbws.com/title.ratings.tsv.gz";
@@ -83,28 +83,33 @@ async function joinRatings(): Promise<number> {
 }
 
 /**
- * Refreshes TMDB's own vote_average/vote_count for every title, from the same
- * details call the pipeline already makes elsewhere — a second, free
- * general-audience rating source alongside IMDb's, useful when IMDb coverage
- * is thin. Re-run safe: just overwrites with current numbers.
+ * Refreshes TMDB metadata for every title: vote_average/vote_count (a second,
+ * free general-audience rating source alongside IMDb's), backdrop art, and
+ * current streaming availability. Re-run safe: overwrites with current values,
+ * which also backfills titles resolved before these columns existed.
  */
-async function refreshTmdbRatings(): Promise<number> {
+async function refreshTmdbMetadata(): Promise<number> {
   const { data: titles, error } = await supabase.from("titles").select("tmdb_id, media_type");
   if (error) throw new Error(`Failed to load titles: ${error.message}`);
 
   let updated = 0;
   for (const t of titles ?? []) {
     try {
-      const details = await getDetails(t.tmdb_id, t.media_type as ResolvedMediaType);
-      if (details.voteAverage !== null) {
-        await supabase
-          .from("titles")
-          .update({ tmdb_rating: details.voteAverage, tmdb_vote_count: details.voteCount })
-          .eq("tmdb_id", t.tmdb_id);
-        updated++;
-      }
+      const mediaType = t.media_type as ResolvedMediaType;
+      const details = await getDetails(t.tmdb_id, mediaType);
+      const providers = await getWatchProviders(t.tmdb_id, mediaType).catch(() => []);
+      await supabase
+        .from("titles")
+        .update({
+          tmdb_rating: details.voteAverage,
+          tmdb_vote_count: details.voteCount,
+          backdrop_path: details.backdropPath,
+          streaming_providers: providers,
+        })
+        .eq("tmdb_id", t.tmdb_id);
+      updated++;
     } catch (err) {
-      console.log(`  Failed to refresh TMDB rating for tmdb:${t.tmdb_id}: ${String(err)}`);
+      console.log(`  Failed to refresh TMDB metadata for tmdb:${t.tmdb_id}: ${String(err)}`);
     }
   }
   return updated;
@@ -121,9 +126,9 @@ async function main() {
   const rowsUpdated = await joinRatings();
   console.log(`  Updated ${rowsUpdated} title(s) with ratings.\n`);
 
-  console.log("Step 3: refreshing TMDB's own rating/vote count...");
-  const tmdbRefreshed = await refreshTmdbRatings();
-  console.log(`  Updated ${tmdbRefreshed} title(s) with TMDB's own rating.\n`);
+  console.log("Step 3: refreshing TMDB metadata (ratings, backdrops, streaming availability)...");
+  const tmdbRefreshed = await refreshTmdbMetadata();
+  console.log(`  Updated ${tmdbRefreshed} title(s) with TMDB metadata.\n`);
 
   const durationMs = Date.now() - start;
   await supabase.from("pipeline_runs").insert({
