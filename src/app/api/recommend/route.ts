@@ -93,6 +93,10 @@ function normalizeGenres(hints: string[]): string[] {
   return [...out];
 }
 
+const RERANK_SYSTEM_PROMPT = `You pick the movies/TV shows that best fit a viewer's request from a candidate shortlist.
+Return ONLY JSON: {"chosen_indices": number[]} — the 0-based indices of the 3 candidates that genuinely fit the request's tone and intent, best first.
+Judge tone honestly: if they asked for funny, pick things that are actually funny — not heavy dramas that happen to carry a comedy label. Never invent candidates; only choose from the list.`;
+
 const SENTIMENT_WEIGHT: Record<string, number> = {
   enthusiastic_rec: 3,
   qualified_rec: 1.5,
@@ -244,6 +248,12 @@ export async function POST(req: NextRequest) {
           ...qualifying.map((m) => SENTIMENT_WEIGHT[m.sentiment] ?? 0),
         );
         const favoriteBoost = row.genres.some((g) => favoriteGenres.includes(g)) ? 1.5 : 0;
+        // A requested genre in first position is the title's real identity; buried
+        // third it's often a token label (the dramedy problem).
+        const primaryGenreBoost =
+          wantedGenres.length > 0 && row.genres[0] && wantedGenres.includes(row.genres[0])
+            ? 1.5
+            : 0;
         const companionDescriptor = preferences?.watches_with
           ? WATCHES_WITH_DESCRIPTOR[preferences.watches_with]
           : undefined;
@@ -252,7 +262,12 @@ export async function POST(req: NextRequest) {
             ? 1.5
             : 0;
         const score =
-          sentimentScore * 2 + rating + favoriteBoost + companionBoost + Math.random() * 1.5;
+          sentimentScore * 2 +
+          rating +
+          favoriteBoost +
+          primaryGenreBoost +
+          companionBoost +
+          Math.random() * 1.5;
 
         return { row: { ...row, mentions: qualifying }, score, matchedDescriptors };
       })
@@ -267,7 +282,34 @@ export async function POST(req: NextRequest) {
     scored = scoreRows([]);
   }
 
-  const top = scored.slice(0, 3).map(({ row, matchedDescriptors }) => ({
+  // Genre labels lie about tone (dramedies carry a Comedy tag), so let the model
+  // read the shortlist and judge fit honestly instead of trusting metadata alone.
+  const pool = scored.slice(0, 12);
+  let chosen = pool.slice(0, 3);
+  if (prompt.trim() && pool.length > 3) {
+    try {
+      const list = pool
+        .map(
+          (c, i) =>
+            `${i}. "${c.row.title}" (${c.row.year ?? "?"}, ${c.row.genres.join("/")}) — ${bestMention(c.row).quote_free_summary}`,
+        )
+        .join("\n");
+      const { data } = await callClaudeJSON<{ chosen_indices: number[] }>({
+        system: RERANK_SYSTEM_PROMPT,
+        user: `REQUEST: ${prompt}\n\nCANDIDATES:\n${list}`,
+        model: "claude-haiku-4-5-20251001",
+        maxTokens: 100,
+      });
+      const idx = (data.chosen_indices ?? [])
+        .filter((i) => Number.isInteger(i) && i >= 0 && i < pool.length)
+        .slice(0, 3);
+      if (idx.length === 3) chosen = idx.map((i) => pool[i]);
+    } catch {
+      // Keep score order — a rerank failure should never fail the request.
+    }
+  }
+
+  const top = chosen.map(({ row, matchedDescriptors }) => ({
     tmdbId: row.tmdb_id,
     title: row.title,
     year: row.year,

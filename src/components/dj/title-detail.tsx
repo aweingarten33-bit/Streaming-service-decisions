@@ -169,7 +169,7 @@ export function TitleDetail({
               </div>
             )}
 
-            {detail.streamingProviders.length > 0 ? (
+            {detail.streamingProviders.length > 0 && (
               <div className="mt-5 rounded-xl bg-gradient-to-br from-[#f2ca6d] to-[#c8933a] px-5 py-3 text-center font-semibold text-[#181104]">
                 Watch on {detail.streamingProviders[0]}
                 {detail.streamingProviders.length > 1 && (
@@ -178,10 +178,6 @@ export function TitleDetail({
                   </span>
                 )}
               </div>
-            ) : (
-              <p className="mt-5 font-mono text-[11px] uppercase tracking-wider text-white/40">
-                Not currently on a subscription service
-              </p>
             )}
 
             {detail.overview && (
