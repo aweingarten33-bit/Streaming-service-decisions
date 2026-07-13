@@ -76,11 +76,13 @@ export interface TmdbDetails extends TmdbCandidate {
   genres: string[];
   runtime: number | null;
   director: string | null;
+  topCast: string[];
+  trailerKey: string | null;
   voteAverage: number | null;
   voteCount: number | null;
 }
 
-/** Fetches full details for disambiguation and storage, including director/creator for context. */
+/** Fetches full details for disambiguation, storage, and the title detail view. */
 export async function getDetails(
   tmdbId: number,
   mediaType: ResolvedMediaType,
@@ -98,16 +100,24 @@ export async function getDetails(
     runtime?: number;
     episode_run_time?: number[];
     created_by?: { name: string }[];
-    credits?: { crew: { job: string; name: string }[] };
+    credits?: { crew: { job: string; name: string }[]; cast?: { name: string }[] };
+    videos?: { results: { site: string; type: string; key: string; official?: boolean }[] };
     vote_average?: number;
     vote_count?: number;
-  }>(`/${mediaType}/${tmdbId}`, { append_to_response: "credits" });
+  }>(`/${mediaType}/${tmdbId}`, { append_to_response: "credits,videos" });
 
   const dateStr = data.release_date || data.first_air_date;
   const director =
     mediaType === "movie"
       ? (data.credits?.crew.find((c) => c.job === "Director")?.name ?? null)
       : (data.created_by?.[0]?.name ?? null);
+
+  const youtubeVideos = (data.videos?.results ?? []).filter((v) => v.site === "YouTube");
+  const trailerKey =
+    youtubeVideos.find((v) => v.type === "Trailer" && v.official)?.key ??
+    youtubeVideos.find((v) => v.type === "Trailer")?.key ??
+    youtubeVideos.find((v) => v.type === "Teaser")?.key ??
+    null;
 
   return {
     tmdbId: data.id,
@@ -120,6 +130,8 @@ export async function getDetails(
     genres: data.genres.map((g) => g.name),
     runtime: data.runtime ?? data.episode_run_time?.[0] ?? null,
     director,
+    topCast: (data.credits?.cast ?? []).slice(0, 4).map((c) => c.name),
+    trailerKey,
     voteAverage: data.vote_average ?? null,
     voteCount: data.vote_count ?? null,
   };
