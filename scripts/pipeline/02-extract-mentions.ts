@@ -34,6 +34,11 @@ function normalizeKey(title: string): string {
   return title.trim().toLowerCase();
 }
 
+// no_captions/video_unavailable are permanent — the video will never gain
+// captions or come back. youtube_blocked/transcript_fetch_error/empty_transcript
+// are transient (rate limits, network blips) and worth retrying on a future run.
+const PERMANENT_FAILURE_REASONS = new Set(["no_captions", "video_unavailable"]);
+
 const SENTIMENT_STRENGTH: Record<string, number> = {
   pan: 0,
   neutral_reference: 1,
@@ -103,9 +108,10 @@ export async function extractVideo(video: {
     console.log(
       `[${transcriptResult.failureReason ?? "unknown"}] ${transcriptResult.failureDetail ?? ""}`,
     );
-    // Leave extracted_at null so the video is retried on a future run — transcript
-    // fetches fail transiently (YouTube blocks datacenter IPs), and stamping the
-    // video done here silently loses its mentions forever.
+    // Permanent failures (no captions / video gone) are marked done so they stop
+    // reappearing on every future run. Transient ones (blocked, network errors)
+    // leave extracted_at null so the video is retried later.
+    const isPermanent = PERMANENT_FAILURE_REASONS.has(transcriptResult.failureReason ?? "");
     await supabase
       .from("videos")
       .update({
@@ -113,6 +119,7 @@ export async function extractVideo(video: {
         transcript_failure_reason: transcriptResult.failureReason,
         transcript_failure_detail: transcriptResult.failureDetail,
         transcript_last_attempt_at: new Date().toISOString(),
+        ...(isPermanent ? { extracted_at: new Date().toISOString() } : {}),
       })
       .eq("id", video.id);
     await supabase.rpc("increment_transcript_attempt_count", { target_video_id: video.id }).then(
