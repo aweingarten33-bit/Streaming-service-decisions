@@ -100,6 +100,9 @@ export async function extractVideo(video: {
   const transcriptResult = await fetchTranscriptResult(video.youtube_video_id);
   const transcript = transcriptResult.text;
   if (!transcript) {
+    console.log(
+      `[${transcriptResult.failureReason ?? "unknown"}] ${transcriptResult.failureDetail ?? ""}`,
+    );
     // Leave extracted_at null so the video is retried on a future run — transcript
     // fetches fail transiently (YouTube blocks datacenter IPs), and stamping the
     // video done here silently loses its mentions forever.
