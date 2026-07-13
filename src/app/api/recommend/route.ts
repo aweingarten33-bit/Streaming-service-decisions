@@ -10,7 +10,8 @@ Return ONLY JSON matching:
   "media_type": "movie" | "tv" | "any",
   "descriptors": string[] (zero or more from this exact list: ${allDescriptors.join(", ")}),
   "max_runtime_minutes": number or null (only if a time constraint is mentioned, e.g. "90 minutes" or "short"),
-  "genre_hints": string[] (zero or more from this exact list: ${allGenres.join(", ")} — map the request's vibe onto these, e.g. "mind-bending" → Science Fiction, Mystery, Thriller)
+  "genre_hints": string[] (zero or more from this exact list: ${allGenres.join(", ")} — map the request's vibe onto these, e.g. "mind-bending" → Science Fiction, Mystery, Thriller),
+  "reference_title": string or null (only when the user explicitly asks for something like a specific movie/show)
 }
 Only include descriptors that clearly match the request's intent. Do not guess wildly.
 
@@ -21,6 +22,7 @@ interface ParsedQuery {
   descriptors: string[];
   max_runtime_minutes: number | null;
   genre_hints: string[];
+  reference_title?: string | null;
 }
 
 interface TitleRow {
@@ -36,13 +38,115 @@ interface TitleRow {
   tmdb_rating: number | null;
   tmdb_vote_count: number | null;
   streaming_providers: string[];
-  mentions: {
-    id: string;
-    sentiment: string;
-    descriptors: string[];
-    quote_free_summary: string;
-    videos: { curator_id: string } | { curator_id: string }[] | null;
-  }[];
+}
+
+interface SignalRow {
+  tmdb_id: number;
+  source_count: number;
+  positive_mention_count: number;
+  negative_mention_count: number;
+  strongest_sentiment: string | null;
+  descriptor_counts: Record<string, number> | null;
+  representative_summaries: string[];
+  latest_mention_at: string | null;
+  evidence_score: number;
+  titles: TitleRow | TitleRow[] | null;
+}
+
+interface ReferenceTitleSignal {
+  descriptor_counts: Record<string, number> | null;
+  titles: { genres: string[] } | { genres: string[] }[] | null;
+}
+
+interface RawMentionCandidateRow {
+  tmdb_id: number;
+  sentiment: string;
+  descriptors: string[] | null;
+  quote_free_summary: string | null;
+  videos: { curator_id: string } | { curator_id: string }[] | null;
+  titles: TitleRow | TitleRow[] | null;
+}
+
+const SENTIMENT_RANK: Record<string, number> = {
+  enthusiastic_rec: 5,
+  qualified_rec: 4,
+  notable_mention: 3,
+  neutral_reference: 2,
+  pan: 1,
+};
+
+function curatorIdsFromVideos(videos: RawMentionCandidateRow["videos"]): string[] {
+  if (!videos) return [];
+  return Array.isArray(videos) ? videos.map((v) => v.curator_id) : [videos.curator_id];
+}
+
+function aggregateRawMentionCandidates(rawRows: RawMentionCandidateRow[]): SignalRow[] {
+  const byTitle = new Map<number, SignalRow & { _curators?: Set<string> }>();
+
+  for (const mention of rawRows) {
+    if (!mention.tmdb_id) continue;
+    const title = titleFromSignal({ titles: mention.titles } as SignalRow);
+    if (!title) continue;
+
+    const existing = byTitle.get(mention.tmdb_id) ?? {
+      tmdb_id: mention.tmdb_id,
+      source_count: 0,
+      positive_mention_count: 0,
+      negative_mention_count: 0,
+      strongest_sentiment: null,
+      descriptor_counts: {},
+      representative_summaries: [],
+      latest_mention_at: null,
+      evidence_score: 0,
+      titles: title,
+      _curators: new Set<string>(),
+    };
+
+    for (const curatorId of curatorIdsFromVideos(mention.videos))
+      existing._curators?.add(curatorId);
+    if (mention.sentiment === "enthusiastic_rec" || mention.sentiment === "qualified_rec") {
+      existing.positive_mention_count += 1;
+    }
+    if (mention.sentiment === "pan") existing.negative_mention_count += 1;
+    if (
+      !existing.strongest_sentiment ||
+      (SENTIMENT_RANK[mention.sentiment] ?? 0) > (SENTIMENT_RANK[existing.strongest_sentiment] ?? 0)
+    ) {
+      existing.strongest_sentiment = mention.sentiment;
+    }
+    for (const descriptor of mention.descriptors ?? []) {
+      if (!allDescriptors.includes(descriptor)) continue;
+      existing.descriptor_counts = existing.descriptor_counts ?? {};
+      existing.descriptor_counts[descriptor] =
+        Number(existing.descriptor_counts[descriptor] ?? 0) + 1;
+    }
+    if (
+      mention.quote_free_summary &&
+      !existing.representative_summaries.includes(mention.quote_free_summary) &&
+      existing.representative_summaries.length < 3
+    ) {
+      existing.representative_summaries.push(mention.quote_free_summary);
+    }
+
+    byTitle.set(mention.tmdb_id, existing);
+  }
+
+  return [...byTitle.values()].map((signal) => {
+    const sourceCount = signal._curators?.size ?? 0;
+    const strongest = strongestSentimentScore(signal);
+    const descriptorTotal = Object.values(signal.descriptor_counts ?? {}).reduce(
+      (sum, count) => sum + Number(count),
+      0,
+    );
+    const evidenceScore =
+      signal.positive_mention_count * 2 +
+      sourceCount * 1.5 +
+      strongest +
+      descriptorTotal * 0.2 -
+      signal.negative_mention_count * 2;
+    const { _curators, ...clean } = signal;
+    return { ...clean, source_count: sourceCount, evidence_score: evidenceScore };
+  });
 }
 
 interface ViewerPreferences {
@@ -105,37 +209,49 @@ const SENTIMENT_WEIGHT: Record<string, number> = {
   pan: -5,
 };
 
-function curatorIdsForTitle(row: TitleRow): Set<string> {
-  const ids = new Set<string>();
-  for (const m of row.mentions) {
-    const v = m.videos;
-    if (!v) continue;
-    if (Array.isArray(v)) v.forEach((x) => ids.add(x.curator_id));
-    else ids.add(v.curator_id);
-  }
-  return ids;
+function titleFromSignal(row: SignalRow): TitleRow | null {
+  return Array.isArray(row.titles) ? (row.titles[0] ?? null) : row.titles;
 }
 
-function bestMention(row: TitleRow) {
-  return row.mentions.reduce((best, m) =>
-    (SENTIMENT_WEIGHT[m.sentiment] ?? 0) > (SENTIMENT_WEIGHT[best.sentiment] ?? 0) ? m : best,
-  );
+function descriptorCount(row: SignalRow, descriptor: string): number {
+  return Number(row.descriptor_counts?.[descriptor] ?? 0);
 }
 
-function buildWhy(row: TitleRow, matchedDescriptors: string[]): string {
-  const curatorCount = curatorIdsForTitle(row).size;
-  const mention = bestMention(row);
+function topDescriptors(counts: Record<string, number> | null, limit: number): string[] {
+  return Object.entries(counts ?? {})
+    .filter(([descriptor]) => allDescriptors.includes(descriptor))
+    .sort((a, b) => Number(b[1]) - Number(a[1]))
+    .slice(0, limit)
+    .map(([descriptor]) => descriptor);
+}
+
+function titleGenresFromReference(row: ReferenceTitleSignal): string[] {
+  const title = Array.isArray(row.titles) ? row.titles[0] : row.titles;
+  return title?.genres ?? [];
+}
+
+function strongestSentimentScore(row: SignalRow): number {
+  return row.strongest_sentiment ? (SENTIMENT_WEIGHT[row.strongest_sentiment] ?? 0) : 0;
+}
+
+function buildWhy(signal: SignalRow, matchedDescriptors: string[]): string {
   const vibePhrase =
     matchedDescriptors.length > 0
       ? ` for its ${matchedDescriptors.map((d) => d.replace(/_/g, " ")).join(" and ")}`
       : "";
 
   const source =
-    curatorCount >= 2
+    signal.source_count >= 2
       ? "Multiple trusted recommendation sources independently highlighted this title"
       : "Highlighted by a trusted recommendation source";
 
-  return `${source}${vibePhrase}. ${mention.quote_free_summary}`;
+  const summary = signal.representative_summaries[0] ?? "Curators described it as worth watching.";
+  const caveat =
+    signal.negative_mention_count > 0
+      ? ` Balanced against ${signal.negative_mention_count} negative mention${signal.negative_mention_count === 1 ? "" : "s"}.`
+      : "";
+
+  return `${source}${vibePhrase}. ${summary}${caveat}`;
 }
 
 export async function POST(req: NextRequest) {
@@ -181,42 +297,127 @@ export async function POST(req: NextRequest) {
       // Never let an invented tag zero out results — only real taxonomy entries count.
       parsed.descriptors = (parsed.descriptors ?? []).filter((d) => allDescriptors.includes(d));
       parsed.genre_hints = parsed.genre_hints ?? [];
+      parsed.reference_title =
+        typeof parsed.reference_title === "string" && parsed.reference_title.trim()
+          ? parsed.reference_title.trim()
+          : null;
     } catch {
       // Fall back to unfiltered (genre-only) search rather than failing the whole request.
     }
   }
 
+  const referenceTitle = parsed.reference_title;
+  if (referenceTitle) {
+    const { data: reference } = await supabase
+      .from("title_signal_summary")
+      .select("descriptor_counts, titles!inner ( genres )")
+      .ilike("titles.title", `%${referenceTitle}%`)
+      .order("evidence_score", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (reference) {
+      const referenceSignal = reference as unknown as ReferenceTitleSignal;
+      parsed.descriptors = [
+        ...new Set([
+          ...parsed.descriptors,
+          ...topDescriptors(referenceSignal.descriptor_counts, 4),
+        ]),
+      ];
+      parsed.genre_hints = [
+        ...new Set([
+          ...parsed.genre_hints,
+          ...titleGenresFromReference(referenceSignal).slice(0, 2),
+        ]),
+      ];
+    }
+  }
+
   const wantedGenres = normalizeGenres([...selectedGenres, ...parsed.genre_hints]);
 
-  async function fetchCandidates(genreFilter: string[]) {
+  async function fetchSummaryCandidates(genreFilter: string[]) {
     let query = supabase
-      .from("titles")
+      .from("title_signal_summary")
       .select(
-        `tmdb_id, title, media_type, year, genres, runtime, poster_path, streaming_providers,
-         imdb_rating, imdb_votes, tmdb_rating, tmdb_vote_count,
-         mentions!inner ( id, sentiment, descriptors, quote_free_summary, videos ( curator_id ) )`,
+        `tmdb_id, source_count, positive_mention_count, negative_mention_count,
+         strongest_sentiment, descriptor_counts, representative_summaries, latest_mention_at,
+         evidence_score,
+         titles!inner (
+           tmdb_id, title, media_type, year, genres, runtime, poster_path, streaming_providers,
+           imdb_rating, imdb_votes, tmdb_rating, tmdb_vote_count
+         )`,
       )
-      .order("imdb_votes", { ascending: false, nullsFirst: false })
-      .limit(300);
+      .gt("positive_mention_count", 0)
+      .order("evidence_score", { ascending: false })
+      .limit(1000);
 
-    if (parsed.media_type !== "any") query = query.eq("media_type", parsed.media_type);
-    if (parsed.max_runtime_minutes) query = query.lte("runtime", parsed.max_runtime_minutes);
-    if (genreFilter.length > 0) query = query.overlaps("genres", genreFilter);
-    if (excludeIds.length > 0) query = query.not("tmdb_id", "in", `(${excludeIds.join(",")})`);
+    if (parsed.media_type !== "any") query = query.eq("titles.media_type", parsed.media_type);
+    if (parsed.max_runtime_minutes) query = query.lte("titles.runtime", parsed.max_runtime_minutes);
+    if (genreFilter.length > 0) query = query.overlaps("titles.genres", genreFilter);
+    if (excludeIds.length > 0)
+      query = query.filter("tmdb_id", "not.in", `(${excludeIds.join(",")})`);
     return query;
   }
 
-  const { data, error } = await fetchCandidates(wantedGenres);
-  if (error) {
-    console.error("recommend: titles query failed:", error.message, error.details, error.hint);
-    return NextResponse.json({ error: `Search failed: ${error.message}` }, { status: 500 });
+  async function fetchRawMentionCandidates(genreFilter: string[]): Promise<SignalRow[]> {
+    let query = supabase
+      .from("mentions")
+      .select(
+        `tmdb_id, sentiment, descriptors, quote_free_summary, videos!inner ( curator_id ),
+         titles!inner (
+           tmdb_id, title, media_type, year, genres, runtime, poster_path, streaming_providers,
+           imdb_rating, imdb_votes, tmdb_rating, tmdb_vote_count
+         )`,
+      )
+      .not("tmdb_id", "is", null)
+      .in("sentiment", ["enthusiastic_rec", "qualified_rec", "pan"])
+      .limit(5000);
+
+    if (parsed.media_type !== "any") query = query.eq("titles.media_type", parsed.media_type);
+    if (parsed.max_runtime_minutes) query = query.lte("titles.runtime", parsed.max_runtime_minutes);
+    if (genreFilter.length > 0) query = query.overlaps("titles.genres", genreFilter);
+    if (excludeIds.length > 0)
+      query = query.filter("tmdb_id", "not.in", `(${excludeIds.join(",")})`);
+
+    const { data, error } = await query;
+    if (error) {
+      console.error(
+        "recommend: raw mention fallback failed:",
+        error.message,
+        error.details,
+        error.hint,
+      );
+      return [];
+    }
+    return aggregateRawMentionCandidates((data ?? []) as unknown as RawMentionCandidateRow[])
+      .filter((signal) => signal.positive_mention_count > 0)
+      .sort((a, b) => b.evidence_score - a.evidence_score)
+      .slice(0, 1000);
   }
 
-  let rows = (data ?? []) as unknown as TitleRow[];
+  async function fetchCandidates(genreFilter: string[]): Promise<SignalRow[]> {
+    const { data, error } = await fetchSummaryCandidates(genreFilter);
+    if (!error && (data ?? []).length > 0) return (data ?? []) as unknown as SignalRow[];
+
+    if (error) {
+      console.warn(
+        "recommend: title_signal_summary unavailable; falling back to raw YouTube mentions:",
+        error.message,
+        error.details,
+        error.hint,
+      );
+    } else {
+      console.warn(
+        "recommend: title_signal_summary is empty; falling back to raw YouTube mentions",
+      );
+    }
+    return fetchRawMentionCandidates(genreFilter);
+  }
+
+  let rows = await fetchCandidates(wantedGenres);
   // Genre interpretation too narrow for our catalog? Relax it rather than coming back empty.
   if (rows.length === 0 && wantedGenres.length > 0) {
-    const { data: relaxed } = await fetchCandidates([]);
-    rows = (relaxed ?? []) as unknown as TitleRow[];
+    rows = await fetchCandidates([]);
   }
   const avoidGenres = preferences?.avoid_genres ?? [];
   const favoriteGenres = preferences?.favorite_genres ?? [];
@@ -224,7 +425,9 @@ export async function POST(req: NextRequest) {
 
   function scoreRows(requiredDescriptors: string[]) {
     return rows
-      .map((row) => {
+      .map((signal) => {
+        const row = titleFromSignal(signal);
+        if (!row) return null;
         if (avoidGenres.length > 0 && row.genres.some((g) => avoidGenres.includes(g))) return null;
         // Only exclude on services when we actually KNOW the availability and none
         // match — an empty providers array means unknown, not unavailable.
@@ -233,19 +436,15 @@ export async function POST(req: NextRequest) {
         if (myServices.length > 0 && row.streaming_providers.length > 0 && !onMyService)
           return null;
 
-        const qualifying = row.mentions.filter((m) =>
-          ["enthusiastic_rec", "qualified_rec"].includes(m.sentiment),
-        );
-        if (qualifying.length === 0) return null;
-
-        const matchedDescriptors = requiredDescriptors.filter((d) =>
-          qualifying.some((m) => m.descriptors.includes(d)),
+        const matchedDescriptors = requiredDescriptors.filter(
+          (d) => descriptorCount(signal, d) > 0,
         );
         if (requiredDescriptors.length > 0 && matchedDescriptors.length === 0) return null;
 
         const rating = row.imdb_rating ?? row.tmdb_rating ?? 0;
-        const sentimentScore = Math.max(
-          ...qualifying.map((m) => SENTIMENT_WEIGHT[m.sentiment] ?? 0),
+        const descriptorStrength = matchedDescriptors.reduce(
+          (sum, descriptor) => sum + descriptorCount(signal, descriptor),
+          0,
         );
         const favoriteBoost = row.genres.some((g) => favoriteGenres.includes(g)) ? 1.5 : 0;
         // A requested genre in first position is the title's real identity; buried
@@ -258,18 +457,18 @@ export async function POST(req: NextRequest) {
           ? WATCHES_WITH_DESCRIPTOR[preferences.watches_with]
           : undefined;
         const companionBoost =
-          companionDescriptor && qualifying.some((m) => m.descriptors.includes(companionDescriptor))
-            ? 1.5
-            : 0;
+          companionDescriptor && descriptorCount(signal, companionDescriptor) > 0 ? 1.5 : 0;
         const score =
-          sentimentScore * 2 +
-          rating +
+          signal.evidence_score +
+          strongestSentimentScore(signal) * 2 +
+          signal.source_count * 1.5 +
+          descriptorStrength * 1.25 +
+          rating * 0.35 +
           favoriteBoost +
           primaryGenreBoost +
-          companionBoost +
-          Math.random() * 1.5;
+          companionBoost;
 
-        return { row: { ...row, mentions: qualifying }, score, matchedDescriptors };
+        return { row, signal, score, matchedDescriptors };
       })
       .filter((x): x is NonNullable<typeof x> => x !== null)
       .sort((a, b) => b.score - a.score);
@@ -291,7 +490,7 @@ export async function POST(req: NextRequest) {
       const list = pool
         .map(
           (c, i) =>
-            `${i}. "${c.row.title}" (${c.row.year ?? "?"}, ${c.row.genres.join("/")}) — ${bestMention(c.row).quote_free_summary}`,
+            `${i}. "${c.row.title}" (${c.row.year ?? "?"}, ${c.row.genres.join("/")}) — ${buildWhy(c.signal, c.matchedDescriptors)}`,
         )
         .join("\n");
       const { data } = await callClaudeJSON<{ chosen_indices: number[] }>({
@@ -309,7 +508,7 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const top = chosen.map(({ row, matchedDescriptors }) => ({
+  const top = chosen.map(({ row, signal, matchedDescriptors }) => ({
     tmdbId: row.tmdb_id,
     title: row.title,
     year: row.year,
@@ -320,7 +519,7 @@ export async function POST(req: NextRequest) {
     voteCount: row.imdb_votes ?? row.tmdb_vote_count ?? null,
     genres: row.genres,
     streamingProviders: row.streaming_providers,
-    why: buildWhy(row, matchedDescriptors),
+    why: buildWhy(signal, matchedDescriptors),
   }));
 
   return NextResponse.json({ results: top, filters: parsed });
