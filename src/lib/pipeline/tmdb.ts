@@ -28,6 +28,7 @@ export interface TmdbCandidate {
   year: number | null;
   overview: string;
   posterPath: string | null;
+  backdropPath: string | null;
 }
 
 interface TmdbSearchResult {
@@ -39,6 +40,7 @@ interface TmdbSearchResult {
   first_air_date?: string;
   overview: string;
   poster_path: string | null;
+  backdrop_path: string | null;
 }
 
 function toCandidate(r: TmdbSearchResult, fallbackType?: ResolvedMediaType): TmdbCandidate {
@@ -52,6 +54,7 @@ function toCandidate(r: TmdbSearchResult, fallbackType?: ResolvedMediaType): Tmd
     year: dateStr ? Number(dateStr.slice(0, 4)) : null,
     overview: r.overview,
     posterPath: r.poster_path,
+    backdropPath: r.backdrop_path,
   };
 }
 
@@ -90,6 +93,7 @@ export async function getDetails(
     first_air_date?: string;
     overview: string;
     poster_path: string | null;
+    backdrop_path: string | null;
     genres: { name: string }[];
     runtime?: number;
     episode_run_time?: number[];
@@ -112,6 +116,7 @@ export async function getDetails(
     year: dateStr ? Number(dateStr.slice(0, 4)) : null,
     overview: data.overview,
     posterPath: data.poster_path,
+    backdropPath: data.backdrop_path,
     genres: data.genres.map((g) => g.name),
     runtime: data.runtime ?? data.episode_run_time?.[0] ?? null,
     director,

@@ -18,6 +18,7 @@ async function upsertTitle(details: Awaited<ReturnType<typeof getDetails>>) {
       genres: details.genres,
       runtime: details.runtime,
       poster_path: details.posterPath,
+      backdrop_path: details.backdropPath,
     },
     { onConflict: "tmdb_id" },
   );

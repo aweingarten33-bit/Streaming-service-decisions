@@ -1,0 +1,22 @@
+/** Shared vibe/descriptor taxonomy — must match the tags used in the extraction prompt. */
+export const descriptors: string[] = [
+  "hidden_gem",
+  "comfort_watch",
+  "great_ending",
+  "weak_ending",
+  "slow_burn",
+  "visually_stunning",
+  "gets_good_immediately",
+  "slow_start_worth_it",
+  "complete_story",
+  "canceled_on_cliffhanger",
+  "phone_down_tv",
+  "background_watchable",
+  "date_night_safe",
+  "parents_safe",
+  "suspense_no_gore",
+  "aged_well",
+  "aged_poorly",
+  "rewatchable",
+  "divisive",
+];

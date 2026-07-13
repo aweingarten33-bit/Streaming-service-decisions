@@ -1,0 +1,172 @@
+import { NextRequest, NextResponse } from "next/server";
+import { supabase } from "@/lib/pipeline/supabase";
+import { callClaudeJSON } from "@/lib/pipeline/llm";
+import { descriptors as allDescriptors } from "../../../../config/descriptors";
+
+const PARSE_SYSTEM_PROMPT = `You convert a casual request for a movie/TV recommendation into structured search filters.
+Return ONLY JSON matching:
+{
+  "media_type": "movie" | "tv" | "any",
+  "descriptors": string[] (zero or more from this exact list: ${allDescriptors.join(", ")}),
+  "max_runtime_minutes": number or null (only if a time constraint is mentioned, e.g. "90 minutes" or "short"),
+  "genre_hints": string[] (genre words mentioned, e.g. "comedy", "thriller" — plain English, not codes)
+}
+Only include descriptors that clearly match the request's intent. Do not guess wildly.`;
+
+interface ParsedQuery {
+  media_type: "movie" | "tv" | "any";
+  descriptors: string[];
+  max_runtime_minutes: number | null;
+  genre_hints: string[];
+}
+
+interface TitleRow {
+  tmdb_id: number;
+  title: string;
+  media_type: string;
+  year: number | null;
+  genres: string[];
+  runtime: number | null;
+  poster_path: string | null;
+  imdb_rating: number | null;
+  imdb_votes: number | null;
+  tmdb_rating: number | null;
+  tmdb_vote_count: number | null;
+  mentions: {
+    id: string;
+    sentiment: string;
+    descriptors: string[];
+    quote_free_summary: string;
+    videos: { curator_id: string } | { curator_id: string }[] | null;
+  }[];
+}
+
+const SENTIMENT_WEIGHT: Record<string, number> = {
+  enthusiastic_rec: 3,
+  qualified_rec: 1.5,
+  notable_mention: 0.5,
+  neutral_reference: 0,
+  pan: -5,
+};
+
+function curatorIdsForTitle(row: TitleRow): Set<string> {
+  const ids = new Set<string>();
+  for (const m of row.mentions) {
+    const v = m.videos;
+    if (!v) continue;
+    if (Array.isArray(v)) v.forEach((x) => ids.add(x.curator_id));
+    else ids.add(v.curator_id);
+  }
+  return ids;
+}
+
+function bestMention(row: TitleRow) {
+  return row.mentions.reduce((best, m) =>
+    (SENTIMENT_WEIGHT[m.sentiment] ?? 0) > (SENTIMENT_WEIGHT[best.sentiment] ?? 0) ? m : best,
+  );
+}
+
+function buildWhy(row: TitleRow, matchedDescriptors: string[]): string {
+  const curatorCount = curatorIdsForTitle(row).size;
+  const mention = bestMention(row);
+  const vibePhrase =
+    matchedDescriptors.length > 0
+      ? ` for its ${matchedDescriptors.map((d) => d.replace(/_/g, " ")).join(" and ")}`
+      : "";
+
+  const source =
+    curatorCount >= 2
+      ? "Multiple trusted recommendation sources independently highlighted this title"
+      : "Highlighted by a trusted recommendation source";
+
+  return `${source}${vibePhrase}. ${mention.quote_free_summary}`;
+}
+
+export async function POST(req: NextRequest) {
+  const body = await req.json().catch(() => ({}));
+  const prompt: string = typeof body.prompt === "string" ? body.prompt : "";
+  const selectedGenres: string[] = Array.isArray(body.genres) ? body.genres : [];
+
+  if (!prompt.trim() && selectedGenres.length === 0) {
+    return NextResponse.json({ error: "Tell us what you're in the mood for." }, { status: 400 });
+  }
+
+  let parsed: ParsedQuery = {
+    media_type: "any",
+    descriptors: [],
+    max_runtime_minutes: null,
+    genre_hints: [],
+  };
+  if (prompt.trim()) {
+    try {
+      const { data } = await callClaudeJSON<ParsedQuery>({
+        system: PARSE_SYSTEM_PROMPT,
+        user: prompt,
+        maxTokens: 500,
+      });
+      parsed = data;
+    } catch {
+      // Fall back to unfiltered (genre-only) search rather than failing the whole request.
+    }
+  }
+
+  const wantedGenres = [...new Set([...selectedGenres, ...parsed.genre_hints])];
+
+  let query = supabase
+    .from("titles")
+    .select(
+      `tmdb_id, title, media_type, year, genres, runtime, poster_path,
+       imdb_rating, imdb_votes, tmdb_rating, tmdb_vote_count,
+       mentions!inner ( id, sentiment, descriptors, quote_free_summary, videos ( curator_id ) )`,
+    )
+    .order("imdb_votes", { ascending: false, nullsFirst: false })
+    .limit(300);
+
+  if (parsed.media_type !== "any") query = query.eq("media_type", parsed.media_type);
+  if (parsed.max_runtime_minutes) query = query.lte("runtime", parsed.max_runtime_minutes);
+  if (wantedGenres.length > 0) query = query.overlaps("genres", wantedGenres);
+
+  const { data, error } = await query;
+  if (error) {
+    return NextResponse.json({ error: "Search failed. Try again." }, { status: 500 });
+  }
+
+  const rows = (data ?? []) as unknown as TitleRow[];
+
+  const scored = rows
+    .map((row) => {
+      const qualifying = row.mentions.filter((m) =>
+        ["enthusiastic_rec", "qualified_rec"].includes(m.sentiment),
+      );
+      if (qualifying.length === 0) return null;
+
+      const matchedDescriptors =
+        parsed.descriptors.length > 0
+          ? parsed.descriptors.filter((d) => qualifying.some((m) => m.descriptors.includes(d)))
+          : [];
+      if (parsed.descriptors.length > 0 && matchedDescriptors.length === 0) return null;
+
+      const rating = row.imdb_rating ?? row.tmdb_rating ?? 0;
+      const sentimentScore = Math.max(...qualifying.map((m) => SENTIMENT_WEIGHT[m.sentiment] ?? 0));
+      const score = sentimentScore * 2 + rating + Math.random() * 1.5;
+
+      return { row: { ...row, mentions: qualifying }, score, matchedDescriptors };
+    })
+    .filter((x): x is NonNullable<typeof x> => x !== null)
+    .sort((a, b) => b.score - a.score);
+
+  const top = scored.slice(0, 3).map(({ row, matchedDescriptors }) => ({
+    tmdbId: row.tmdb_id,
+    title: row.title,
+    year: row.year,
+    mediaType: row.media_type,
+    posterPath: row.poster_path,
+    rating: row.imdb_rating ?? row.tmdb_rating ?? null,
+    ratingSource: row.imdb_rating ? "IMDb" : row.tmdb_rating ? "TMDB" : null,
+    voteCount: row.imdb_votes ?? row.tmdb_vote_count ?? null,
+    genres: row.genres,
+    why: buildWhy(row, matchedDescriptors),
+  }));
+
+  return NextResponse.json({ results: top });
+}
