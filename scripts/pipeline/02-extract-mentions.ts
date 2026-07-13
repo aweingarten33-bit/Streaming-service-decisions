@@ -49,10 +49,10 @@ export async function extractVideo(video: {
 }): Promise<{ mentionsExtracted: number; inputTokens: number; outputTokens: number }> {
   const transcript = await fetchTranscript(video.youtube_video_id);
   if (!transcript) {
-    await supabase
-      .from("videos")
-      .update({ transcript_status: "unavailable", extracted_at: new Date().toISOString() })
-      .eq("id", video.id);
+    // Leave extracted_at null so the video is retried on a future run — transcript
+    // fetches fail transiently (YouTube blocks datacenter IPs), and stamping the
+    // video done here silently loses its mentions forever.
+    await supabase.from("videos").update({ transcript_status: "unavailable" }).eq("id", video.id);
     return { mentionsExtracted: 0, inputTokens: 0, outputTokens: 0 };
   }
 
