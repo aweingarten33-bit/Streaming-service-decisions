@@ -165,6 +165,11 @@ export function WatchDj({ backdrops }: { backdrops: string[] }) {
           Watch DJ
         </h1>
         <p className="mt-3 text-center text-base text-white/60">Your personal movie &amp; TV DJ</p>
+        {!started && (
+          <p className="mt-2 max-w-xs text-center font-mono text-[11px] uppercase tracking-wider text-[#E3B24B]/80">
+            Powered by a network of trusted entertainment recommendations
+          </p>
+        )}
 
         {!started && (
           <>
@@ -196,6 +201,13 @@ export function WatchDj({ backdrops }: { backdrops: string[] }) {
                 </button>
               ))}
             </div>
+
+            <a
+              href="/how-it-works"
+              className="mt-8 text-xs text-white/40 underline-offset-4 transition-colors hover:text-white/70 hover:underline"
+            >
+              Why our picks are different
+            </a>
           </>
         )}
 
