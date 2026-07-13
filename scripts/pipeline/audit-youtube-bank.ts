@@ -55,6 +55,11 @@ async function main() {
   const retryableUnavailable = await count("videos", (q) =>
     q.is("extracted_at", null).eq("transcript_status", "unavailable"),
   );
+  const { data: transcriptFailures } = await supabase
+    .from("videos")
+    .select("transcript_failure_reason")
+    .is("extracted_at", null)
+    .eq("transcript_status", "unavailable");
   const totalMentions = await count("mentions", (q) => q.not("video_id", "is", null));
   const resolvedMentions = await count("mentions", (q) =>
     q.not("video_id", "is", null).not("tmdb_id", "is", null),
@@ -79,6 +84,17 @@ async function main() {
   );
   console.log(`Pending transcript extraction: ${pendingVideos}`);
   console.log(`Retryable unavailable transcripts: ${retryableUnavailable}`);
+  const failureCounts = new Map<string, number>();
+  for (const row of transcriptFailures ?? []) {
+    const reason = (row.transcript_failure_reason as string | null) ?? "unknown";
+    failureCounts.set(reason, (failureCounts.get(reason) ?? 0) + 1);
+  }
+  if (failureCounts.size > 0) {
+    console.log("Transcript failure reasons:");
+    for (const [reason, total] of [...failureCounts.entries()].sort((a, b) => b[1] - a[1])) {
+      console.log(`  - ${reason}: ${total}`);
+    }
+  }
   console.log(`YouTube mentions: ${totalMentions}`);
   console.log(
     `Resolved YouTube mentions: ${resolvedMentions}/${totalMentions} (${pct(resolvedMentions, totalMentions)})`,

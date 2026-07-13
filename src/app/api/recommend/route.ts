@@ -230,6 +230,21 @@ function titleGenresFromReference(row: ReferenceTitleSignal): string[] {
   return title?.genres ?? [];
 }
 
+}
+
+function topDescriptors(counts: Record<string, number> | null, limit: number): string[] {
+  return Object.entries(counts ?? {})
+    .filter(([descriptor]) => allDescriptors.includes(descriptor))
+    .sort((a, b) => Number(b[1]) - Number(a[1]))
+    .slice(0, limit)
+    .map(([descriptor]) => descriptor);
+}
+
+function titleGenresFromReference(row: ReferenceTitleSignal): string[] {
+  const title = Array.isArray(row.titles) ? row.titles[0] : row.titles;
+  return title?.genres ?? [];
+}
+
 function strongestSentimentScore(row: SignalRow): number {
   return row.strongest_sentiment ? (SENTIMENT_WEIGHT[row.strongest_sentiment] ?? 0) : 0;
 }
@@ -395,6 +410,33 @@ export async function POST(req: NextRequest) {
       .slice(0, 1000);
   }
 
+  let candidateSource = "title_signal_summary";
+
+  async function fetchCandidates(genreFilter: string[]): Promise<SignalRow[]> {
+    const { data, error } = await fetchSummaryCandidates(genreFilter);
+    if (!error && (data ?? []).length > 0) {
+      candidateSource = "title_signal_summary";
+      return (data ?? []) as unknown as SignalRow[];
+    }
+
+    if (error) {
+      console.warn(
+        "recommend: title_signal_summary unavailable; falling back to raw YouTube mentions:",
+        error.message,
+        error.details,
+        error.hint,
+      );
+    } else {
+      console.warn(
+        "recommend: title_signal_summary is empty; falling back to raw YouTube mentions",
+      );
+    }
+    candidateSource = "raw_mentions_fallback";
+    return fetchRawMentionCandidates(genreFilter);
+  }
+
+  }
+
   async function fetchCandidates(genreFilter: string[]): Promise<SignalRow[]> {
     const { data, error } = await fetchSummaryCandidates(genreFilter);
     if (!error && (data ?? []).length > 0) return (data ?? []) as unknown as SignalRow[];
@@ -485,6 +527,7 @@ export async function POST(req: NextRequest) {
   // read the shortlist and judge fit honestly instead of trusting metadata alone.
   const pool = scored.slice(0, 12);
   let chosen = pool.slice(0, 3);
+  let rerankUsed = false;
   if (prompt.trim() && pool.length > 3) {
     try {
       const list = pool
@@ -502,7 +545,10 @@ export async function POST(req: NextRequest) {
       const idx = (data.chosen_indices ?? [])
         .filter((i) => Number.isInteger(i) && i >= 0 && i < pool.length)
         .slice(0, 3);
-      if (idx.length === 3) chosen = idx.map((i) => pool[i]);
+      if (idx.length === 3) {
+        chosen = idx.map((i) => pool[i]);
+        rerankUsed = true;
+      }
     } catch {
       // Keep score order — a rerank failure should never fail the request.
     }
@@ -522,5 +568,38 @@ export async function POST(req: NextRequest) {
     why: buildWhy(signal, matchedDescriptors),
   }));
 
-  return NextResponse.json({ results: top, filters: parsed });
+  const trace = {
+    candidateSource,
+    wantedGenres,
+    requestedDescriptors: parsed.descriptors,
+    candidateCount: rows.length,
+    scoredCount: scored.length,
+    rerankUsed,
+    chosenTmdbIds: top.map((item) => item.tmdbId),
+  };
+
+  supabase
+    .from("recommendation_traces")
+    .insert({
+      device_id: deviceId ?? null,
+      prompt,
+      parsed_filters: parsed,
+      candidate_source: candidateSource,
+      wanted_genres: wantedGenres,
+      requested_descriptors: parsed.descriptors,
+      candidate_count: rows.length,
+      scored_count: scored.length,
+      rerank_used: rerankUsed,
+      chosen_tmdb_ids: top.map((item) => item.tmdbId),
+    })
+    .then(
+      () => undefined,
+      (error) => console.warn("recommend: trace logging skipped:", error.message),
+    );
+
+  return NextResponse.json({
+    results: top,
+    filters: parsed,
+    ...(body.debug === true ? { trace } : {}),
+  });
 }
