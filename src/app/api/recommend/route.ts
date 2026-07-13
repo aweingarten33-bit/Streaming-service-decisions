@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/pipeline/supabase";
 import { callClaudeJSON } from "@/lib/pipeline/llm";
 import { descriptors as allDescriptors } from "../../../../config/descriptors";
+import { genres as allGenres } from "../../../../config/genres";
 
 const PARSE_SYSTEM_PROMPT = `You convert a casual request for a movie/TV recommendation into structured search filters.
 Return ONLY JSON matching:
@@ -9,7 +10,7 @@ Return ONLY JSON matching:
   "media_type": "movie" | "tv" | "any",
   "descriptors": string[] (zero or more from this exact list: ${allDescriptors.join(", ")}),
   "max_runtime_minutes": number or null (only if a time constraint is mentioned, e.g. "90 minutes" or "short"),
-  "genre_hints": string[] (genre words mentioned, e.g. "comedy", "thriller" — plain English, not codes)
+  "genre_hints": string[] (zero or more from this exact list: ${allGenres.join(", ")} — map the request's vibe onto these, e.g. "mind-bending" → Science Fiction, Mystery, Thriller)
 }
 Only include descriptors that clearly match the request's intent. Do not guess wildly.
 
@@ -57,6 +58,40 @@ const WATCHES_WITH_DESCRIPTOR: Record<string, string> = {
   Partner: "date_night_safe",
   Family: "parents_safe",
 };
+
+// The LLM writes genre hints in casual English ("sci-fi") but titles store
+// TMDB's exact names ("Science Fiction"), and array overlap is case-sensitive.
+const GENRE_LOOKUP = new Map(allGenres.map((g) => [g.toLowerCase(), g]));
+const GENRE_SYNONYMS: Record<string, string> = {
+  "sci-fi": "Science Fiction",
+  scifi: "Science Fiction",
+  "sci fi": "Science Fiction",
+  "science-fiction": "Science Fiction",
+  "rom-com": "Romance",
+  romcom: "Romance",
+  romantic: "Romance",
+  documentaries: "Documentary",
+  doc: "Documentary",
+  docs: "Documentary",
+  "true crime": "Crime",
+  historical: "History",
+  musical: "Music",
+  scary: "Horror",
+  funny: "Comedy",
+  kids: "Family",
+  animated: "Animation",
+  anime: "Animation",
+};
+
+function normalizeGenres(hints: string[]): string[] {
+  const out = new Set<string>();
+  for (const hint of hints) {
+    const key = hint.trim().toLowerCase();
+    const match = GENRE_LOOKUP.get(key) ?? GENRE_SYNONYMS[key];
+    if (match) out.add(match);
+  }
+  return [...out];
+}
 
 const SENTIMENT_WEIGHT: Record<string, number> = {
   enthusiastic_rec: 3,
@@ -139,73 +174,94 @@ export async function POST(req: NextRequest) {
         maxTokens: 500,
       });
       parsed = data;
+      // Never let an invented tag zero out results — only real taxonomy entries count.
+      parsed.descriptors = (parsed.descriptors ?? []).filter((d) => allDescriptors.includes(d));
+      parsed.genre_hints = parsed.genre_hints ?? [];
     } catch {
       // Fall back to unfiltered (genre-only) search rather than failing the whole request.
     }
   }
 
-  const wantedGenres = [...new Set([...selectedGenres, ...parsed.genre_hints])];
+  const wantedGenres = normalizeGenres([...selectedGenres, ...parsed.genre_hints]);
 
-  let query = supabase
-    .from("titles")
-    .select(
-      `tmdb_id, title, media_type, year, genres, runtime, poster_path, streaming_providers,
-       imdb_rating, imdb_votes, tmdb_rating, tmdb_vote_count,
-       mentions!inner ( id, sentiment, descriptors, quote_free_summary, videos ( curator_id ) )`,
-    )
-    .order("imdb_votes", { ascending: false, nullsFirst: false })
-    .limit(300);
+  async function fetchCandidates(genreFilter: string[]) {
+    let query = supabase
+      .from("titles")
+      .select(
+        `tmdb_id, title, media_type, year, genres, runtime, poster_path, streaming_providers,
+         imdb_rating, imdb_votes, tmdb_rating, tmdb_vote_count,
+         mentions!inner ( id, sentiment, descriptors, quote_free_summary, videos ( curator_id ) )`,
+      )
+      .order("imdb_votes", { ascending: false, nullsFirst: false })
+      .limit(300);
 
-  if (parsed.media_type !== "any") query = query.eq("media_type", parsed.media_type);
-  if (parsed.max_runtime_minutes) query = query.lte("runtime", parsed.max_runtime_minutes);
-  if (wantedGenres.length > 0) query = query.overlaps("genres", wantedGenres);
-  if (excludeIds.length > 0) query = query.not("tmdb_id", "in", `(${excludeIds.join(",")})`);
+    if (parsed.media_type !== "any") query = query.eq("media_type", parsed.media_type);
+    if (parsed.max_runtime_minutes) query = query.lte("runtime", parsed.max_runtime_minutes);
+    if (genreFilter.length > 0) query = query.overlaps("genres", genreFilter);
+    if (excludeIds.length > 0) query = query.not("tmdb_id", "in", `(${excludeIds.join(",")})`);
+    return query;
+  }
 
-  const { data, error } = await query;
+  const { data, error } = await fetchCandidates(wantedGenres);
   if (error) {
     console.error("recommend: titles query failed:", error.message, error.details, error.hint);
     return NextResponse.json({ error: `Search failed: ${error.message}` }, { status: 500 });
   }
 
-  const rows = (data ?? []) as unknown as TitleRow[];
+  let rows = (data ?? []) as unknown as TitleRow[];
+  // Genre interpretation too narrow for our catalog? Relax it rather than coming back empty.
+  if (rows.length === 0 && wantedGenres.length > 0) {
+    const { data: relaxed } = await fetchCandidates([]);
+    rows = (relaxed ?? []) as unknown as TitleRow[];
+  }
   const avoidGenres = preferences?.avoid_genres ?? [];
   const favoriteGenres = preferences?.favorite_genres ?? [];
   const myServices = preferences?.streaming_services ?? [];
 
-  const scored = rows
-    .map((row) => {
-      if (avoidGenres.length > 0 && row.genres.some((g) => avoidGenres.includes(g))) return null;
-      if (myServices.length > 0 && !row.streaming_providers.some((p) => myServices.includes(p)))
-        return null;
+  function scoreRows(requiredDescriptors: string[]) {
+    return rows
+      .map((row) => {
+        if (avoidGenres.length > 0 && row.genres.some((g) => avoidGenres.includes(g))) return null;
+        if (myServices.length > 0 && !row.streaming_providers.some((p) => myServices.includes(p)))
+          return null;
 
-      const qualifying = row.mentions.filter((m) =>
-        ["enthusiastic_rec", "qualified_rec"].includes(m.sentiment),
-      );
-      if (qualifying.length === 0) return null;
+        const qualifying = row.mentions.filter((m) =>
+          ["enthusiastic_rec", "qualified_rec"].includes(m.sentiment),
+        );
+        if (qualifying.length === 0) return null;
 
-      const matchedDescriptors =
-        parsed.descriptors.length > 0
-          ? parsed.descriptors.filter((d) => qualifying.some((m) => m.descriptors.includes(d)))
-          : [];
-      if (parsed.descriptors.length > 0 && matchedDescriptors.length === 0) return null;
+        const matchedDescriptors = requiredDescriptors.filter((d) =>
+          qualifying.some((m) => m.descriptors.includes(d)),
+        );
+        if (requiredDescriptors.length > 0 && matchedDescriptors.length === 0) return null;
 
-      const rating = row.imdb_rating ?? row.tmdb_rating ?? 0;
-      const sentimentScore = Math.max(...qualifying.map((m) => SENTIMENT_WEIGHT[m.sentiment] ?? 0));
-      const favoriteBoost = row.genres.some((g) => favoriteGenres.includes(g)) ? 1.5 : 0;
-      const companionDescriptor = preferences?.watches_with
-        ? WATCHES_WITH_DESCRIPTOR[preferences.watches_with]
-        : undefined;
-      const companionBoost =
-        companionDescriptor && qualifying.some((m) => m.descriptors.includes(companionDescriptor))
-          ? 1.5
-          : 0;
-      const score =
-        sentimentScore * 2 + rating + favoriteBoost + companionBoost + Math.random() * 1.5;
+        const rating = row.imdb_rating ?? row.tmdb_rating ?? 0;
+        const sentimentScore = Math.max(
+          ...qualifying.map((m) => SENTIMENT_WEIGHT[m.sentiment] ?? 0),
+        );
+        const favoriteBoost = row.genres.some((g) => favoriteGenres.includes(g)) ? 1.5 : 0;
+        const companionDescriptor = preferences?.watches_with
+          ? WATCHES_WITH_DESCRIPTOR[preferences.watches_with]
+          : undefined;
+        const companionBoost =
+          companionDescriptor && qualifying.some((m) => m.descriptors.includes(companionDescriptor))
+            ? 1.5
+            : 0;
+        const score =
+          sentimentScore * 2 + rating + favoriteBoost + companionBoost + Math.random() * 1.5;
 
-      return { row: { ...row, mentions: qualifying }, score, matchedDescriptors };
-    })
-    .filter((x): x is NonNullable<typeof x> => x !== null)
-    .sort((a, b) => b.score - a.score);
+        return { row: { ...row, mentions: qualifying }, score, matchedDescriptors };
+      })
+      .filter((x): x is NonNullable<typeof x> => x !== null)
+      .sort((a, b) => b.score - a.score);
+  }
+
+  // Strict interpretation first; if the vibe requirement filtered everything out,
+  // relax it and still hand back strong picks instead of an empty answer.
+  let scored = scoreRows(parsed.descriptors);
+  if (scored.length === 0 && parsed.descriptors.length > 0) {
+    scored = scoreRows([]);
+  }
 
   const top = scored.slice(0, 3).map(({ row, matchedDescriptors }) => ({
     tmdbId: row.tmdb_id,
