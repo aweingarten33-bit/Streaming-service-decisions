@@ -136,3 +136,15 @@ export async function getExternalIds(
   );
   return data.imdb_id ?? null;
 }
+
+/** Fetches real US subscription-tier streaming availability (never rent/buy, that's not "on your service"). */
+export async function getWatchProviders(
+  tmdbId: number,
+  mediaType: ResolvedMediaType,
+): Promise<string[]> {
+  const data = await tmdbFetch<{
+    results?: Record<string, { flatrate?: { provider_name: string }[] }>;
+  }>(`/${mediaType}/${tmdbId}/watch/providers`, {});
+  const us = data.results?.US;
+  return (us?.flatrate ?? []).map((p) => p.provider_name);
+}

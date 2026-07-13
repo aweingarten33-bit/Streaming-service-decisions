@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/pipeline/supabase";
-import { WatchDj } from "@/components/dj/watch-dj";
+import { AppShell } from "@/components/dj/app-shell";
 
 async function getBackdrops(): Promise<string[]> {
   const { data } = await supabase
@@ -15,5 +15,5 @@ async function getBackdrops(): Promise<string[]> {
 
 export default async function Home() {
   const backdrops = await getBackdrops().catch(() => []);
-  return <WatchDj backdrops={backdrops} />;
+  return <AppShell backdrops={backdrops} />;
 }

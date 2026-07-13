@@ -11,7 +11,9 @@ Return ONLY JSON matching:
   "max_runtime_minutes": number or null (only if a time constraint is mentioned, e.g. "90 minutes" or "short"),
   "genre_hints": string[] (genre words mentioned, e.g. "comedy", "thriller" — plain English, not codes)
 }
-Only include descriptors that clearly match the request's intent. Do not guess wildly.`;
+Only include descriptors that clearly match the request's intent. Do not guess wildly.
+
+If PREVIOUS FILTERS are given, the user is continuing a conversation, not starting fresh. If their new message is feedback on what was just shown (e.g. "too serious", "lighter", "shorter"), adjust the previous filters rather than discarding them. If it's clearly an unrelated new request, replace them entirely.`;
 
 interface ParsedQuery {
   media_type: "movie" | "tv" | "any";
@@ -32,6 +34,7 @@ interface TitleRow {
   imdb_votes: number | null;
   tmdb_rating: number | null;
   tmdb_vote_count: number | null;
+  streaming_providers: string[];
   mentions: {
     id: string;
     sentiment: string;
@@ -39,6 +42,12 @@ interface TitleRow {
     quote_free_summary: string;
     videos: { curator_id: string } | { curator_id: string }[] | null;
   }[];
+}
+
+interface ViewerPreferences {
+  streaming_services: string[];
+  favorite_genres: string[];
+  avoid_genres: string[];
 }
 
 const SENTIMENT_WEIGHT: Record<string, number> = {
@@ -86,9 +95,23 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}));
   const prompt: string = typeof body.prompt === "string" ? body.prompt : "";
   const selectedGenres: string[] = Array.isArray(body.genres) ? body.genres : [];
+  const excludeIds: number[] = Array.isArray(body.excludeIds) ? body.excludeIds : [];
+  const deviceId: string | undefined =
+    typeof body.deviceId === "string" ? body.deviceId : undefined;
+  const previousFilters: ParsedQuery | undefined = body.previousFilters;
 
   if (!prompt.trim() && selectedGenres.length === 0) {
     return NextResponse.json({ error: "Tell us what you're in the mood for." }, { status: 400 });
+  }
+
+  let preferences: ViewerPreferences | null = null;
+  if (deviceId) {
+    const { data } = await supabase
+      .from("viewer_preferences")
+      .select("streaming_services, favorite_genres, avoid_genres")
+      .eq("device_id", deviceId)
+      .maybeSingle();
+    preferences = data;
   }
 
   let parsed: ParsedQuery = {
@@ -99,9 +122,12 @@ export async function POST(req: NextRequest) {
   };
   if (prompt.trim()) {
     try {
+      const user = previousFilters
+        ? `PREVIOUS FILTERS: ${JSON.stringify(previousFilters)}\n\nUSER'S NEW MESSAGE: ${prompt}`
+        : prompt;
       const { data } = await callClaudeJSON<ParsedQuery>({
         system: PARSE_SYSTEM_PROMPT,
-        user: prompt,
+        user,
         maxTokens: 500,
       });
       parsed = data;
@@ -115,7 +141,7 @@ export async function POST(req: NextRequest) {
   let query = supabase
     .from("titles")
     .select(
-      `tmdb_id, title, media_type, year, genres, runtime, poster_path,
+      `tmdb_id, title, media_type, year, genres, runtime, poster_path, streaming_providers,
        imdb_rating, imdb_votes, tmdb_rating, tmdb_vote_count,
        mentions!inner ( id, sentiment, descriptors, quote_free_summary, videos ( curator_id ) )`,
     )
@@ -125,6 +151,7 @@ export async function POST(req: NextRequest) {
   if (parsed.media_type !== "any") query = query.eq("media_type", parsed.media_type);
   if (parsed.max_runtime_minutes) query = query.lte("runtime", parsed.max_runtime_minutes);
   if (wantedGenres.length > 0) query = query.overlaps("genres", wantedGenres);
+  if (excludeIds.length > 0) query = query.not("tmdb_id", "in", `(${excludeIds.join(",")})`);
 
   const { data, error } = await query;
   if (error) {
@@ -132,9 +159,16 @@ export async function POST(req: NextRequest) {
   }
 
   const rows = (data ?? []) as unknown as TitleRow[];
+  const avoidGenres = preferences?.avoid_genres ?? [];
+  const favoriteGenres = preferences?.favorite_genres ?? [];
+  const myServices = preferences?.streaming_services ?? [];
 
   const scored = rows
     .map((row) => {
+      if (avoidGenres.length > 0 && row.genres.some((g) => avoidGenres.includes(g))) return null;
+      if (myServices.length > 0 && !row.streaming_providers.some((p) => myServices.includes(p)))
+        return null;
+
       const qualifying = row.mentions.filter((m) =>
         ["enthusiastic_rec", "qualified_rec"].includes(m.sentiment),
       );
@@ -148,7 +182,8 @@ export async function POST(req: NextRequest) {
 
       const rating = row.imdb_rating ?? row.tmdb_rating ?? 0;
       const sentimentScore = Math.max(...qualifying.map((m) => SENTIMENT_WEIGHT[m.sentiment] ?? 0));
-      const score = sentimentScore * 2 + rating + Math.random() * 1.5;
+      const favoriteBoost = row.genres.some((g) => favoriteGenres.includes(g)) ? 1.5 : 0;
+      const score = sentimentScore * 2 + rating + favoriteBoost + Math.random() * 1.5;
 
       return { row: { ...row, mentions: qualifying }, score, matchedDescriptors };
     })
@@ -165,8 +200,9 @@ export async function POST(req: NextRequest) {
     ratingSource: row.imdb_rating ? "IMDb" : row.tmdb_rating ? "TMDB" : null,
     voteCount: row.imdb_votes ?? row.tmdb_vote_count ?? null,
     genres: row.genres,
+    streamingProviders: row.streaming_providers,
     why: buildWhy(row, matchedDescriptors),
   }));
 
-  return NextResponse.json({ results: top });
+  return NextResponse.json({ results: top, filters: parsed });
 }
