@@ -69,11 +69,6 @@ export async function fetchTranscriptResult(
       failureReason: classifyTranscriptError(error),
       failureDetail: error instanceof Error ? error.message : String(error),
     };
-    if (!segments.length) return null;
-    return segments.map((s) => s.text).join(" ");
-  } catch (err) {
-    console.log(`    [transcript fetch failed for ${youtubeVideoId}]: ${String(err)}`);
-    return null;
   }
 }
 
