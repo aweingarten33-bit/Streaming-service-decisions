@@ -7,6 +7,7 @@ const QUALIFYING = ["enthusiastic_rec", "qualified_rec"];
 interface MentionRow {
   sentiment: string;
   quote_free_summary: string;
+  descriptors: string[];
   videos: { curator_id: string } | { curator_id: string }[] | null;
 }
 
@@ -49,15 +50,18 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ tmdb
   const [{ data: mentionRows }, details] = await Promise.all([
     supabase
       .from("mentions")
-      .select("sentiment, quote_free_summary, videos ( curator_id )")
+      .select("sentiment, quote_free_summary, descriptors, videos ( curator_id )")
       .eq("tmdb_id", tmdbId)
       .in("sentiment", QUALIFYING),
     getDetails(tmdbId, mediaType).catch(() => null),
   ]);
 
   const genres: string[] = row?.genres ?? details?.genres ?? [];
+  const sourceDescriptors = new Set(
+    ((mentionRows ?? []) as unknown as MentionRow[]).flatMap((m) => m.descriptors ?? []),
+  );
 
-  interface SimilarRow {
+  interface SimilarTitleRow {
     tmdb_id: number;
     title: string;
     media_type: string;
@@ -67,39 +71,67 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ tmdb
     backdrop_path: string | null;
     imdb_rating: number | null;
     imdb_votes: number | null;
-    mentions: { sentiment: string }[];
   }
-  let similar: SimilarRow[] = [];
+
+  interface SimilarSignalRow {
+    tmdb_id: number;
+    source_count: number;
+    positive_mention_count: number;
+    descriptor_counts: Record<string, number> | null;
+    evidence_score: number;
+    titles: SimilarTitleRow | SimilarTitleRow[] | null;
+  }
+
+  function titleFromSignal(signal: SimilarSignalRow): SimilarTitleRow | null {
+    return Array.isArray(signal.titles) ? (signal.titles[0] ?? null) : signal.titles;
+  }
+  let similar: SimilarTitleRow[] = [];
   if (genres.length > 0) {
     const { data: sim } = await supabase
-      .from("titles")
+      .from("title_signal_summary")
       .select(
-        `tmdb_id, title, media_type, year, genres, poster_path, backdrop_path, imdb_rating, imdb_votes,
-         mentions!inner ( sentiment )`,
+        `tmdb_id, source_count, positive_mention_count, descriptor_counts, evidence_score,
+         titles!inner (
+           tmdb_id, title, media_type, year, genres, poster_path, backdrop_path, imdb_rating, imdb_votes
+         )`,
       )
-      // Anchor on the primary genre — one shared secondary tag ("Crime") is not similarity.
-      .contains("genres", [genres[0]])
+      .gt("positive_mention_count", 0)
       .neq("tmdb_id", tmdbId)
-      .order("imdb_votes", { ascending: false, nullsFirst: false })
-      .limit(100);
+      .order("evidence_score", { ascending: false })
+      .limit(200);
 
     // Documentaries are their own world: never mix them with fiction in either direction.
     const sourceIsDoc = genres.includes("Documentary");
-    similar = ((sim ?? []) as unknown as SimilarRow[])
-      .filter((s) => s.mentions.some((m) => QUALIFYING.includes(m.sentiment)))
-      .filter((s) => s.genres.includes("Documentary") === sourceIsDoc)
-      .map((s) => ({
-        s,
-        shared: s.genres.filter((g) => genres.includes(g)).length,
-        sameType: s.media_type === mediaType ? 1 : 0,
-      }))
+    similar = ((sim ?? []) as unknown as SimilarSignalRow[])
+      .map((signal) => ({ signal, title: titleFromSignal(signal) }))
+      .filter((item): item is { signal: SimilarSignalRow; title: SimilarTitleRow } =>
+        Boolean(item.title),
+      )
+      .filter(({ title }) => title.genres.includes("Documentary") === sourceIsDoc)
+      .map(({ signal, title }) => {
+        const descriptorOverlap = [...sourceDescriptors].reduce(
+          (sum, descriptor) => sum + Number(signal.descriptor_counts?.[descriptor] ?? 0),
+          0,
+        );
+        return {
+          title,
+          descriptorOverlap,
+          sharedGenres: title.genres.filter((g) => genres.includes(g)).length,
+          sameType: title.media_type === mediaType ? 1 : 0,
+          evidenceScore: Number(signal.evidence_score ?? 0),
+          sourceCount: signal.source_count,
+        };
+      })
       .sort(
         (a, b) =>
           b.sameType - a.sameType ||
-          b.shared - a.shared ||
-          (b.s.imdb_votes ?? 0) - (a.s.imdb_votes ?? 0),
+          b.descriptorOverlap - a.descriptorOverlap ||
+          b.sharedGenres - a.sharedGenres ||
+          b.evidenceScore - a.evidenceScore ||
+          b.sourceCount - a.sourceCount ||
+          (b.title.imdb_votes ?? 0) - (a.title.imdb_votes ?? 0),
       )
-      .map((x) => x.s)
+      .map((x) => x.title)
       .slice(0, 10);
   }
 
