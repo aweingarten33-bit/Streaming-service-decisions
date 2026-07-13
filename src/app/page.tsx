@@ -1,37 +1,19 @@
-import type { Metadata } from "next";
-import { JourneyBackdrop } from "@/components/journey/backdrop";
-import { JourneyLoader } from "@/components/journey/loader";
-import { JourneyHero } from "@/components/journey/hero";
-import { JourneyChapters } from "@/components/journey/chapters";
-import { JourneyFinale } from "@/components/journey/finale";
-import { JourneyNav } from "@/components/journey/nav";
+import { supabase } from "@/lib/pipeline/supabase";
+import { AppShell } from "@/components/dj/app-shell";
 
-export const metadata: Metadata = {
-  title: "DFS Strategy Auditor — Play DFS like it's a game of Chess",
-  description:
-    "Upload your DraftKings or FanDuel contest history and get a full strategy audit — what's making you money, what's costing you, and what to change before your next slate.",
-  openGraph: {
-    title: "DFS Strategy Auditor — Play DFS like it's a game of Chess",
-    description:
-      "Upload your DraftKings or FanDuel contest history and get a full strategy audit — what's making you money, what's costing you, and what to change before your next slate.",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-  },
-};
+async function getBackdrops(): Promise<string[]> {
+  const { data } = await supabase
+    .from("titles")
+    .select("backdrop_path")
+    .not("backdrop_path", "is", null)
+    .order("imdb_votes", { ascending: false, nullsFirst: false })
+    .limit(8);
+  return (data ?? [])
+    .map((row) => row.backdrop_path as string | null)
+    .filter((p): p is string => Boolean(p));
+}
 
-export default function Index() {
-  return (
-    <div className="relative isolate -mt-px bg-[#05060a] text-white antialiased">
-      <JourneyLoader />
-      <JourneyBackdrop />
-      <JourneyNav />
-      <div className="relative z-10">
-        <JourneyHero />
-        <JourneyChapters />
-        <JourneyFinale />
-      </div>
-    </div>
-  );
+export default async function Home() {
+  const backdrops = await getBackdrops().catch(() => []);
+  return <AppShell backdrops={backdrops} />;
 }

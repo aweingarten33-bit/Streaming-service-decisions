@@ -1,5 +1,10 @@
 import { supabase } from "@/lib/pipeline/supabase";
-import { searchTitle, getDetails, type TmdbCandidate } from "@/lib/pipeline/tmdb";
+import {
+  searchTitle,
+  getDetails,
+  getWatchProviders,
+  type TmdbCandidate,
+} from "@/lib/pipeline/tmdb";
 import { callClaudeJSON } from "@/lib/pipeline/llm";
 import type { MediaType } from "@/lib/pipeline/types";
 
@@ -9,6 +14,9 @@ const DISAMBIGUATION_SYSTEM_PROMPT = `You disambiguate a movie/TV mention agains
 Return ONLY JSON: {"chosen_index": number or null} — the 0-based index of the candidate that clearly matches, or null if none confidently match. Do not guess if it's ambiguous; return null.`;
 
 async function upsertTitle(details: Awaited<ReturnType<typeof getDetails>>) {
+  const streamingProviders = await getWatchProviders(details.tmdbId, details.mediaType).catch(
+    () => [],
+  );
   await supabase.from("titles").upsert(
     {
       tmdb_id: details.tmdbId,
@@ -18,6 +26,8 @@ async function upsertTitle(details: Awaited<ReturnType<typeof getDetails>>) {
       genres: details.genres,
       runtime: details.runtime,
       poster_path: details.posterPath,
+      backdrop_path: details.backdropPath,
+      streaming_providers: streamingProviders,
     },
     { onConflict: "tmdb_id" },
   );
