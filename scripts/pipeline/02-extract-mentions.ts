@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/pipeline/supabase";
 import { fetchTranscript, chunkTranscript } from "@/lib/pipeline/transcript";
 import { callClaudeJSON } from "@/lib/pipeline/llm";
+import { descriptors } from "../../config/descriptors";
 import type { MentionExtraction } from "@/lib/pipeline/types";
 
 export const EXTRACTION_SYSTEM_PROMPT = `You extract structured film/TV mentions from a movie/TV curator's spoken video transcript.
@@ -14,7 +15,7 @@ Each object must match exactly:
   "year_hint": number or null (only if the curator mentions a year or era),
   "context_clues": string (director, actors, plot details mentioned nearby — used later to disambiguate against a database),
   "sentiment": "enthusiastic_rec" | "qualified_rec" | "notable_mention" | "pan" | "neutral_reference",
-  "descriptors": string[] (short tags — use any that fit: hidden_gem, comfort_watch, great_ending, weak_ending, slow_burn, visually_stunning, gets_good_immediately, slow_start_worth_it, complete_story, canceled_on_cliffhanger, phone_down_tv, background_watchable, date_night_safe, parents_safe, suspense_no_gore, aged_well, aged_poorly, rewatchable, divisive),
+  "descriptors": string[] (short tags — use any that fit from this exact list: ${descriptors.join(", ")}),
   "quote_free_summary": string, at most 15 words, written entirely in YOUR OWN words describing why it was mentioned
 }
 
