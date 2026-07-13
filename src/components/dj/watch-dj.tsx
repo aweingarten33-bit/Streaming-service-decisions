@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Mic, ArrowUp } from "lucide-react";
 import { getDeviceId } from "@/lib/device-id";
+import { TitleDetail } from "./title-detail";
 
 interface Pick {
   tmdbId: number;
@@ -52,6 +53,7 @@ export function WatchDj({ backdrops }: { backdrops: string[] }) {
   const [loading, setLoading] = useState(false);
   const [turns, setTurns] = useState<Turn[]>([]);
   const [listening, setListening] = useState(false);
+  const [detail, setDetail] = useState<{ tmdbId: number; mediaType: string } | null>(null);
   const shownIds = useRef<number[]>([]);
   const lastFilters = useRef<ParsedFilters | null>(null);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
@@ -231,6 +233,7 @@ export function WatchDj({ backdrops }: { backdrops: string[] }) {
                       <PickCard
                         key={pick.tmdbId}
                         pick={pick}
+                        onOpen={() => setDetail({ tmdbId: pick.tmdbId, mediaType: pick.mediaType })}
                         onNotForMe={() => ask("Something different, please")}
                       />
                     ))}
@@ -263,6 +266,15 @@ export function WatchDj({ backdrops }: { backdrops: string[] }) {
             />
           </form>
         </div>
+      )}
+
+      {detail && (
+        <TitleDetail
+          tmdbId={detail.tmdbId}
+          mediaType={detail.mediaType}
+          onClose={() => setDetail(null)}
+          onSwap={(tmdbId, mediaType) => setDetail({ tmdbId, mediaType })}
+        />
       )}
     </div>
   );
@@ -317,10 +329,24 @@ function PromptBar({
   );
 }
 
-function PickCard({ pick, onNotForMe }: { pick: Pick; onNotForMe: () => void }) {
+function PickCard({
+  pick,
+  onOpen,
+  onNotForMe,
+}: {
+  pick: Pick;
+  onOpen: () => void;
+  onNotForMe: () => void;
+}) {
   return (
     <div className="overflow-hidden rounded-2xl border border-white/10 bg-black/45 backdrop-blur-xl">
-      <div className="flex gap-4 p-4">
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={onOpen}
+        onKeyDown={(e) => e.key === "Enter" && onOpen()}
+        className="flex cursor-pointer gap-4 p-4 transition-colors hover:bg-white/5"
+      >
         {pick.posterPath && (
           <img
             src={`${TMDB_IMG}/w200${pick.posterPath}`}
@@ -363,6 +389,12 @@ function PickCard({ pick, onNotForMe }: { pick: Pick; onNotForMe: () => void }) 
         {pick.why}
       </p>
       <div className="flex border-t border-white/10">
+        <button
+          onClick={onOpen}
+          className="flex-1 border-r border-white/10 py-2.5 text-center text-xs font-medium text-[#E3B24B]/80 transition-colors hover:bg-white/5 hover:text-[#E3B24B]"
+        >
+          Details
+        </button>
         <button
           onClick={onNotForMe}
           className="flex-1 py-2.5 text-center text-xs font-medium text-white/50 transition-colors hover:bg-white/5 hover:text-white/80"
