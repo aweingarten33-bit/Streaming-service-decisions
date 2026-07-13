@@ -155,7 +155,8 @@ export async function POST(req: NextRequest) {
 
   const { data, error } = await query;
   if (error) {
-    return NextResponse.json({ error: "Search failed. Try again." }, { status: 500 });
+    console.error("recommend: titles query failed:", error.message, error.details, error.hint);
+    return NextResponse.json({ error: `Search failed: ${error.message}` }, { status: 500 });
   }
 
   const rows = (data ?? []) as unknown as TitleRow[];
