@@ -115,7 +115,7 @@ begin
     (
       coalesce(a.positive_signal, 0) * 2.0
       + a.source_count * 1.5
-      + jsonb_object_length(d.descriptor_counts) * 0.25
+      + (select count(*) from jsonb_object_keys(d.descriptor_counts)) * 0.25
       - coalesce(a.negative_signal, 0) * 2.5
     )::numeric(10, 2) as evidence_score,
     now()
