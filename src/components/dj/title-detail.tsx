@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, Play } from "lucide-react";
 
 const TMDB_IMG = "https://image.tmdb.org/t/p";
@@ -31,6 +31,7 @@ interface SimilarTitle {
   mediaType: string;
   year: number | null;
   posterPath: string | null;
+  backdropPath: string | null;
   rating: number | null;
 }
 
@@ -49,12 +50,14 @@ export function TitleDetail({
   const [similar, setSimilar] = useState<SimilarTitle[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [playing, setPlaying] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setDetail(null);
     setSimilar([]);
     setError(null);
     setPlaying(false);
+    scrollRef.current?.scrollTo({ top: 0 });
     fetch(`/api/title/${tmdbId}?type=${mediaType}`)
       .then(async (res) => {
         const data = await res.json();
@@ -73,7 +76,7 @@ export function TitleDetail({
       : null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-[#08080c]">
+    <div ref={scrollRef} className="fixed inset-0 z-50 overflow-y-auto bg-[#08080c]">
       <button
         onClick={onClose}
         aria-label="Back"
@@ -215,28 +218,31 @@ export function TitleDetail({
             {similar.length > 0 && (
               <div className="mt-8">
                 <h2 className="font-display text-lg text-[#F5EEDC]">More Like This</h2>
-                <div className="mt-3 flex gap-3 overflow-x-auto pb-2">
+                <div className="mt-3 space-y-3">
                   {similar.map((s) => (
                     <button
                       key={s.tmdbId}
                       onClick={() => onSwap(s.tmdbId, s.mediaType)}
-                      className="w-24 flex-none text-left"
+                      className="flex w-full items-center gap-4 rounded-xl p-2 text-left transition-colors hover:bg-white/5"
                     >
-                      {s.posterPath ? (
+                      {s.backdropPath || s.posterPath ? (
                         <img
-                          src={`${TMDB_IMG}/w200${s.posterPath}`}
+                          src={`${TMDB_IMG}/w300${s.backdropPath ?? s.posterPath}`}
                           alt={s.title}
-                          className="h-36 w-24 rounded-lg object-cover"
+                          className="h-20 w-32 flex-none rounded-lg object-cover"
                         />
                       ) : (
-                        <div className="h-36 w-24 rounded-lg bg-white/10" />
+                        <div className="h-20 w-32 flex-none rounded-lg bg-white/10" />
                       )}
-                      <p className="mt-1.5 line-clamp-2 text-xs text-white/80">{s.title}</p>
-                      {s.rating != null && (
-                        <p className="font-mono text-[10px] text-white/40">
-                          ★ {s.rating.toFixed(1)}
+                      <div className="min-w-0">
+                        <p className="line-clamp-2 text-[15px] font-medium text-[#F5EEDC]">
+                          {s.title}
                         </p>
-                      )}
+                        <p className="mt-0.5 font-mono text-[11px] text-white/40">
+                          {s.year ?? ""}
+                          {s.rating != null && ` · ★ ${s.rating.toFixed(1)}`}
+                        </p>
+                      </div>
                     </button>
                   ))}
                 </div>

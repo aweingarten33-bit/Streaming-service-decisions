@@ -63,6 +63,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ tmdb
     media_type: string;
     year: number | null;
     poster_path: string | null;
+    backdrop_path: string | null;
     imdb_rating: number | null;
     mentions: { sentiment: string }[];
   }
@@ -71,7 +72,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ tmdb
     const { data: sim } = await supabase
       .from("titles")
       .select(
-        `tmdb_id, title, media_type, year, poster_path, imdb_rating,
+        `tmdb_id, title, media_type, year, poster_path, backdrop_path, imdb_rating,
          mentions!inner ( sentiment )`,
       )
       .overlaps("genres", genres)
@@ -109,6 +110,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ tmdb
       mediaType: s.media_type,
       year: s.year,
       posterPath: s.poster_path,
+      backdropPath: s.backdrop_path,
       rating: s.imdb_rating,
     })),
   });
