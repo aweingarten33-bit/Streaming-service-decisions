@@ -454,11 +454,18 @@ export async function POST(req: NextRequest) {
         );
         const favoriteBoost = row.genres.some((g) => favoriteGenres.includes(g)) ? 1.5 : 0;
         // A requested genre in first position is the title's real identity; buried
-        // third it's often a token label (the dramedy problem).
+        // third it's often a token label (the dramedy problem). When the genre filter
+        // had to be relaxed catalog-wide (see fetchCandidates fallback above), genre
+        // mismatch must cost real points — otherwise a widely-mentioned, high-rated
+        // title with nothing to do with the request wins purely on raw evidence/rating.
         const primaryGenreBoost =
-          wantedGenres.length > 0 && row.genres[0] && wantedGenres.includes(row.genres[0])
-            ? 1.5
-            : 0;
+          wantedGenres.length === 0
+            ? 0
+            : row.genres[0] && wantedGenres.includes(row.genres[0])
+              ? 3
+              : row.genres.some((g) => wantedGenres.includes(g))
+                ? 1
+                : -6;
         const companionDescriptor = preferences?.watches_with
           ? WATCHES_WITH_DESCRIPTOR[preferences.watches_with]
           : undefined;
