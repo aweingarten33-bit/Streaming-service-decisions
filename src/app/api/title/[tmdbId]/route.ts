@@ -62,9 +62,11 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ tmdb
     title: string;
     media_type: string;
     year: number | null;
+    genres: string[];
     poster_path: string | null;
     backdrop_path: string | null;
     imdb_rating: number | null;
+    imdb_votes: number | null;
     mentions: { sentiment: string }[];
   }
   let similar: SimilarRow[] = [];
@@ -72,15 +74,32 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ tmdb
     const { data: sim } = await supabase
       .from("titles")
       .select(
-        `tmdb_id, title, media_type, year, poster_path, backdrop_path, imdb_rating,
+        `tmdb_id, title, media_type, year, genres, poster_path, backdrop_path, imdb_rating, imdb_votes,
          mentions!inner ( sentiment )`,
       )
-      .overlaps("genres", genres)
+      // Anchor on the primary genre — one shared secondary tag ("Crime") is not similarity.
+      .contains("genres", [genres[0]])
       .neq("tmdb_id", tmdbId)
       .order("imdb_votes", { ascending: false, nullsFirst: false })
-      .limit(60);
+      .limit(100);
+
+    // Documentaries are their own world: never mix them with fiction in either direction.
+    const sourceIsDoc = genres.includes("Documentary");
     similar = ((sim ?? []) as unknown as SimilarRow[])
       .filter((s) => s.mentions.some((m) => QUALIFYING.includes(m.sentiment)))
+      .filter((s) => s.genres.includes("Documentary") === sourceIsDoc)
+      .map((s) => ({
+        s,
+        shared: s.genres.filter((g) => genres.includes(g)).length,
+        sameType: s.media_type === mediaType ? 1 : 0,
+      }))
+      .sort(
+        (a, b) =>
+          b.sameType - a.sameType ||
+          b.shared - a.shared ||
+          (b.s.imdb_votes ?? 0) - (a.s.imdb_votes ?? 0),
+      )
+      .map((x) => x.s)
       .slice(0, 10);
   }
 
