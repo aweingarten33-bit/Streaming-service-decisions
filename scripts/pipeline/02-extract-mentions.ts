@@ -74,7 +74,7 @@ async function extractFromChunk(
     system: EXTRACTION_SYSTEM_PROMPT,
     user,
     model: EXTRACTION_MODEL,
-    maxTokens: 4000,
+    maxTokens: 8000,
   });
   return { mentions: Array.isArray(data) ? data : [], inputTokens, outputTokens };
 }
