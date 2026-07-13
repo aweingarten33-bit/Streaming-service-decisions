@@ -222,7 +222,11 @@ export async function POST(req: NextRequest) {
     return rows
       .map((row) => {
         if (avoidGenres.length > 0 && row.genres.some((g) => avoidGenres.includes(g))) return null;
-        if (myServices.length > 0 && !row.streaming_providers.some((p) => myServices.includes(p)))
+        // Only exclude on services when we actually KNOW the availability and none
+        // match — an empty providers array means unknown, not unavailable.
+        const onMyService =
+          myServices.length > 0 && row.streaming_providers.some((p) => myServices.includes(p));
+        if (myServices.length > 0 && row.streaming_providers.length > 0 && !onMyService)
           return null;
 
         const qualifying = row.mentions.filter((m) =>
