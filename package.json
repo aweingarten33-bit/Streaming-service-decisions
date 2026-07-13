@@ -22,7 +22,6 @@
     "report": "bun run scripts/pipeline/report.ts",
     "pipeline:audit-youtube": "bun run scripts/pipeline/audit-youtube-bank.ts",
     "eval:recommendations": "bun run scripts/eval/recommendation-fixtures.ts"
-    "pipeline:audit-youtube": "bun run scripts/pipeline/audit-youtube-bank.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.68.0",
