@@ -1,8 +1,10 @@
 import { YoutubeTranscript } from "youtube-transcript";
 
 // Rough heuristic (~4 chars/token) — good enough for chunk sizing, not billing.
-const CHARS_PER_CHUNK = 32_000; // ~8k tokens
-const OVERLAP_CHARS = 2_000;
+// Kept small because dense videos (weekly box-office chart shows) can discuss
+// dozens of titles in one chunk, overflowing the extraction response's token cap.
+const CHARS_PER_CHUNK = 12_000; // ~3k tokens
+const OVERLAP_CHARS = 1_000;
 
 export type TranscriptFailureReason =
   | "empty_transcript"
