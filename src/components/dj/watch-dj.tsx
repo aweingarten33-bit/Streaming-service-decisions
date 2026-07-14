@@ -47,24 +47,18 @@ const CHIPS = [
 
 const TMDB_IMG = "https://image.tmdb.org/t/p";
 
-export function WatchDj({ backdrops }: { backdrops: string[] }) {
-  const [bgIndex, setBgIndex] = useState(0);
+export function WatchDj({ backdrops: _backdrops }: { backdrops: string[] }) {
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
   const [turns, setTurns] = useState<Turn[]>([]);
   const [listening, setListening] = useState(false);
+  const [savedIds, setSavedIds] = useState<Set<number>>(new Set());
   // Navigation stack so hopping through More Like This can step back page by page.
   const [detailStack, setDetailStack] = useState<{ tmdbId: number; mediaType: string }[]>([]);
   const shownIds = useRef<number[]>([]);
   const lastFilters = useRef<ParsedFilters | null>(null);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (backdrops.length < 2) return;
-    const id = setInterval(() => setBgIndex((i) => (i + 1) % backdrops.length), 7000);
-    return () => clearInterval(id);
-  }, [backdrops.length]);
 
   useEffect(() => {
     const SpeechRecognitionCtor =
@@ -85,6 +79,16 @@ export function WatchDj({ backdrops }: { backdrops: string[] }) {
     recognition.onend = () => setListening(false);
     recognitionRef.current = recognition;
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    fetch(`/api/watchlist?deviceId=${encodeURIComponent(getDeviceId())}`)
+      .then((res) => res.json())
+      .then((data) => {
+        const ids = (data.items ?? []).map((item: { tmdb_id: number }) => item.tmdb_id);
+        setSavedIds(new Set(ids));
+      })
+      .catch(() => undefined);
   }, []);
 
   function toggleVoice() {
@@ -139,36 +143,40 @@ export function WatchDj({ backdrops }: { backdrops: string[] }) {
     }
   }
 
+  async function savePick(pick: Pick) {
+    setSavedIds((ids) => new Set(ids).add(pick.tmdbId));
+    await fetch("/api/watchlist", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ deviceId: getDeviceId(), tmdbId: pick.tmdbId, source: "watch_dj" }),
+    }).catch(() => {
+      setSavedIds((ids) => {
+        const next = new Set(ids);
+        next.delete(pick.tmdbId);
+        return next;
+      });
+    });
+  }
+
   const started = turns.length > 0;
 
   return (
     <div className="relative min-h-screen overflow-hidden">
       <div className="fixed inset-0 -z-10">
-        {backdrops.length > 0 ? (
-          backdrops.map((path, i) => (
-            <div
-              key={path}
-              className="absolute inset-0 bg-cover bg-center transition-opacity duration-[2000ms]"
-              style={{
-                backgroundImage: `url(${TMDB_IMG}/original${path})`,
-                opacity: i === bgIndex ? 1 : 0,
-              }}
-            />
-          ))
-        ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-[#1a0a14] via-[#08080c] to-[#0e1420]" />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/90" />
+        <div className="absolute inset-0 bg-[#08080c]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(227,178,75,0.14),_transparent_32rem)]" />
       </div>
 
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-xl flex-col items-center px-6 pb-40 pt-24">
         <h1 className="font-display text-5xl font-semibold tracking-tight text-[#F5EEDC] sm:text-6xl">
           Watch DJ
         </h1>
-        <p className="mt-3 text-center text-base text-white/60">Your personal movie &amp; TV DJ</p>
+        <p className="mt-3 text-center text-base text-white/60">
+          Text your watchlist. Get one clear direction.
+        </p>
         {!started && (
           <p className="mt-2 max-w-xs text-center font-mono text-[11px] uppercase tracking-wider text-[#E3B24B]/80">
-            Powered by a network of trusted entertainment recommendations
+            Saved titles first. Curator evidence second. No endless homepage.
           </p>
         )}
 
@@ -202,13 +210,10 @@ export function WatchDj({ backdrops }: { backdrops: string[] }) {
                 </button>
               ))}
             </div>
-
-            <a
-              href="/how-it-works"
-              className="mt-8 text-xs text-white/40 underline-offset-4 transition-colors hover:text-white/70 hover:underline"
-            >
-              Why our picks are different
-            </a>
+            <p className="mt-6 max-w-sm text-center text-xs leading-relaxed text-white/45">
+              Save anything interesting. Future requests search your list first, then fall back to
+              trusted curator picks if your list is empty.
+            </p>
           </>
         )}
 
@@ -250,6 +255,8 @@ export function WatchDj({ backdrops }: { backdrops: string[] }) {
                           setDetailStack([{ tmdbId: pick.tmdbId, mediaType: pick.mediaType }])
                         }
                         onNotForMe={() => ask("Something different, please")}
+                        onSave={() => savePick(pick)}
+                        saved={savedIds.has(pick.tmdbId)}
                       />
                     ))}
                   </div>
@@ -348,10 +355,14 @@ function PickCard({
   pick,
   onOpen,
   onNotForMe,
+  onSave,
+  saved,
 }: {
   pick: Pick;
   onOpen: () => void;
   onNotForMe: () => void;
+  onSave: () => void;
+  saved: boolean;
 }) {
   return (
     <div className="overflow-hidden rounded-2xl border border-white/10 bg-black/45 backdrop-blur-xl">
@@ -409,6 +420,13 @@ function PickCard({
           className="flex-1 border-r border-white/10 py-2.5 text-center text-xs font-medium text-[#E3B24B]/80 transition-colors hover:bg-white/5 hover:text-[#E3B24B]"
         >
           Details
+        </button>
+        <button
+          onClick={onSave}
+          disabled={saved}
+          className="flex-1 border-r border-white/10 py-2.5 text-center text-xs font-medium text-white/60 transition-colors hover:bg-white/5 hover:text-white/90 disabled:text-[#E3B24B]"
+        >
+          {saved ? "Saved" : "Save"}
         </button>
         <button
           onClick={onNotForMe}
