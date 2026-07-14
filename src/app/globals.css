@@ -1,40 +1,33 @@
 @import "tailwindcss" source(none);
 @source "../";
 @import "tw-animate-css";
-@import "@fontsource/playfair-display/400.css";
-@import "@fontsource/playfair-display/700.css";
-@import "@fontsource/source-serif-4/400.css";
-@import "@fontsource/source-serif-4/600.css";
 @import "@fontsource/archivo/400.css";
 @import "@fontsource/archivo/500.css";
 @import "@fontsource/archivo/600.css";
 @import "@fontsource/archivo/700.css";
+@import "@fontsource/archivo/800.css";
+@import "@fontsource/archivo/900.css";
+@import "@fontsource/source-serif-4/400.css";
+@import "@fontsource/source-serif-4/400-italic.css";
+@import "@fontsource/source-serif-4/600.css";
 @import "@fontsource/jetbrains-mono/400.css";
 @import "@fontsource/jetbrains-mono/500.css";
 
 @custom-variant dark (&:is(.dark *));
 
-
-@theme inline {
-  --font-display: "Playfair Display", Georgia, serif;
-  --font-serif: "Source Serif 4", Georgia, serif;
-  --font-sans: "Archivo", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, monospace;
-}
-
-
-
 /* ============================================================
-   DFS ANALYSIS ENGINE
-   Clean white technical HUD aesthetic (kprverse-inspired)
-   + cartoon punk football energy
+   THE REEL — editorial film-club journal
+   Warm paper base · ink near-black · one confident vermilion.
+   Grotesk display (Archivo) × editorial serif (Source Serif)
+   × mono data labels (JetBrains Mono). Sharp corners, hairline
+   rules, framed & duotone imagery.
    ============================================================ */
 
 @theme inline {
-  --font-display: var(--font-display);
-  --font-serif: var(--font-serif);
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-mono);
+  --font-sans: "Archivo", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Archivo", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Source Serif 4", Georgia, serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -57,12 +50,10 @@
   --color-ring: var(--ring);
 
   /* Brand palette */
-  --color-lime: var(--lime);
-  --color-profit: var(--profit);
-  --color-hotred: var(--hotred);
-  --color-orange: var(--orange);
   --color-ink: var(--ink);
   --color-paper: var(--paper);
+  --color-vermilion: var(--vermilion);
+  --color-marigold: var(--marigold);
 
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
@@ -79,50 +70,44 @@
 :root {
   color-scheme: light;
 
-  /* ===== Editorial palette — NYT (70) × professional-services resume (30).
-     Near-black ink on warm paper-white, one restrained accent. ===== */
-  --ink: #121212;          /* editorial near-black (softer than pure #000) */
-  --paper: #ffffff;
-  --lime: #1a7f37;         /* restrained editorial green for positives */
-  --profit: #1a7f37;
-  --hotred: #b31b1b;       /* muted editorial red (not neon) */
-  --orange: #8a6d1a;       /* muted ochre accent */
+  /* ===== Warm editorial palette ===== */
+  --ink: #17130d;          /* warm near-black */
+  --paper: #f2ece0;        /* warm cream paper */
+  --vermilion: #d8452a;    /* bold marquee accent */
+  --marigold: #c98a1e;     /* warm secondary (ratings, sparing) */
 
-  --accent-ink: #326891;   /* NYT-ish restrained link blue, used sparingly */
-
-  --background: #ffffff;
-  --foreground: #121212;
-  --card: #ffffff;
-  --card-foreground: #121212;
-  --popover: #ffffff;
-  --popover-foreground: #121212;
-  --primary: #121212;
-  --primary-foreground: #ffffff;
-  --secondary: #f7f7f5;    /* warm off-white section band */
-  --secondary-foreground: #121212;
-  --muted: #f7f7f5;
-  --muted-foreground: #6b6b6b;
-  --accent: #326891;
-  --accent-foreground: #ffffff;
-  --destructive: #b31b1b;
-  --destructive-foreground: #ffffff;
-  --border: #121212;
-  --input: #dcdcd6;
-  --ring: #121212;
+  --background: #f2ece0;
+  --foreground: #17130d;
+  --card: #f8f3e8;         /* lifted paper */
+  --card-foreground: #17130d;
+  --popover: #f8f3e8;
+  --popover-foreground: #17130d;
+  --primary: #17130d;      /* ink buttons */
+  --primary-foreground: #f6f0e4;
+  --secondary: #e7dfcd;    /* warm section band */
+  --secondary-foreground: #17130d;
+  --muted: #e7dfcd;
+  --muted-foreground: #6d6555;
+  --accent: #d8452a;
+  --accent-foreground: #f8f3e8;
+  --destructive: #b3241b;
+  --destructive-foreground: #f8f3e8;
+  --border: #d3c8b2;       /* soft hairline default */
+  --input: #cdc1a9;
+  --ring: #d8452a;
 
   --radius: 0px;
 
-  --chart-1: #1a7f37;
-  --chart-2: #b31b1b;
-  --chart-3: #326891;
-  --chart-4: #121212;
-  --chart-5: #a8a29e;
+  --chart-1: #d8452a;
+  --chart-2: #17130d;
+  --chart-3: #c98a1e;
+  --chart-4: #6d6555;
+  --chart-5: #8a5a2b;
 }
 
 @layer base {
   * {
     @apply border-border;
-    border-radius: 0 !important;
   }
   html {
     @apply bg-background;
@@ -131,211 +116,122 @@
     @apply bg-background text-foreground font-sans antialiased;
   }
   ::selection {
-    background: #121212;
-    color: #ffffff;
+    background: var(--ink);
+    color: var(--paper);
   }
   ::-webkit-scrollbar {
     width: 10px;
     height: 10px;
   }
   ::-webkit-scrollbar-track {
-    background: #ffffff;
+    background: var(--paper);
   }
   ::-webkit-scrollbar-thumb {
-    background: #c8c8c2;
-    border: 2px solid #ffffff;
+    background: #c9bda4;
+    border: 2px solid var(--paper);
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #121212;
+    background: var(--ink);
   }
 }
 
 @layer utilities {
   .font-display {
-    font-family: var(--font-display), 'Georgia', serif;
+    font-family: var(--font-display), system-ui, sans-serif;
   }
   .font-serif {
-    font-family: var(--font-serif), 'Georgia', serif;
+    font-family: var(--font-serif), Georgia, serif;
   }
 
-  /* technical dotted grid, very subtle on white */
-  .grid-dots {
-    background-image: radial-gradient(rgba(18, 18, 18, 0.07) 1px, transparent 1px);
-    background-size: 26px 26px;
+  /* editorial kicker — tracked mono metadata label */
+  .kicker {
+    font-family: var(--font-mono), monospace;
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
   }
-  .grid-dots-light {
-    background-image: radial-gradient(rgba(18, 18, 18, 0.05) 1px, transparent 1px);
-    background-size: 26px 26px;
+
+  /* thin authoritative rules that divide editorial sections */
+  .rule-ink {
+    height: 2px;
+    background: var(--ink);
+    border: 0;
+  }
+  .rule-hair {
+    height: 1px;
+    background: color-mix(in srgb, var(--ink) 18%, transparent);
+    border: 0;
+  }
+
+  /* hard offset shadow — tactile editorial block edge */
+  .shadow-ink {
+    box-shadow: 5px 5px 0 0 var(--ink);
+  }
+  .shadow-ink-sm {
+    box-shadow: 3px 3px 0 0 var(--ink);
+  }
+  .shadow-vermilion {
+    box-shadow: 5px 5px 0 0 var(--vermilion);
+  }
+
+  /* framed media — crisp ink frame around imagery */
+  .frame-ink {
+    border: 1.5px solid var(--ink);
+  }
+
+  /* paper grain / dotted technical field */
+  .grid-dots {
+    background-image: radial-gradient(color-mix(in srgb, var(--ink) 9%, transparent) 1px, transparent 1px);
+    background-size: 22px 22px;
   }
   .grid-lines {
     background-image:
-      linear-gradient(to right, rgba(18, 18, 18, 0.045) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(18, 18, 18, 0.045) 1px, transparent 1px);
-    background-size: 60px 60px;
+      linear-gradient(to right, color-mix(in srgb, var(--ink) 6%, transparent) 1px, transparent 1px),
+      linear-gradient(to bottom, color-mix(in srgb, var(--ink) 6%, transparent) 1px, transparent 1px);
+    background-size: 56px 56px;
   }
 
-  /* ===== Editorial helpers (NYT × resume) ===== */
-  /* the thin authoritative black rule that divides editorial sections */
-  .edu-rule {
-    height: 2px;
-    background: #121212;
-    border: 0;
+  /* duotone imagery: warm-desaturate at rest, full color on hover */
+  .img-duotone {
+    filter: grayscale(0.55) contrast(1.05) sepia(0.12);
+    transition: filter 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: transform, filter;
   }
-  .edu-hairline {
-    height: 1px;
-    background: rgba(18, 18, 18, 0.18);
-    border: 0;
-  }
-  /* mono metadata label, like "5 MIN READ" / "SECTION 01" */
-  .edu-kicker {
-    font-family: var(--font-mono), monospace;
-    font-size: 11px;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: #6b6b6b;
-  }
-  /* masked text reveal — clip container, child rises up into view */
-  .reveal-mask {
-    overflow: hidden;
-    display: block;
+  .group:hover .img-duotone,
+  .img-duotone:hover {
+    filter: grayscale(0) contrast(1.05) sepia(0);
   }
 
-  /* hard shadow — subtle editorial block edge (used sparingly) */
-  .shadow-hard {
-    box-shadow: 4px 4px 0 0 #121212;
-  }
-  .shadow-hard-sm {
-    box-shadow: 3px 3px 0 0 #121212;
-  }
-  .shadow-hard-lime {
-    box-shadow: 4px 4px 0 0 var(--lime);
-  }
-  .shadow-hard-red {
-    box-shadow: 4px 4px 0 0 var(--hotred);
-  }
-
-  /* wordmark with artwork bleeding through the letterforms */
-  .wordmark-clip {
-    background-image: url('/hero-art.png');
-    background-size: cover;
-    background-position: center 28%;
-    background-repeat: no-repeat;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: transparent;
-    filter: contrast(1.08) saturate(1.1);
-  }
-  /* children must also be transparent so the parent's clipped bg shows through */
-  .wordmark-clip span {
-    -webkit-text-fill-color: transparent;
-    color: transparent;
-  }
-
+  /* marquee ticker */
   .marquee-track {
-    animation: marquee 26s linear infinite;
+    animation: marquee 32s linear infinite;
   }
   @keyframes marquee {
-    from {
-      transform: translateX(0);
-    }
-    to {
-      transform: translateX(-50%);
-    }
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
   }
+
+  /* blinking cursor */
   @keyframes blink {
-    0%,
-    49% {
-      opacity: 1;
-    }
-    50%,
-    100% {
-      opacity: 0;
-    }
+    0%, 49% { opacity: 1; }
+    50%, 100% { opacity: 0; }
   }
   .cursor-blink::after {
-    content: '_';
+    content: "_";
     animation: blink 1s steps(1) infinite;
   }
-}
 
-@layer utilities {
-  /* ============================================================
-     CSS-only animated data-field (mobile / no-WebGL fallback)
-     A slowly drifting dotted grid over a soft navy wash.
-     Pure compositor transforms — no GPU stress, no battery drain.
-     ============================================================ */
-  .css-datafield {
-    background-color: #ffffff;
-    background-image:
-      radial-gradient(circle at 50% 30%, rgba(23, 42, 77, 0.09), transparent 62%),
-      radial-gradient(rgba(23, 42, 77, 0.20) 1.2px, transparent 1.6px);
-    background-size:
-      100% 100%,
-      26px 26px;
-    background-position:
-      center,
-      0 0;
-    animation: datafield-drift 8s linear infinite;
-  }
-  @keyframes datafield-drift {
-    from {
-      background-position:
-        center,
-        0 0;
-    }
-    to {
-      background-position:
-        center,
-        26px 26px;
-    }
-  }
-
-  /* ============================================================
-     POLA-style cinematic motion helpers
-     Slow, soft, eased — applied via framer-motion in components,
-     these are supporting CSS utilities for parallax + polish.
-     ============================================================ */
-  .pola-blur-in {
-    animation: pola-blur-in 1.1s cubic-bezier(0.16, 1, 0.3, 1) both;
-  }
-  @keyframes pola-blur-in {
-    from {
-      opacity: 0;
-      filter: blur(8px);
-      transform: translateY(24px);
-    }
-    to {
-      opacity: 1;
-      filter: blur(0);
-      transform: translateY(0);
-    }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .pola-blur-in {
-      animation: none;
-    }
-  }
-
-  /* Hide native cursor when custom cursor is active (desktop pointers only). */
-  .cursor-none-root,
-  .cursor-none-root * {
-    cursor: none !important;
-  }
-}
-
-@layer utilities {
-  /* Underline sweep for inline links — hover expands a hairline from left. */
+  /* underline sweep for inline links */
   .link-sweep {
     position: relative;
     display: inline-block;
   }
   .link-sweep::after {
-    content: '';
+    content: "";
     position: absolute;
     left: 0;
     bottom: -2px;
-    height: 1px;
+    height: 1.5px;
     width: 100%;
     background: currentColor;
     transform: scaleX(0);
@@ -347,14 +243,89 @@
     transform-origin: 0% 50%;
   }
 
-  /* Image hover: desaturate at rest, full color on hover, subtle scale. */
-  .img-desat {
-    filter: grayscale(1) contrast(1.02);
-    transition: filter 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-    will-change: transform, filter;
+  /* editorial entrance — rise + blur clear */
+  .rise-in {
+    animation: rise-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
-  .img-desat:hover {
-    filter: grayscale(0) contrast(1.06);
-    transform: scale(1.03);
+  @keyframes rise-in {
+    from { opacity: 0; transform: translateY(18px); filter: blur(6px); }
+    to { opacity: 1; transform: translateY(0); filter: blur(0); }
+  }
+
+  /* masked text reveal */
+  .reveal-mask {
+    overflow: hidden;
+    display: block;
+  }
+
+  /* ===== printed-program primitives ===== */
+
+  /* film-strip sprocket header band */
+  .sprockets {
+    background-color: var(--ink);
+    background-image: repeating-linear-gradient(
+      to right,
+      transparent 0,
+      transparent 10px,
+      var(--paper) 10px,
+      var(--paper) 18px,
+      transparent 18px,
+      transparent 28px
+    );
+    background-position: center;
+    background-repeat: repeat-x;
+  }
+
+  /* perforated ticket edge (top or bottom) */
+  .perf-top {
+    -webkit-mask-image: radial-gradient(circle 6px at 12px -1px, transparent 6px, #000 6.5px);
+    mask-image: radial-gradient(circle 6px at 12px -1px, transparent 6px, #000 6.5px);
+    -webkit-mask-size: 24px 100%;
+    mask-size: 24px 100%;
+    -webkit-mask-repeat: repeat-x;
+    mask-repeat: repeat-x;
+  }
+
+  /* duotone vermilion wash for framed stills */
+  .img-vermilion {
+    filter: grayscale(1) contrast(1.08);
+    transition: filter 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .group:hover .img-vermilion {
+    filter: grayscale(0) contrast(1.04);
+  }
+
+  /* editorial focus ring for keyboard nav */
+  .focus-ink:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
+  }
+
+  /* stamped/rotated ticket label */
+  .stamp {
+    border: 1.5px solid var(--vermilion);
+    color: var(--vermilion);
+    transform: rotate(-4deg);
+  }
+
+  /* soft entrance for stacked cards */
+  .stagger-in {
+    animation: rise-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  /* three-dot loading */
+  @keyframes dot-pulse {
+    0%, 60%, 100% { opacity: 0.25; transform: translateY(0); }
+    30% { opacity: 1; transform: translateY(-3px); }
+  }
+  .dot-pulse { animation: dot-pulse 1.1s ease-in-out infinite; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rise-in,
+    .stagger-in,
+    .dot-pulse,
+    .marquee-track,
+    .img-duotone,
+    .img-vermilion { animation: none; transition: none; }
   }
 }

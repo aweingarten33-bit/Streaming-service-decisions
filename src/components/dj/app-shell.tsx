@@ -11,7 +11,7 @@ export function AppShell({ backdrops }: { backdrops: string[] }) {
     setOnboarded(localStorage.getItem("watchdj_onboarded") === "true");
   }, []);
 
-  if (onboarded === null) return <div className="min-h-screen bg-[#08080c]" />;
+  if (onboarded === null) return <div className="min-h-screen bg-background" />;
   if (!onboarded) return <Onboarding onDone={() => setOnboarded(true)} />;
   return <WatchDj backdrops={backdrops} />;
 }
