@@ -4,9 +4,16 @@ import type { MediaType, ResolvedMediaType } from "./types";
 const BASE = "https://api.themoviedb.org/3";
 const MAX_ATTEMPTS = 5;
 
+function tmdbApiKey(): string {
+  if (!env.TMDB_API_KEY) {
+    throw new Error("TMDB_API_KEY is not set -- add it in your environment to use this feature.");
+  }
+  return env.TMDB_API_KEY;
+}
+
 async function tmdbFetch<T>(path: string, params: Record<string, string>): Promise<T> {
   const url = new URL(`${BASE}${path}`);
-  url.searchParams.set("api_key", env.TMDB_API_KEY);
+  url.searchParams.set("api_key", tmdbApiKey());
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
 
   for (let attempt = 0; ; attempt++) {
