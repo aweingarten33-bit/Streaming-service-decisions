@@ -72,6 +72,19 @@ export async function searchTitle(title: string, mediaType: MediaType): Promise<
     .map((r) => toCandidate(r));
 }
 
+/** Looks up a title directly by its IMDb id (tt#######) -- exact match, no fuzzy search needed. */
+export async function findByImdbId(imdbId: string): Promise<TmdbCandidate | null> {
+  const data = await tmdbFetch<{
+    movie_results: TmdbSearchResult[];
+    tv_results: TmdbSearchResult[];
+  }>(`/find/${imdbId}`, { external_source: "imdb_id" });
+  const movie = data.movie_results[0];
+  if (movie) return toCandidate(movie, "movie");
+  const tv = data.tv_results[0];
+  if (tv) return toCandidate(tv, "tv");
+  return null;
+}
+
 export interface TmdbDetails extends TmdbCandidate {
   genres: string[];
   runtime: number | null;
