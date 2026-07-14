@@ -116,3 +116,111 @@ export function SectionLabel({
     </div>
   );
 }
+
+export const TMDB_IMG = "https://image.tmdb.org/t/p";
+
+/** Film-strip sprocket band used as a masthead accent across every surface. */
+export function Sprockets({ className }: { className?: string }) {
+  return <div className={cx("sprockets h-4 w-full", className)} aria-hidden />;
+}
+
+/** Small mono metadata line separated by vermilion middots. */
+export function MetaLine({
+  items,
+  className,
+}: {
+  items: (string | null | undefined | false)[];
+  className?: string;
+}) {
+  const clean = items.filter(Boolean) as string[];
+  if (clean.length === 0) return null;
+  return (
+    <div
+      className={cx(
+        "flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground",
+        className,
+      )}
+    >
+      {clean.map((item, i) => (
+        <span key={i} className="flex items-center gap-2">
+          {i > 0 && (
+            <span className="text-vermilion" aria-hidden>
+              ·
+            </span>
+          )}
+          {item}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+/** Hairline or ink rule with optional centered kicker label. */
+export function Rule({ label, ink }: { label?: string; ink?: boolean }) {
+  if (!label) return <hr className={ink ? "rule-ink" : "rule-hair"} />;
+  return (
+    <div className="flex items-center gap-3">
+      <hr className={cx("flex-1", ink ? "rule-ink" : "rule-hair")} />
+      <span className="kicker text-muted-foreground">{label}</span>
+      <hr className={cx("flex-1", ink ? "rule-ink" : "rule-hair")} />
+    </div>
+  );
+}
+
+/** Framed, duotone poster/still with a crisp ink frame. */
+export function PosterFrame({
+  src,
+  alt,
+  className,
+  ratio = "aspect-[2/3]",
+}: {
+  src: string | null;
+  alt: string;
+  className?: string;
+  ratio?: string;
+}) {
+  return (
+    <div className={cx("group relative overflow-hidden frame-ink bg-secondary", ratio, className)}>
+      {src ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={src || "/placeholder.svg"}
+          alt={alt}
+          loading="lazy"
+          className="img-duotone h-full w-full object-cover group-hover:scale-[1.04]"
+        />
+      ) : (
+        <div className="grid h-full w-full place-items-center">
+          <span className="kicker text-muted-foreground">No still</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Rotated vermilion "ticket stamp" badge. */
+export function Stamp({ children }: { children: ReactNode }) {
+  return (
+    <span className="stamp inline-block px-2 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-[0.18em]">
+      {children}
+    </span>
+  );
+}
+
+/** Three-dot "cueing up" loader in vermilion. */
+export function CueingDots({ label }: { label?: string }) {
+  return (
+    <div className="flex items-center gap-3" role="status" aria-label={label ?? "Loading"}>
+      <div className="flex items-end gap-1.5">
+        {[0, 1, 2].map((k) => (
+          <span
+            key={k}
+            className="dot-pulse h-1.5 w-1.5 rounded-full bg-vermilion"
+            style={{ animationDelay: `${k * 0.16}s` }}
+          />
+        ))}
+      </div>
+      {label && <span className="kicker text-muted-foreground">{label}</span>}
+    </div>
+  );
+}
