@@ -15,9 +15,10 @@ type CountQuery = {
 async function count(
   table: string,
   apply: (query: CountQuery) => CountQuery = (query) => query,
+  select: string = "*",
 ): Promise<number> {
   const result = (await apply(
-    supabase.from(table).select("*", { count: "exact", head: true }) as unknown as CountQuery,
+    supabase.from(table).select(select, { count: "exact", head: true }) as unknown as CountQuery,
   )) as unknown as CountResult;
   if (result.error) throw new Error(`${table} count failed: ${result.error.message}`);
   return result.count ?? 0;
@@ -122,21 +123,23 @@ async function main() {
     const unavailable = await count("videos", (q) =>
       q.eq("curator_id", curatorId).is("extracted_at", null).eq("transcript_status", "unavailable"),
     );
-    const { data: videoRows } = await supabase
-      .from("videos")
-      .select("id")
-      .eq("curator_id", curatorId);
-    const ids = (videoRows ?? []).map((v) => v.id as string);
-    const mentions =
-      ids.length === 0
-        ? 0
-        : await count("mentions", (q) => q.not("video_id", "is", null).in("video_id", ids));
-    const resolvedPositive =
-      ids.length === 0
-        ? 0
-        : await count("mentions", (q) =>
-            q.in("video_id", ids).not("tmdb_id", "is", null).in("sentiment", ACTIVE_SENTIMENTS),
-          );
+    // Filter through a join instead of pulling every video id into memory --
+    // a prolific curator's id list can be large enough to blow past the
+    // request size limit when passed through .in().
+    const mentions = await count(
+      "mentions",
+      (q) => q.not("video_id", "is", null).eq("videos.curator_id", curatorId),
+      "*, videos!inner(curator_id)",
+    );
+    const resolvedPositive = await count(
+      "mentions",
+      (q) =>
+        q
+          .not("tmdb_id", "is", null)
+          .in("sentiment", ACTIVE_SENTIMENTS)
+          .eq("videos.curator_id", curatorId),
+      "*, videos!inner(curator_id)",
+    );
 
     const status = videos === 0 ? "NO VIDEOS" : resolvedPositive === 0 ? "NOT SERVING" : "SERVING";
     console.log(
