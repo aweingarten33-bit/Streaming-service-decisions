@@ -19,7 +19,9 @@
     "reddit:extract": "bun run scripts/pipeline/06-extract-reddit-mentions.ts",
     "discover:channels": "bun run scripts/pipeline/07-discover-channels.ts",
     "discover:evaluate": "bun run scripts/pipeline/08-evaluate-candidates.ts",
-    "report": "bun run scripts/pipeline/report.ts"
+    "report": "bun run scripts/pipeline/report.ts",
+    "pipeline:audit-youtube": "bun run scripts/pipeline/audit-youtube-bank.ts",
+    "eval:recommendations": "bun run scripts/eval/recommendation-fixtures.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.68.0",

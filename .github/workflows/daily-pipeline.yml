@@ -28,3 +28,5 @@ jobs:
         run: bun run pipeline:comments
       - name: Sync IMDb/TMDB ratings
         run: bun run ratings:sync
+      - name: Audit YouTube bank health
+        run: bun run pipeline:audit-youtube
