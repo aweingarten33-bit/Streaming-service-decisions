@@ -97,6 +97,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ tmdb
   }
   let similar: SimilarTitleRow[] = [];
   {
+  if (genres.length > 0) {
     const { data: sim } = await supabase
       .from("title_signal_summary")
       .select(
@@ -113,6 +114,11 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ tmdb
     // Documentaries are their own world: never mix them with fiction in either direction.
     const sourceIsDoc = genres.includes("Documentary");
     similar = ((sim ?? []) as unknown as SimilarSignalRow[])
+      .limit(200);
+
+    // Documentaries are their own world: never mix them with fiction in either direction.
+    const sourceIsDoc = genres.includes("Documentary");
+    const ranked = ((sim ?? []) as unknown as SimilarSignalRow[])
       .map((signal) => ({ signal, title: titleFromSignal(signal) }))
       .filter((item): item is { signal: SimilarSignalRow; title: SimilarTitleRow } =>
         Boolean(item.title),
@@ -128,6 +134,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ tmdb
           title,
           descriptorOverlap,
           sharedGenres,
+        return {
+          title,
+          descriptorOverlap,
+          sharedGenres: title.genres.filter((g) => genres.includes(g)).length,
           sameType: title.media_type === mediaType ? 1 : 0,
           evidenceScore: Number(signal.evidence_score ?? 0),
           sourceCount: signal.source_count,
@@ -138,6 +148,15 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ tmdb
           ? candidate.descriptorOverlap > 0 || candidate.sharedGenres > 0
           : candidate.sharedGenres > 0,
       )
+      });
+
+    // sharedGenres was only ever a sort tiebreaker, never a requirement — a
+    // zero-overlap title could still win on raw evidence score alone and get
+    // shown as "similar" despite having nothing in common. Require actual
+    // genre overlap whenever any candidate has it; only fall back to the
+    // full pool if truly nothing shares a genre.
+    const withSharedGenre = ranked.filter((x) => x.sharedGenres > 0);
+    similar = (withSharedGenre.length > 0 ? withSharedGenre : ranked)
       .sort(
         (a, b) =>
           b.sameType - a.sameType ||

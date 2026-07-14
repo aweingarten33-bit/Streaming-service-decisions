@@ -34,6 +34,11 @@ function normalizeKey(title: string): string {
   return title.trim().toLowerCase();
 }
 
+// no_captions/video_unavailable are permanent — the video will never gain
+// captions or come back. youtube_blocked/transcript_fetch_error/empty_transcript
+// are transient (rate limits, network blips) and worth retrying on a future run.
+const PERMANENT_FAILURE_REASONS = new Set(["no_captions", "video_unavailable"]);
+
 const SENTIMENT_STRENGTH: Record<string, number> = {
   pan: 0,
   neutral_reference: 1,
@@ -74,7 +79,7 @@ async function extractFromChunk(
     system: EXTRACTION_SYSTEM_PROMPT,
     user,
     model: EXTRACTION_MODEL,
-    maxTokens: 4000,
+    maxTokens: 8000,
   });
   return { mentions: Array.isArray(data) ? data : [], inputTokens, outputTokens };
 }
@@ -103,6 +108,13 @@ export async function extractVideo(video: {
     // Leave extracted_at null so the video is retried on a future run — transcript
     // fetches fail transiently (YouTube blocks datacenter IPs), and stamping the
     // video done here silently loses its mentions forever.
+    console.log(
+      `[${transcriptResult.failureReason ?? "unknown"}] ${transcriptResult.failureDetail ?? ""}`,
+    );
+    // Permanent failures (no captions / video gone) are marked done so they stop
+    // reappearing on every future run. Transient ones (blocked, network errors)
+    // leave extracted_at null so the video is retried later.
+    const isPermanent = PERMANENT_FAILURE_REASONS.has(transcriptResult.failureReason ?? "");
     await supabase
       .from("videos")
       .update({
@@ -110,6 +122,7 @@ export async function extractVideo(video: {
         transcript_failure_reason: transcriptResult.failureReason,
         transcript_failure_detail: transcriptResult.failureDetail,
         transcript_last_attempt_at: new Date().toISOString(),
+        ...(isPermanent ? { extracted_at: new Date().toISOString() } : {}),
       })
       .eq("id", video.id);
     await supabase.rpc("increment_transcript_attempt_count", { target_video_id: video.id }).then(
@@ -244,7 +257,23 @@ async function main() {
 
   let query = supabase.from("videos").select("id, youtube_video_id, title, curator_id");
   if (!force) query = query.is("extracted_at", null);
-  if (curatorId) query = query.eq("curator_id", curatorId);
+  if (curatorId) {
+    query = query.eq("curator_id", curatorId);
+  } else {
+    // Default runs only extract from currently-active curators -- deactivating
+    // a curator should also stop spending time/tokens on its existing backlog,
+    // not just stop future ingestion. Pass --curator-id to target one
+    // explicitly (including an inactive one) if you ever need to override this.
+    const { data: activeCurators, error: curatorsError } = await supabase
+      .from("curators")
+      .select("id")
+      .eq("active", true);
+    if (curatorsError) throw new Error(`Failed to load curators: ${curatorsError.message}`);
+    query = query.in(
+      "curator_id",
+      (activeCurators ?? []).map((c) => c.id),
+    );
+  }
   const { data: videos, error } = await query;
   if (error) throw new Error(`Failed to load videos: ${error.message}`);
 

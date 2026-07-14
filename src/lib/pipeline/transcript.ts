@@ -1,8 +1,47 @@
 import { YoutubeTranscript } from "youtube-transcript";
 
 // Rough heuristic (~4 chars/token) — good enough for chunk sizing, not billing.
-const CHARS_PER_CHUNK = 32_000; // ~8k tokens
-const OVERLAP_CHARS = 2_000;
+// Kept small because dense videos (weekly box-office chart shows) can discuss
+// dozens of titles in one chunk, overflowing the extraction response's token cap.
+const CHARS_PER_CHUNK = 12_000; // ~3k tokens
+const OVERLAP_CHARS = 1_000;
+
+export type TranscriptFailureReason =
+  | "empty_transcript"
+  | "no_captions"
+  | "youtube_blocked"
+  | "video_unavailable"
+  | "transcript_fetch_error";
+
+export interface TranscriptFetchResult {
+  text: string | null;
+  failureReason: TranscriptFailureReason | null;
+  failureDetail: string | null;
+}
+
+function classifyTranscriptError(error: unknown): TranscriptFailureReason {
+  const message = error instanceof Error ? error.message : String(error);
+  const lower = message.toLowerCase();
+  if (
+    lower.includes("disabled") ||
+    lower.includes("no transcript") ||
+    lower.includes("could not find")
+  ) {
+    return "no_captions";
+  }
+  if (
+    lower.includes("too many") ||
+    lower.includes("429") ||
+    lower.includes("blocked") ||
+    lower.includes("captcha")
+  ) {
+    return "youtube_blocked";
+  }
+  if (lower.includes("unavailable") || lower.includes("private") || lower.includes("deleted")) {
+    return "video_unavailable";
+  }
+  return "transcript_fetch_error";
+}
 
 export type TranscriptFailureReason =
   | "empty_transcript"

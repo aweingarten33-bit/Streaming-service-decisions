@@ -322,6 +322,29 @@ function strongestSentimentScore(row: SignalRow): number {
   return row.strongest_sentiment ? (SENTIMENT_WEIGHT[row.strongest_sentiment] ?? 0) : 0;
 }
 
+}
+
+function descriptorCount(row: SignalRow, descriptor: string): number {
+  return Number(row.descriptor_counts?.[descriptor] ?? 0);
+}
+
+function topDescriptors(counts: Record<string, number> | null, limit: number): string[] {
+  return Object.entries(counts ?? {})
+    .filter(([descriptor]) => allDescriptors.includes(descriptor))
+    .sort((a, b) => Number(b[1]) - Number(a[1]))
+    .slice(0, limit)
+    .map(([descriptor]) => descriptor);
+}
+
+function titleGenresFromReference(row: ReferenceTitleSignal): string[] {
+  const title = Array.isArray(row.titles) ? row.titles[0] : row.titles;
+  return title?.genres ?? [];
+}
+
+function strongestSentimentScore(row: SignalRow): number {
+  return row.strongest_sentiment ? (SENTIMENT_WEIGHT[row.strongest_sentiment] ?? 0) : 0;
+}
+
 function buildWhy(signal: SignalRow, matchedDescriptors: string[]): string {
   const vibePhrase =
     matchedDescriptors.length > 0
@@ -414,6 +437,33 @@ export async function POST(req: NextRequest) {
         ...new Set([
           ...parsed.descriptors,
           ...topDescriptors(referenceSignal.descriptor_counts, 6),
+        ]),
+      ];
+      parsed.genre_hints = [
+        ...new Set([
+          ...parsed.genre_hints,
+          ...titleGenresFromReference(referenceSignal).slice(0, 2),
+        ]),
+      ];
+    }
+  }
+
+  const referenceTitle = parsed.reference_title;
+  if (referenceTitle) {
+    const { data: reference } = await supabase
+      .from("title_signal_summary")
+      .select("descriptor_counts, titles!inner ( genres )")
+      .ilike("titles.title", `%${referenceTitle}%`)
+      .order("evidence_score", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (reference) {
+      const referenceSignal = reference as unknown as ReferenceTitleSignal;
+      parsed.descriptors = [
+        ...new Set([
+          ...parsed.descriptors,
+          ...topDescriptors(referenceSignal.descriptor_counts, 4),
         ]),
       ];
       parsed.genre_hints = [
@@ -550,11 +600,18 @@ export async function POST(req: NextRequest) {
         );
         const favoriteBoost = row.genres.some((g) => favoriteGenres.includes(g)) ? 1.5 : 0;
         // A requested genre in first position is the title's real identity; buried
-        // third it's often a token label (the dramedy problem).
+        // third it's often a token label (the dramedy problem). When the genre filter
+        // had to be relaxed catalog-wide (see fetchCandidates fallback above), genre
+        // mismatch must cost real points — otherwise a widely-mentioned, high-rated
+        // title with nothing to do with the request wins purely on raw evidence/rating.
         const primaryGenreBoost =
-          wantedGenres.length > 0 && row.genres[0] && wantedGenres.includes(row.genres[0])
-            ? 1.5
-            : 0;
+          wantedGenres.length === 0
+            ? 0
+            : row.genres[0] && wantedGenres.includes(row.genres[0])
+              ? 3
+              : row.genres.some((g) => wantedGenres.includes(g))
+                ? 1
+                : -6;
         const companionDescriptor = preferences?.watches_with
           ? WATCHES_WITH_DESCRIPTOR[preferences.watches_with]
           : undefined;
