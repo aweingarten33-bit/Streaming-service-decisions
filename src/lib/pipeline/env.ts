@@ -1,7 +1,10 @@
 import { z } from "zod";
 
 const schema = z.object({
-  YOUTUBE_API_KEY: z.string().min(1, "YOUTUBE_API_KEY is required"),
+  // Optional: only needed by the offline YouTube pipeline scripts (ingest,
+  // discovery, comment analysis) -- never called by the deployed web app, so
+  // it shouldn't be a hard requirement for the site to build/run.
+  YOUTUBE_API_KEY: z.string().optional(),
   ANTHROPIC_API_KEY: z.string().min(1, "ANTHROPIC_API_KEY is required"),
   TMDB_API_KEY: z.string().min(1, "TMDB_API_KEY is required"),
   SUPABASE_URL: z.string().url("SUPABASE_URL must be a valid URL"),
