@@ -4,9 +4,16 @@ import type { RawVideo } from "./types";
 const BASE = "https://www.googleapis.com/youtube/v3";
 const MAX_ATTEMPTS = 5;
 
+function youtubeApiKey(): string {
+  if (!env.YOUTUBE_API_KEY) {
+    throw new Error("YOUTUBE_API_KEY is required to run pipeline scripts -- set it in your .env.");
+  }
+  return env.YOUTUBE_API_KEY;
+}
+
 async function ytFetch<T>(path: string, params: Record<string, string>): Promise<T> {
   const url = new URL(`${BASE}${path}`);
-  url.searchParams.set("key", env.YOUTUBE_API_KEY);
+  url.searchParams.set("key", youtubeApiKey());
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
 
   for (let attempt = 0; ; attempt++) {
@@ -46,7 +53,7 @@ async function ytFetchAllowDisabled<T>(
   params: Record<string, string>,
 ): Promise<T | null> {
   const url = new URL(`${BASE}${path}`);
-  url.searchParams.set("key", env.YOUTUBE_API_KEY);
+  url.searchParams.set("key", youtubeApiKey());
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
 
   for (let attempt = 0; ; attempt++) {
