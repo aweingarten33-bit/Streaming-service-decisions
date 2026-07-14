@@ -1,8 +1,11 @@
 import { z } from "zod";
 
 const schema = z.object({
-  ANTHROPIC_API_KEY: z.string().min(1, "ANTHROPIC_API_KEY is required"),
-  TMDB_API_KEY: z.string().min(1, "TMDB_API_KEY is required"),
+  // Optional so the site can build/deploy before these are configured --
+  // callers (llm.ts, tmdb.ts) throw a clear error if actually used without
+  // one set, rather than the whole build refusing to run.
+  ANTHROPIC_API_KEY: z.string().optional(),
+  TMDB_API_KEY: z.string().optional(),
   SUPABASE_URL: z.string().url("SUPABASE_URL must be a valid URL"),
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1, "SUPABASE_SERVICE_ROLE_KEY is required"),
 });

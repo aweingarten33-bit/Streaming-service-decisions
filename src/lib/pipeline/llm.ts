@@ -1,8 +1,19 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { env } from "./env";
 
-// SDK retries network errors and 429/5xx internally with backoff.
-const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY, maxRetries: 5 });
+// Constructed lazily (not at module load) so the app can start without
+// ANTHROPIC_API_KEY set -- only actually calling this throws.
+let client: Anthropic | null = null;
+function getClient(): Anthropic {
+  if (!env.ANTHROPIC_API_KEY) {
+    throw new Error(
+      "ANTHROPIC_API_KEY is not set -- add it in your environment to use this feature.",
+    );
+  }
+  // SDK retries network errors and 429/5xx internally with backoff.
+  client ??= new Anthropic({ apiKey: env.ANTHROPIC_API_KEY, maxRetries: 5 });
+  return client;
+}
 
 export interface LlmJsonResult<T> {
   data: T;
@@ -31,7 +42,7 @@ export async function callClaudeJSON<T>(opts: {
   let lastError: unknown;
 
   for (let attempt = 0; attempt < 2; attempt++) {
-    const res = await client.messages.create({
+    const res = await getClient().messages.create({
       model,
       max_tokens: maxTokens,
       system: opts.system,
