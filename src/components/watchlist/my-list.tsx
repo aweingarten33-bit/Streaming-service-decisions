@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { ChevronLeft, Plus, X, Search } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ChevronLeft, Plus, X, Search, Upload } from "lucide-react";
 import { getDeviceId } from "@/lib/device-id";
 
 const TMDB_IMG = "https://image.tmdb.org/t/p";
@@ -23,12 +23,21 @@ interface SavedTitle {
   posterPath: string | null;
 }
 
+interface ImportResult {
+  imported: number;
+  total: number;
+  failed: string[];
+}
+
 export function MyList({ onClose }: { onClose: () => void }) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [saved, setSaved] = useState<SavedTitle[]>([]);
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
+  const [importing, setImporting] = useState(false);
+  const [importResult, setImportResult] = useState<ImportResult | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   function refreshSaved() {
     const deviceId = getDeviceId();
@@ -85,6 +94,28 @@ export function MyList({ onClose }: { onClose: () => void }) {
     });
   }
 
+  async function importFile(file: File) {
+    setImporting(true);
+    setImportResult(null);
+    const formData = new FormData();
+    formData.append("deviceId", getDeviceId());
+    formData.append("file", file);
+    try {
+      const res = await fetch("/api/watchlist/import", { method: "POST", body: formData });
+      const data = await res.json();
+      if (res.ok) {
+        setImportResult(data);
+        refreshSaved();
+      } else {
+        setImportResult({ imported: 0, total: 0, failed: [data.error ?? "Import failed."] });
+      }
+    } catch {
+      setImportResult({ imported: 0, total: 0, failed: ["Import failed."] });
+    } finally {
+      setImporting(false);
+    }
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-[#08080c]">
       <div className="flex items-center gap-3 border-b border-white/10 px-4 py-4">
@@ -98,7 +129,7 @@ export function MyList({ onClose }: { onClose: () => void }) {
         <h1 className="font-display text-lg text-[#F5EEDC]">My List</h1>
       </div>
 
-      <div className="border-b border-white/10 px-4 py-3">
+      <div className="space-y-2 border-b border-white/10 px-4 py-3">
         <div className="flex items-center gap-2 rounded-xl bg-white/5 px-3 py-2.5">
           <Search size={16} className="text-white/40" />
           <input
@@ -108,6 +139,37 @@ export function MyList({ onClose }: { onClose: () => void }) {
             className="flex-1 bg-transparent text-[15px] text-white placeholder:text-white/30 focus:outline-none"
           />
         </div>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".csv,text/csv"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) importFile(file);
+            e.target.value = "";
+          }}
+        />
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          disabled={importing}
+          className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 py-2.5 text-xs font-medium text-white/60 transition-colors hover:border-[#E3B24B]/40 hover:text-[#F5EEDC] disabled:opacity-50"
+        >
+          <Upload size={13} />
+          {importing ? "Importing..." : "Import a CSV from IMDb, Letterboxd, etc."}
+        </button>
+        {importResult && (
+          <div className="rounded-xl bg-white/5 px-3 py-2.5 text-xs text-white/70">
+            <p>
+              Imported {importResult.imported} of {importResult.total}.
+              {importResult.failed.length > 0 &&
+                ` ${importResult.failed.length} couldn't be matched.`}
+            </p>
+            {importResult.failed.length > 0 && (
+              <p className="mt-1 text-white/40">{importResult.failed.slice(0, 8).join(", ")}</p>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-3">
