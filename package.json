@@ -1,5 +1,5 @@
 {
-  "name": "curator-pipeline",
+  "name": "watch-dj",
   "private": true,
   "sideEffects": false,
   "type": "module",
@@ -9,19 +9,6 @@
     "start": "next start",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "pipeline:ingest": "bun run scripts/pipeline/01-ingest-videos.ts",
-    "pipeline:extract": "bun run scripts/pipeline/02-extract-mentions.ts",
-    "pipeline:resolve": "bun run scripts/pipeline/03-resolve-tmdb.ts",
-    "pipeline:comments": "bun run scripts/pipeline/04-analyze-comments.ts",
-    "pipeline:one": "bun run scripts/pipeline/run-one-curator.ts",
-    "ratings:sync": "bun run scripts/pipeline/ratings-sync.ts",
-    "reddit:ingest": "bun run scripts/pipeline/05-ingest-reddit.ts",
-    "reddit:extract": "bun run scripts/pipeline/06-extract-reddit-mentions.ts",
-    "discover:channels": "bun run scripts/pipeline/07-discover-channels.ts",
-    "discover:evaluate": "bun run scripts/pipeline/08-evaluate-candidates.ts",
-    "report": "bun run scripts/pipeline/report.ts",
-    "pipeline:audit-youtube": "bun run scripts/pipeline/audit-youtube-bank.ts",
-    "eval:recommendations": "bun run scripts/eval/recommendation-fixtures.ts",
     "run-sql": "bun run scripts/run-sql-file.ts"
   },
   "dependencies": {
@@ -84,7 +71,6 @@
     "three": "^0.185.1",
     "tw-animate-css": "^1.3.4",
     "vaul": "^1.1.2",
-    "youtube-transcript": "^1.2.1",
     "zod": "^3.24.2"
   },
   "devDependencies": {
