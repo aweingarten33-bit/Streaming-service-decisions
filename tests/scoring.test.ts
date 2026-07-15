@@ -94,6 +94,13 @@ describe("chooseOne", () => {
     const choice = chooseOne(intent, pool);
     expect(choice?.item.tmdbId).toBe(2);
   });
+
+  test("unknown runtime never silently satisfies a stated time budget", () => {
+    const pool = [candidate({ tmdbId: 1, runtime: null })];
+    const intent = { ...baseIntent, maxRuntimeMinutes: 90 };
+    expect(chooseOne(intent, pool)).toBeNull();
+    expect(chooseOne(intent, pool, [], true)).not.toBeNull();
+  });
 });
 
 describe("explainChoice", () => {

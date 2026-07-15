@@ -73,8 +73,7 @@ export function chooseOne(
       (c) =>
         relax ||
         !intent.maxRuntimeMinutes ||
-        !c.runtime ||
-        c.runtime <= intent.maxRuntimeMinutes + 5,
+        (c.runtime != null && c.runtime <= intent.maxRuntimeMinutes + 5),
     );
 
   const scored = pool
