@@ -1,12 +1,12 @@
 "use client";
 
-import Link from 'next/link'
-import { motion, useScroll, useTransform } from 'framer-motion'
-import { useRef } from 'react'
-import { SplitChars } from '@/components/fx/split-chars'
-import { Magnetic } from '@/components/fx/magnetic'
-import { ThreeHeroScene } from '@/components/fx/three-hero-scene'
-import { ease } from '@/lib/motion'
+import Link from "next/link";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { useRef } from "react";
+import { SplitChars } from "@/components/fx/split-chars";
+import { Magnetic } from "@/components/fx/magnetic";
+import { ThreeHeroScene } from "@/components/fx/three-hero-scene";
+import { ease } from "@/lib/motion";
 
 /**
  * Editorial hero — NYT typography, giant serif headline, live Three.js
@@ -15,13 +15,13 @@ import { ease } from '@/lib/motion'
  * hand-drawn rule that draws itself as anticipation.
  */
 export function EditorialHero() {
-  const ref = useRef<HTMLDivElement>(null)
-  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] })
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
 
-  const yFar = useTransform(scrollYProgress, [0, 1], ['0%', '55%'])
-  const yMid = useTransform(scrollYProgress, [0, 1], ['0%', '30%'])
-  const yNear = useTransform(scrollYProgress, [0, 1], ['0%', '12%'])
-  const opacity = useTransform(scrollYProgress, [0, 0.85], [1, 0])
+  const yFar = useTransform(scrollYProgress, [0, 1], ["0%", "55%"]);
+  const yMid = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
+  const yNear = useTransform(scrollYProgress, [0, 1], ["0%", "12%"]);
+  const opacity = useTransform(scrollYProgress, [0, 0.85], [1, 0]);
 
   return (
     <section
@@ -29,14 +29,17 @@ export function EditorialHero() {
       className="relative min-h-[92svh] overflow-hidden px-6 py-14 sm:px-10 lg:px-16"
     >
       {/* far column ruler — parallax layer 1 */}
-      <motion.div style={{ y: yFar }} className="pointer-events-none absolute inset-y-0 left-1/2 hidden w-px -translate-x-1/2 bg-[#e8e6df]/10 lg:block" />
+      <motion.div
+        style={{ y: yFar }}
+        className="pointer-events-none absolute inset-y-0 left-1/2 hidden w-px -translate-x-1/2 bg-[#e8e6df]/10 lg:block"
+      />
 
       {/* mid — masthead ornaments — parallax layer 2 */}
       <motion.div style={{ y: yMid }} className="pointer-events-none absolute inset-x-0 top-0">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 pt-6 font-mono text-[10px] uppercase tracking-[0.4em] text-[#e8e6df]/60 sm:px-10 lg:px-16">
           <span>Vol. I — No. 01</span>
           <span>Decision Intelligence, Daily</span>
-          <span>{new Date().toLocaleDateString('en-US', { weekday: 'long' })}</span>
+          <span>{new Date().toLocaleDateString("en-US", { weekday: "long" })}</span>
         </div>
       </motion.div>
 
@@ -55,15 +58,17 @@ export function EditorialHero() {
           </div>
 
           <h1 className="font-serif text-[11vw] font-black leading-[0.92] tracking-[-0.02em] text-[#e8e6df] sm:text-[6rem] lg:text-[6.75rem]">
-            <div><SplitChars text="Stop guessing" /></div>
+            <div>
+              <SplitChars text="Stop guessing" />
+            </div>
             <div className="mt-1 italic text-[#f5d100]">
               <SplitChars text="why you lose." delay={0.35} />
             </div>
           </h1>
 
           <motion.p
-            initial={{ opacity: 0, y: 24, filter: 'blur(8px)' }}
-            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            initial={{ opacity: 0, y: 24, filter: "blur(8px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             transition={{ duration: 1.1, delay: 1.1, ease: ease.silk }}
             className="mt-8 max-w-xl font-serif text-lg leading-[1.55] text-[#a8a69c] sm:text-xl"
           >
@@ -83,8 +88,13 @@ export function EditorialHero() {
                 className="group relative inline-flex items-center justify-center overflow-hidden bg-[#e8e6df] px-9 py-4 font-mono text-[11px] font-semibold uppercase tracking-[0.28em] text-[#050508] transition-colors"
               >
                 <span className="relative z-10">Upload Your History</span>
-                <span className="relative z-10 ml-3 transition-transform duration-500 ease-[cubic-bezier(.16,1,.3,1)] group-hover:translate-x-1.5">→</span>
-                <span aria-hidden className="absolute inset-0 origin-left scale-x-0 bg-[#f5d100] transition-transform duration-500 ease-[cubic-bezier(.16,1,.3,1)] group-hover:scale-x-100" />
+                <span className="relative z-10 ml-3 transition-transform duration-500 ease-[cubic-bezier(.16,1,.3,1)] group-hover:translate-x-1.5">
+                  →
+                </span>
+                <span
+                  aria-hidden
+                  className="absolute inset-0 origin-left scale-x-0 bg-[#f5d100] transition-transform duration-500 ease-[cubic-bezier(.16,1,.3,1)] group-hover:scale-x-100"
+                />
               </Link>
             </Magnetic>
             <Magnetic>
@@ -132,5 +142,5 @@ export function EditorialHero() {
         </div>
       </div>
     </section>
-  )
+  );
 }

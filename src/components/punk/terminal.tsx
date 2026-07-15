@@ -1,34 +1,33 @@
 "use client";
 
-
-import { motion } from 'framer-motion'
-import { useEffect, useState } from 'react'
-import { cn } from '@/lib/utils'
+import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { cn } from "@/lib/utils";
 
 interface TerminalProps {
-  lines: string[]
-  className?: string
-  lineDelay?: number
-  onComplete?: () => void
+  lines: string[];
+  className?: string;
+  lineDelay?: number;
+  onComplete?: () => void;
 }
 
 /** Prints terminal lines sequentially with a blinking cursor. */
 export function Terminal({ lines, className, lineDelay = 420, onComplete }: TerminalProps) {
-  const [visible, setVisible] = useState(0)
+  const [visible, setVisible] = useState(0);
 
   useEffect(() => {
     if (visible >= lines.length) {
-      onComplete?.()
-      return
+      onComplete?.();
+      return;
     }
-    const t = setTimeout(() => setVisible((v) => v + 1), lineDelay)
-    return () => clearTimeout(t)
-  }, [visible, lines.length, lineDelay, onComplete])
+    const t = setTimeout(() => setVisible((v) => v + 1), lineDelay);
+    return () => clearTimeout(t);
+  }, [visible, lines.length, lineDelay, onComplete]);
 
   return (
     <div
       className={cn(
-        'scanlines relative border border-lime bg-ink p-5 font-mono text-sm text-profit shadow-[0_6px_24px_-8px_rgba(18,18,18,0.18)]',
+        "scanlines relative border border-lime bg-ink p-5 font-mono text-sm text-profit shadow-[0_6px_24px_-8px_rgba(18,18,18,0.18)]",
         className,
       )}
     >
@@ -47,8 +46,8 @@ export function Terminal({ lines, className, lineDelay = 420, onComplete }: Term
             className="flex gap-2"
           >
             <span className="text-profit/50">$</span>
-            <span className={line.startsWith('!') ? 'text-hotred' : ''}>
-              {line.replace(/^!/, '')}
+            <span className={line.startsWith("!") ? "text-hotred" : ""}>
+              {line.replace(/^!/, "")}
             </span>
           </motion.div>
         ))}
@@ -60,5 +59,5 @@ export function Terminal({ lines, className, lineDelay = 420, onComplete }: Term
         )}
       </div>
     </div>
-  )
+  );
 }

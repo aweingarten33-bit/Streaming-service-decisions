@@ -1,14 +1,26 @@
 "use client";
 
-import { motion } from 'framer-motion'
-import { ParticleMorph } from '@/components/fx/particle-morph'
-import { ease, stagger } from '@/lib/motion'
+import { motion } from "framer-motion";
+import { ParticleMorph } from "@/components/fx/particle-morph";
+import { ease, stagger } from "@/lib/motion";
 
 const CHAPTERS = [
-  { n: '01', k: 'Upload', b: 'Your entire DraftKings or FanDuel history — every entry, every sport, every buy-in — arrives as a single CSV. We never ask for lineups.' },
-  { n: '02', k: 'Audit', b: 'The engine reconstructs every decision: entry sizing, format concentration, late swap discipline, tilt cadence. Nothing is smoothed away.' },
-  { n: '03', k: 'Findings', b: 'Leaks are ranked by dollars lost, not vanity metrics. Each has a root cause and a specific, phased remedy — not a lecture.' },
-]
+  {
+    n: "01",
+    k: "Upload",
+    b: "Your entire DraftKings or FanDuel history — every entry, every sport, every buy-in — arrives as a single CSV. We never ask for lineups.",
+  },
+  {
+    n: "02",
+    k: "Audit",
+    b: "The engine reconstructs every decision: entry sizing, format concentration, late swap discipline, tilt cadence. Nothing is smoothed away.",
+  },
+  {
+    n: "03",
+    k: "Findings",
+    b: "Leaks are ranked by dollars lost, not vanity metrics. Each has a root cause and a specific, phased remedy — not a lecture.",
+  },
+];
 
 /**
  * Scroll-driven storytelling. A sticky Three.js particle field morphs
@@ -36,22 +48,20 @@ export function EditorialStory() {
         </div>
       </div>
     </section>
-  )
+  );
 }
 
 function Chapter({ c, i }: { c: (typeof CHAPTERS)[number]; i: number }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 28, filter: 'blur(8px)' }}
-      whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+      initial={{ opacity: 0, y: 28, filter: "blur(8px)" }}
+      whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
       viewport={{ once: true, amount: 0.35 }}
       transition={{ duration: 0.8, delay: stagger(i, 0.08), ease: ease.emphatic }}
       className="border-b border-[#e8e6df]/12 pb-8 last:border-b-0 last:pb-0"
     >
-      <motion.div
-        className={`w-full ${i % 2 === 0 ? 'text-left' : 'text-left lg:text-right'}`}
-      >
-        <div className={`max-w-xl ${i % 2 === 0 ? '' : 'lg:ml-auto'}`}>
+      <motion.div className={`w-full ${i % 2 === 0 ? "text-left" : "text-left lg:text-right"}`}>
+        <div className={`max-w-xl ${i % 2 === 0 ? "" : "lg:ml-auto"}`}>
           <div className="mb-4 font-mono text-[11px] uppercase tracking-[0.4em] text-[#f5d100]">
             Chapter {c.n}
           </div>
@@ -64,11 +74,9 @@ function Chapter({ c, i }: { c: (typeof CHAPTERS)[number]; i: number }) {
           >
             {c.k}
           </motion.h3>
-          <p className="mt-6 font-serif text-lg leading-relaxed text-[#a8a69c] sm:text-xl">
-            {c.b}
-          </p>
+          <p className="mt-6 font-serif text-lg leading-relaxed text-[#a8a69c] sm:text-xl">{c.b}</p>
         </div>
       </motion.div>
     </motion.div>
-  )
+  );
 }

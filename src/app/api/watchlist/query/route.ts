@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/lib/pipeline/supabase";
+import { getSupabase } from "@/lib/pipeline/supabase";
 import { getDetails } from "@/lib/pipeline/tmdb";
 import { callClaudeJSON } from "@/lib/pipeline/llm";
 
@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Tell me what you're in the mood for." }, { status: 400 });
   }
 
-  const { data: rows, error } = await supabase
+  const { data: rows, error } = await getSupabase()
     .from("watchlist")
     .select("tmdb_id, media_type")
     .eq("device_id", deviceId);

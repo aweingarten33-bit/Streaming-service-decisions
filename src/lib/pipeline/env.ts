@@ -1,21 +1,28 @@
 import { z } from "zod";
 
 const schema = z.object({
-  // Optional so the site can build/deploy before these are configured --
-  // callers (llm.ts, tmdb.ts) throw a clear error if actually used without
-  // one set, rather than the whole build refusing to run.
+  // Optional so the site can build/deploy before these are configured.
+  // Callers validate required values lazily when a feature actually uses them.
   ANTHROPIC_API_KEY: z.string().optional(),
   TMDB_API_KEY: z.string().optional(),
-  SUPABASE_URL: z.string().url("SUPABASE_URL must be a valid URL"),
-  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1, "SUPABASE_SERVICE_ROLE_KEY is required"),
+  SUPABASE_URL: z.string().url("SUPABASE_URL must be a valid URL").optional(),
+  SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
 });
 
 const parsed = schema.safeParse(process.env);
 if (!parsed.success) {
-  const missing = parsed.error.issues.map((i) => i.path.join(".")).join(", ");
+  const invalid = parsed.error.issues.map((i) => i.path.join(".")).join(", ");
   throw new Error(
-    `Missing/invalid environment variables: ${missing}. Copy .env.example to .env and fill in values.`,
+    `Invalid environment variables: ${invalid}. Copy .env.example to .env and fill in values.`,
   );
 }
 
 export const env = parsed.data;
+
+export function requireEnv(name: keyof typeof env): string {
+  const value = env[name];
+  if (!value) {
+    throw new Error(`${name} is not set -- add it in your environment to use this feature.`);
+  }
+  return value;
+}

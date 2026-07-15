@@ -1,35 +1,34 @@
 "use client";
 
-
-import { cn } from '@/lib/utils'
-import { useRef } from 'react'
-import { motion, useScroll, useSpring, useTransform, useVelocity } from 'framer-motion'
+import { cn } from "@/lib/utils";
+import { useRef } from "react";
+import { motion, useScroll, useSpring, useTransform, useVelocity } from "framer-motion";
 
 interface MarqueeProps {
-  items: string[]
-  className?: string
-  color?: 'lime' | 'red' | 'white' | 'orange'
+  items: string[];
+  className?: string;
+  color?: "lime" | "red" | "white" | "orange";
 }
 
 const colors: Record<string, string> = {
-  lime: 'bg-ink text-paper',
-  red: 'bg-ink text-paper',
-  white: 'bg-paper text-ink',
-  orange: 'bg-ink text-paper',
-}
+  lime: "bg-ink text-paper",
+  red: "bg-ink text-paper",
+  white: "bg-paper text-ink",
+  orange: "bg-ink text-paper",
+};
 
-export function Marquee({ items, className, color = 'lime' }: MarqueeProps) {
-  const doubled = [...items, ...items]
-  const ref = useRef<HTMLDivElement>(null)
-  const { scrollY } = useScroll()
-  const velocity = useVelocity(scrollY)
-  const smooth = useSpring(velocity, { stiffness: 400, damping: 50 })
-  const skew = useTransform(smooth, [-2000, 0, 2000], [-8, 0, 8])
+export function Marquee({ items, className, color = "lime" }: MarqueeProps) {
+  const doubled = [...items, ...items];
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollY } = useScroll();
+  const velocity = useVelocity(scrollY);
+  const smooth = useSpring(velocity, { stiffness: 400, damping: 50 });
+  const skew = useTransform(smooth, [-2000, 0, 2000], [-8, 0, 8]);
   return (
     <div
       ref={ref}
       className={cn(
-        'relative flex overflow-hidden border-y border-ink py-2.5 select-none',
+        "relative flex overflow-hidden border-y border-ink py-2.5 select-none",
         colors[color],
         className,
       )}
@@ -58,5 +57,5 @@ export function Marquee({ items, className, color = 'lime' }: MarqueeProps) {
         ))}
       </motion.div>
     </div>
-  )
+  );
 }

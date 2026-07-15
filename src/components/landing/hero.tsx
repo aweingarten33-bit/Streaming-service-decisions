@@ -1,12 +1,11 @@
 "use client";
 
-
-import Link from 'next/link'
-import { motion } from 'framer-motion'
-import { MaskReveal, RiseReveal } from '@/components/fx/mask-reveal'
-import { ParallaxImg } from '@/components/fx/parallax-img'
-import { Magnetic } from '@/components/fx/magnetic'
-import { SplitWords } from '@/components/fx/split-text'
+import Link from "next/link";
+import { motion } from "framer-motion";
+import { MaskReveal, RiseReveal } from "@/components/fx/mask-reveal";
+import { ParallaxImg } from "@/components/fx/parallax-img";
+import { Magnetic } from "@/components/fx/magnetic";
+import { SplitWords } from "@/components/fx/split-text";
 
 /**
  * Editorial hero — NYT front-page (70) × professional-services resume (30).
@@ -26,7 +25,9 @@ export function Hero() {
       {/* headline */}
       <h1 className="mt-10 font-display text-[13vw] font-bold leading-[0.98] tracking-[-0.01em] text-ink sm:mt-14 sm:text-7xl lg:text-8xl">
         <MaskReveal immediate>Stop guessing</MaskReveal>
-        <MaskReveal immediate delay={0.08}>why you&apos;re</MaskReveal>
+        <MaskReveal immediate delay={0.08}>
+          why you&apos;re
+        </MaskReveal>
         <MaskReveal immediate delay={0.16}>
           <span className="italic">losing.</span>
         </MaskReveal>
@@ -88,5 +89,5 @@ export function Hero() {
         </figure>
       </RiseReveal>
     </section>
-  )
+  );
 }

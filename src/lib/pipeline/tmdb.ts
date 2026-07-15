@@ -1,14 +1,11 @@
-import { env } from "./env";
+import { requireEnv } from "./env";
 import type { MediaType, ResolvedMediaType } from "./types";
 
 const BASE = "https://api.themoviedb.org/3";
 const MAX_ATTEMPTS = 5;
 
 function tmdbApiKey(): string {
-  if (!env.TMDB_API_KEY) {
-    throw new Error("TMDB_API_KEY is not set -- add it in your environment to use this feature.");
-  }
-  return env.TMDB_API_KEY;
+  return requireEnv("TMDB_API_KEY");
 }
 
 async function tmdbFetch<T>(path: string, params: Record<string, string>): Promise<T> {

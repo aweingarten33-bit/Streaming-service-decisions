@@ -5,7 +5,7 @@ import reactHooks from "eslint-plugin-react-hooks";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["dist", ".next"] },
+  { ignores: ["dist", ".next", "next-env.d.ts"] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],
@@ -19,6 +19,12 @@ export default tseslint.config(
     rules: {
       ...reactHooks.configs.recommended.rules,
       "@typescript-eslint/no-unused-vars": "off",
+    },
+  },
+  {
+    files: ["**/*.d.ts"],
+    rules: {
+      "no-var": "off",
     },
   },
   eslintPluginPrettier,

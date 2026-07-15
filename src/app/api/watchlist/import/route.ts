@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import Papa from "papaparse";
-import { supabase } from "@/lib/pipeline/supabase";
+import { getSupabase } from "@/lib/pipeline/supabase";
 import { findByImdbId, searchTitle, type TmdbCandidate } from "@/lib/pipeline/tmdb";
 import { disambiguateCandidates } from "@/lib/pipeline/disambiguate";
 
@@ -90,7 +90,7 @@ export async function POST(req: NextRequest) {
       failed.push(row.title ?? row.imdbId ?? "unknown row");
       continue;
     }
-    const { error } = await supabase
+    const { error } = await getSupabase()
       .from("watchlist")
       .upsert(
         { device_id: deviceId, tmdb_id: match.tmdbId, media_type: match.mediaType },
