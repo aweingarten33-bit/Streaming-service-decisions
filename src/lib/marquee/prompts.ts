@@ -1,0 +1,31 @@
+export const PROMPT_BANK = [
+  "Everything looks like shit.",
+  "I want something awesome.",
+  "Don't make me think.",
+  "I got like 90 minutes.",
+  "Give me something that gets good immediately.",
+  "I'm probably gonna be on my phone.",
+  "I don't even know why I opened Netflix.",
+  "Make me forget my phone exists.",
+  "Something but not a whole fucking commitment.",
+  "Surprise me.",
+  "Something cozy, not homework.",
+  "Dark thriller, no three-hour bullshit.",
+  "Something weird but not punishing.",
+  "I need a win tonight.",
+  "Pick the thing I keep avoiding.",
+  "Something smart that still moves.",
+  "I want to disappear for a bit.",
+  "Nothing depressing. Seriously.",
+  "I have exactly one movie of patience.",
+  "Stop me from scrolling again.",
+];
+
+export const WIDGET_COPY = [
+  "Everything looks like shit tonight.",
+  "Stop opening Netflix. I already picked something.",
+  "You saved this three years ago. WTF are you waiting for?",
+  "You've spent longer choosing than this movie is.",
+  "You have a watchlist and somehow no plan.",
+  "Tap here before the couch wins.",
+];
