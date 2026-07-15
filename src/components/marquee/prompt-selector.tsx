@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ChevronDown, X } from "lucide-react";
 import { PROMPT_BANK, getPrompt, type Language } from "@/lib/marquee/copy";
 
@@ -12,16 +12,9 @@ export function PromptSelector({
   onSelect: (text: string) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const [rotatingIndex, setRotatingIndex] = useState(() =>
-    Math.floor(Math.random() * PROMPT_BANK.length),
-  );
-
-  useEffect(() => {
-    const id = setInterval(() => {
-      setRotatingIndex((i) => (i + 1) % PROMPT_BANK.length);
-    }, 4000);
-    return () => clearInterval(id);
-  }, []);
+  // Picked once per app open, not on a timer -- a constantly-changing label
+  // is exactly the kind of distracting motion the design explicitly avoids.
+  const [rotatingIndex] = useState(() => Math.floor(Math.random() * PROMPT_BANK.length));
 
   return (
     <>

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabase } from "@/lib/pipeline/supabase";
 import { getDeviceId } from "@/lib/device-server";
+import { requireEnv } from "@/lib/pipeline/env";
 import { findByImdbId, searchTitle, type TmdbCandidate } from "@/lib/pipeline/tmdb";
 import { disambiguateCandidates } from "@/lib/pipeline/disambiguate";
 import { upsertTitle } from "@/lib/marquee/upsert-title";
@@ -34,6 +35,15 @@ export async function POST(req: NextRequest) {
   const deviceId = getDeviceId(req);
   if (!deviceId) return NextResponse.json({ error: "Missing device id." }, { status: 400 });
 
+  try {
+    requireEnv("TMDB_API_KEY");
+  } catch {
+    return NextResponse.json(
+      { error: "TMDB isn't configured on the server. Add TMDB_API_KEY and try again." },
+      { status: 500 },
+    );
+  }
+
   const form = await req.formData().catch(() => null);
   const file = form?.get("file");
   const source =
@@ -47,6 +57,17 @@ export async function POST(req: NextRequest) {
   const rows = parseImdbCsv(csvText);
   if (rows.length === 0) {
     return NextResponse.json({ error: "Couldn't find any rows in that file." }, { status: 400 });
+  }
+
+  // Smoke-test a well-known title before churning through the whole file --
+  // a bad/expired key should fail loudly here, not silently mark every row
+  // as "needs your help" like it's 108 individual matching failures.
+  const reachable = await searchTitle("Inception", "movie").catch(() => null);
+  if (reachable === null) {
+    return NextResponse.json(
+      { error: "Couldn't reach TMDB right now. Check TMDB_API_KEY and try again." },
+      { status: 502 },
+    );
   }
 
   const supabase = getSupabase();
