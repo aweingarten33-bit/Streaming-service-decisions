@@ -9,33 +9,16 @@ export interface PromptOption {
   clean: string;
 }
 
-// ~15 built-in conversational prompts. Not every line is profane -- the humor
-// is in accurately naming what the user is already thinking, not swearing for
-// its own sake.
+// 15 built-in conversational prompts, each naming a genuinely different mood
+// or constraint -- no near-duplicate "just pick something for me" restated
+// four different ways. Not every line is profane -- the humor is in
+// accurately naming what the user is already thinking, not swearing for its
+// own sake.
 export const PROMPT_BANK: PromptOption[] = [
+  { unfiltered: "Pick a fucking adventure.", clean: "Pick something exciting." },
   {
-    unfiltered: "Everything looks like shit. Pick something.",
-    clean: "Everything looks the same. Pick something.",
-  },
-  { unfiltered: "I want something awesome.", clean: "I want something awesome." },
-  { unfiltered: "Don't make me think that hard.", clean: "Don't make me think that hard." },
-  { unfiltered: "I got like 90 minutes.", clean: "I got like 90 minutes." },
-  {
-    unfiltered: "Give me something that gets good immediately.",
-    clean: "Give me something that gets good immediately.",
-  },
-  { unfiltered: "I'm probably gonna be on my phone.", clean: "I'm probably gonna be on my phone." },
-  {
-    unfiltered: "Give me something that'll make me forget my phone exists.",
-    clean: "Give me something that'll make me forget my phone exists.",
-  },
-  {
-    unfiltered: "I want a movie but not a whole fucking commitment.",
-    clean: "I want a movie but not a whole commitment.",
-  },
-  {
-    unfiltered: "I wanna start a show but I'm not signing a seven-season contract.",
-    clean: "I wanna start a show but I'm not signing a seven-season contract.",
+    unfiltered: "I'm probably gonna be on my phone, so I need something I can half-watch.",
+    clean: "I'm probably gonna be on my phone, so I need something I can half-watch.",
   },
   { unfiltered: "Funny, but not completely stupid.", clean: "Funny, but not completely dumb." },
   {
@@ -50,11 +33,33 @@ export const PROMPT_BANK: PromptOption[] = [
     unfiltered: "My attention span is hanging on by a thread.",
     clean: "My attention span is hanging on by a thread.",
   },
-  {
-    unfiltered: "Surprise me, but don't screw this up.",
-    clean: "Surprise me, but don't screw this up.",
-  },
   { unfiltered: "Fuck it. You decide.", clean: "Fine. You decide." },
+  {
+    unfiltered: "Give me something that'll make me forget my phone exists.",
+    clean: "Give me something that'll make me forget my phone exists.",
+  },
+  {
+    unfiltered: "Give me something that gets good immediately.",
+    clean: "Give me something that gets good immediately.",
+  },
+  { unfiltered: "I got like 90 minutes.", clean: "I got like 90 minutes." },
+  { unfiltered: "Don't make me think that hard.", clean: "Don't make me think that hard." },
+  {
+    unfiltered: "I want a movie but not a whole fucking commitment.",
+    clean: "I want a movie but not a whole commitment.",
+  },
+  {
+    unfiltered: "I wanna start a show but I'm not signing a seven-season contract.",
+    clean: "I wanna start a show but I'm not signing a seven-season contract.",
+  },
+  {
+    unfiltered: "Something cozy. Like a blanket, but a movie.",
+    clean: "Something cozy. Like a blanket, but a movie.",
+  },
+  {
+    unfiltered: "Give me something I can cry to. On purpose.",
+    clean: "Give me something I can cry to. On purpose.",
+  },
 ];
 
 interface CopySet {

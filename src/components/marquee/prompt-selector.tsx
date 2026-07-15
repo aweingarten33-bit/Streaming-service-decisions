@@ -12,9 +12,6 @@ export function PromptSelector({
   onSelect: (text: string) => void;
 }) {
   const [open, setOpen] = useState(false);
-  // Picked once per app open, not on a timer -- a constantly-changing label
-  // is exactly the kind of distracting motion the design explicitly avoids.
-  const [rotatingIndex] = useState(() => Math.floor(Math.random() * PROMPT_BANK.length));
 
   return (
     <>
@@ -23,7 +20,7 @@ export function PromptSelector({
         onClick={() => setOpen(true)}
         className="flex w-full items-center justify-between gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-left text-[14px] text-white/70 transition-colors hover:border-[#E3B24B]/40 hover:text-[#F5EEDC]"
       >
-        <span className="truncate">{getPrompt(PROMPT_BANK[rotatingIndex], language)}</span>
+        <span className="truncate">Choose Your Mood</span>
         <ChevronDown size={16} className="flex-none text-white/40" />
       </button>
 
@@ -37,7 +34,7 @@ export function PromptSelector({
           <div className="relative z-10 max-h-[75vh] w-full max-w-xl overflow-y-auto rounded-t-3xl border-t border-white/10 bg-[#0e0e14] pb-6 pt-3 shadow-2xl motion-reduce:transition-none">
             <div className="mx-auto mb-2 h-1 w-10 rounded-full bg-white/20" />
             <div className="flex items-center justify-between px-5 py-2">
-              <h2 className="font-display text-sm text-white/50">Pick a mood</h2>
+              <h2 className="font-display text-sm text-white/50">Choose Your Mood</h2>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
