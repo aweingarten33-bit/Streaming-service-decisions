@@ -28,7 +28,10 @@ export function AppShell() {
     return <div className="min-h-screen bg-[#08080c]" />;
   }
 
-  if (showOnboarding || hasWatchlist === false) {
+  // Opt-in only -- reached via "Get My IMDb Watchlist" from Home's empty
+  // state or "Import Again" from Watchlist. An empty watchlist never forces
+  // this screen; Home is always the default landing page.
+  if (showOnboarding) {
     return (
       <Onboarding
         onDone={() => {
