@@ -29,6 +29,9 @@ export function Home({
   const [state, setState] = useState<DecideState>({ kind: "idle" });
   const [loadingMessage, setLoadingMessage] = useState(copy.loadingMessages[0]);
   const [interstitial, setInterstitial] = useState<string | null>(null);
+  const [useSavedLists, setUseSavedLists] = useState(false);
+  const [groupMode, setGroupMode] = useState<"solo" | "two" | "group">("solo");
+  const [pendingRejection, setPendingRejection] = useState<"another" | "idle" | null>(null);
   const lastPrompt = useRef("");
   const excludeIds = useRef<number[]>([]);
 
@@ -43,14 +46,28 @@ export function Home({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.kind]);
 
-  async function decide(text: string, relax = false) {
+  function promptWithGroupMode(text: string) {
+    if (groupMode === "two")
+      return `${text}. Pick something good for two people watching together; avoid polarizing choices.`;
+    if (groupMode === "group")
+      return `${text}. Pick something for a group; favor crowd-pleasing, easy-to-agree-on titles.`;
+    return text;
+  }
+
+  async function decide(text: string, relax = false, rejectionReason = "") {
     setState({ kind: "loading" });
     setLoadingMessage(copy.loadingMessages[0]);
     try {
       const res = await deviceFetch("/api/decide", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: text, excludeTmdbIds: excludeIds.current, relax }),
+        body: JSON.stringify({
+          prompt: promptWithGroupMode(text),
+          excludeTmdbIds: excludeIds.current,
+          relax,
+          useSavedLists,
+          rejectionReason,
+        }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -75,6 +92,7 @@ export function Home({
     if (!text.trim() || state.kind === "loading") return;
     lastPrompt.current = text;
     excludeIds.current = [];
+    setPendingRejection(null);
     setPrompt("");
     decide(text);
   }
@@ -82,16 +100,25 @@ export function Home({
   function giveMeAnother() {
     if (state.kind !== "result") return;
     excludeIds.current = [...excludeIds.current, state.result.tmdbId];
+    setPendingRejection("another");
+  }
+
+  function notTonight() {
+    if (state.kind !== "result") return;
+    excludeIds.current = [...excludeIds.current, state.result.tmdbId];
+    setPendingRejection("idle");
+  }
+
+  function rejectWithReason(reason: string) {
     if (Math.random() < 0.4) {
       const lines = copy.giveMeAnotherInterstitials;
       setInterstitial(lines[Math.floor(Math.random() * lines.length)]);
       setTimeout(() => setInterstitial(null), 1600);
     }
-    decide(lastPrompt.current);
-  }
-
-  function notTonight() {
-    setState({ kind: "idle" });
+    const next = pendingRejection;
+    setPendingRejection(null);
+    if (next === "another") decide(lastPrompt.current, false, reason);
+    else setState({ kind: "idle" });
   }
 
   async function markWatched() {
@@ -116,6 +143,35 @@ export function Home({
 
       <div className="mt-8 w-full space-y-3">
         <PromptSelector language={language} onSelect={setPrompt} />
+        <div className="grid grid-cols-3 gap-2">
+          {[
+            ["solo", "Solo"],
+            ["two", "For two"],
+            ["group", "Group"],
+          ].map(([value, label]) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setGroupMode(value as typeof groupMode)}
+              className={`rounded-full border px-3 py-2 text-xs font-medium ${
+                groupMode === value
+                  ? "border-[#E3B24B]/60 bg-[#E3B24B]/15 text-[#F5EEDC]"
+                  : "border-white/10 bg-white/5 text-white/50"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        <label className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-xs text-white/60">
+          <input
+            type="checkbox"
+            checked={useSavedLists}
+            onChange={(e) => setUseSavedLists(e.target.checked)}
+            className="accent-[#E3B24B]"
+          />
+          Let saved IMDb lists influence this pick
+        </label>
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -158,6 +214,31 @@ export function Home({
             onNotTonight={notTonight}
             onMarkWatched={markWatched}
           />
+        )}
+
+        {pendingRejection && (
+          <div className="mt-3 rounded-2xl border border-white/10 bg-white/5 p-4">
+            <p className="text-sm font-medium text-[#F5EEDC]">What was wrong with that one?</p>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              {[
+                "Too heavy",
+                "Too long",
+                "Wrong vibe",
+                "Not for the room",
+                "Already seen",
+                "Not on my services",
+              ].map((reason) => (
+                <button
+                  key={reason}
+                  type="button"
+                  onClick={() => rejectWithReason(reason)}
+                  className="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-xs font-medium text-white/70"
+                >
+                  {reason}
+                </button>
+              ))}
+            </div>
+          </div>
         )}
 
         {state.kind === "emptyWatchlist" && (

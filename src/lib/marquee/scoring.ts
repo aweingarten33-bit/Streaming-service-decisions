@@ -53,6 +53,29 @@ export interface ScoredCandidate {
   score: number;
 }
 
+export interface ChooseOptions {
+  excludeTmdbIds?: number[];
+  relax?: boolean;
+  tasteSourceText?: string[];
+}
+
+function tasteSourceScore(item: WatchlistCandidate, tasteSourceText: string[] = []): number {
+  if (tasteSourceText.length === 0) return 0;
+  const haystack = tasteSourceText.join(" ").toLowerCase();
+  let score = 0;
+  for (const genre of item.genres) {
+    if (haystack.includes(genre.toLowerCase())) score += 1.5;
+  }
+  if (item.mediaType === "tv" && /\b(tv|show|series|season|episode)\b/.test(haystack)) score += 1;
+  if (item.mediaType === "movie" && /\b(movie|film|cinema)\b/.test(haystack)) score += 1;
+  const titleWords = item.title
+    .toLowerCase()
+    .split(/\W+/)
+    .filter((word) => word.length > 3);
+  if (titleWords.some((word) => haystack.includes(word))) score += 1;
+  return Math.min(score, 6);
+}
+
 /**
  * Deterministic, non-LLM scoring. `relax` drops the hard mediaType/runtime
  * filters (used only after the user explicitly agrees via "Fine. Do Your
@@ -62,9 +85,12 @@ export interface ScoredCandidate {
 export function chooseOne(
   intent: DecideIntent,
   candidates: WatchlistCandidate[],
-  excludeTmdbIds: number[] = [],
-  relax = false,
+  options: ChooseOptions | number[] = {},
+  legacyRelax = false,
 ): ScoredCandidate | null {
+  const excludeTmdbIds = Array.isArray(options) ? options : (options.excludeTmdbIds ?? []);
+  const relax = Array.isArray(options) ? legacyRelax : (options.relax ?? false);
+  const tasteSourceText = Array.isArray(options) ? [] : (options.tasteSourceText ?? []);
   const pool = candidates
     .filter((c) => c.status !== "watched")
     .filter((c) => !excludeTmdbIds.includes(c.tmdbId))
@@ -90,6 +116,7 @@ export function chooseOne(
       if (intent.hookSpeed === "fast" && (item.tmdbRating ?? 0) >= 7) score += 2;
       if (intent.backgroundFriendly && item.genres.some((g) => ["Comedy", "Animation"].includes(g)))
         score += 2;
+      score += tasteSourceScore(item, tasteSourceText);
       score += (item.tmdbRating ?? 0) * 0.3;
 
       return { item, score };
@@ -100,9 +127,16 @@ export function chooseOne(
 }
 
 /** Practical, specific explanations -- never generic "this captivating masterpiece" AI copy. */
-export function explainChoice(intent: DecideIntent, item: WatchlistCandidate): string {
+export function explainChoice(
+  intent: DecideIntent,
+  item: WatchlistCandidate,
+  tasteSourceCount = 0,
+): string {
   const runtime = item.runtime ? `${item.runtime} minutes` : null;
 
+  if (tasteSourceCount > 0) {
+    return `This lines up with your saved IMDb list taste sources and still fits the mood you asked for.`;
+  }
   if (intent.maxRuntimeMinutes && runtime) {
     return `You said you had about ${intent.maxRuntimeMinutes} minutes. This is ${runtime}, so it actually fits.`;
   }
