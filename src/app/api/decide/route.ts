@@ -12,6 +12,10 @@ export async function POST(req: NextRequest) {
   const prompt: string = typeof body.prompt === "string" ? body.prompt.trim() : "";
   const excludeTmdbIds: number[] = Array.isArray(body.excludeTmdbIds) ? body.excludeTmdbIds : [];
   const relax: boolean = body.relax === true;
+  const mediaType: "movie" | "tv" | "any" | undefined =
+    body.mediaType === "movie" || body.mediaType === "tv" || body.mediaType === "any"
+      ? body.mediaType
+      : undefined;
 
   if (!prompt) {
     return NextResponse.json({ error: "Tell me what you're in the mood for." }, { status: 400 });
@@ -22,7 +26,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ emptyWatchlist: true });
   }
 
-  const intent = await parseIntent(prompt);
+  const parsed = await parseIntent(prompt);
+  // An explicit Movie/TV toggle always wins over whatever the text implies --
+  // the user shouldn't have to phrase their mood to also carry the media
+  // type.
+  const intent = mediaType ? { ...parsed, mediaType } : parsed;
   const choice = chooseOne(intent, candidates, excludeTmdbIds, relax);
 
   if (!choice) {

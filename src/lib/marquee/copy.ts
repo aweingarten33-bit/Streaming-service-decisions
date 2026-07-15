@@ -9,9 +9,10 @@ export interface PromptOption {
   clean: string;
 }
 
-// 15 built-in conversational prompts, each naming a genuinely different mood
-// or constraint -- no near-duplicate "just pick something for me" restated
-// four different ways. Not every line is profane -- the humor is in
+// Built-in conversational prompts, each naming a genuinely different mood or
+// constraint -- no near-duplicate "just pick something for me" restated four
+// different ways, and no media-type phrasing now that Home has its own
+// explicit Movie/TV toggle. Not every line is profane -- the humor is in
 // accurately naming what the user is already thinking, not swearing for its
 // own sake.
 export const PROMPT_BANK: PromptOption[] = [
@@ -29,10 +30,6 @@ export const PROMPT_BANK: PromptOption[] = [
     unfiltered: "I want something weird. Good weird.",
     clean: "I want something weird. Good weird.",
   },
-  {
-    unfiltered: "My attention span is hanging on by a thread.",
-    clean: "My attention span is hanging on by a thread.",
-  },
   { unfiltered: "Fuck it. You decide.", clean: "Fine. You decide." },
   {
     unfiltered: "Give me something that'll make me forget my phone exists.",
@@ -44,14 +41,6 @@ export const PROMPT_BANK: PromptOption[] = [
   },
   { unfiltered: "I got like 90 minutes.", clean: "I got like 90 minutes." },
   { unfiltered: "Don't make me think that hard.", clean: "Don't make me think that hard." },
-  {
-    unfiltered: "I want a movie but not a whole fucking commitment.",
-    clean: "I want a movie but not a whole commitment.",
-  },
-  {
-    unfiltered: "I wanna start a show but I'm not signing a seven-season contract.",
-    clean: "I wanna start a show but I'm not signing a seven-season contract.",
-  },
   {
     unfiltered: "Something cozy. Like a blanket, but a movie.",
     clean: "Something cozy. Like a blanket, but a movie.",

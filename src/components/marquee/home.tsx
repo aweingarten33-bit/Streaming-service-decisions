@@ -16,6 +16,8 @@ type DecideState =
   | { kind: "noMatch"; intent: DecideIntent; relaxed: boolean }
   | { kind: "error"; message: string };
 
+type MediaTypeFilter = "any" | "movie" | "tv";
+
 export function Home({
   language,
   onNeedsImport,
@@ -26,6 +28,7 @@ export function Home({
   const deviceFetch = useDeviceFetch();
   const copy = getCopy(language);
   const [prompt, setPrompt] = useState("");
+  const [mediaTypeFilter, setMediaTypeFilter] = useState<MediaTypeFilter>("any");
   const [state, setState] = useState<DecideState>({ kind: "idle" });
   const [loadingMessage, setLoadingMessage] = useState(copy.loadingMessages[0]);
   const [interstitial, setInterstitial] = useState<string | null>(null);
@@ -50,7 +53,12 @@ export function Home({
       const res = await deviceFetch("/api/decide", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: text, excludeTmdbIds: excludeIds.current, relax }),
+        body: JSON.stringify({
+          prompt: text,
+          excludeTmdbIds: excludeIds.current,
+          relax,
+          mediaType: mediaTypeFilter,
+        }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -114,7 +122,35 @@ export function Home({
         {"WTF are you in the mood for?"}
       </h1>
 
-      <div className="mt-8 w-full space-y-3">
+      <div
+        role="group"
+        aria-label="Movie or TV show"
+        className="mt-6 flex w-full gap-2 rounded-xl border border-white/10 bg-white/5 p-1"
+      >
+        {(
+          [
+            ["any", "Any"],
+            ["movie", "Movie"],
+            ["tv", "TV Show"],
+          ] as const
+        ).map(([value, label]) => (
+          <button
+            key={value}
+            type="button"
+            aria-pressed={mediaTypeFilter === value}
+            onClick={() => setMediaTypeFilter(value)}
+            className={`flex-1 rounded-lg py-2 text-[13px] font-medium transition-colors ${
+              mediaTypeFilter === value
+                ? "bg-[#E3B24B]/15 text-[#F5EEDC]"
+                : "text-white/50 hover:text-white/80"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      <div className="mt-3 w-full space-y-3">
         <PromptSelector language={language} onSelect={setPrompt} />
         <form
           onSubmit={(e) => {
