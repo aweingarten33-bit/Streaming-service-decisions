@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { ChevronLeft } from "lucide-react";
 import { ONBOARDING, importSummary } from "@/lib/marquee/copy";
 import { useDeviceFetch } from "./use-device-fetch";
 
@@ -11,7 +12,7 @@ interface ImportResult {
   total: number;
 }
 
-export function Onboarding({ onDone }: { onDone: () => void }) {
+export function Onboarding({ onDone, onCancel }: { onDone: () => void; onCancel: () => void }) {
   const deviceFetch = useDeviceFetch();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [importing, setImporting] = useState(false);
@@ -95,7 +96,18 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-[#08080c] px-6 text-center">
+    <div className="relative flex min-h-screen flex-col items-center justify-center bg-[#08080c] px-6 text-center">
+      {!importing && (
+        <button
+          type="button"
+          onClick={onCancel}
+          aria-label="Back"
+          className="absolute left-4 top-6 grid h-9 w-9 place-items-center rounded-full bg-white/5 text-white/60"
+        >
+          <ChevronLeft size={18} />
+        </button>
+      )}
+
       <input
         ref={fileInputRef}
         type="file"

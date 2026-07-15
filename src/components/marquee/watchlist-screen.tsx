@@ -6,14 +6,14 @@ import type { WatchlistCandidate } from "@/lib/marquee/types";
 import { useDeviceFetch } from "./use-device-fetch";
 
 const TMDB_IMG = "https://image.tmdb.org/t/p";
-type SortKey = "added" | "title" | "year";
+type SortKey = "title" | "year";
 
 export function WatchlistScreen({ onImportAgain }: { onImportAgain: () => void }) {
   const deviceFetch = useDeviceFetch();
   const [items, setItems] = useState<WatchlistCandidate[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
-  const [sort, setSort] = useState<SortKey>("added");
+  const [sort, setSort] = useState<SortKey>("title");
 
   function refresh() {
     deviceFetch("/api/watchlist")
@@ -49,9 +49,8 @@ export function WatchlistScreen({ onImportAgain }: { onImportAgain: () => void }
   const visible = useMemo(() => {
     const filtered = items.filter((i) => i.title.toLowerCase().includes(query.toLowerCase()));
     const sorted = [...filtered].sort((a, b) => {
-      if (sort === "title") return a.title.localeCompare(b.title);
       if (sort === "year") return (b.year ?? 0) - (a.year ?? 0);
-      return 0; // "added" -- keep server order (most recently added first)
+      return a.title.localeCompare(b.title);
     });
     return sorted;
   }, [items, query, sort]);
@@ -65,7 +64,7 @@ export function WatchlistScreen({ onImportAgain }: { onImportAgain: () => void }
           onClick={onImportAgain}
           className="flex items-center gap-1.5 rounded-full border border-white/15 px-3 py-1.5 text-xs font-medium text-white/70"
         >
-          <RotateCcw size={12} /> Import Again
+          <RotateCcw size={12} /> Import
         </button>
       </div>
 
@@ -81,7 +80,6 @@ export function WatchlistScreen({ onImportAgain }: { onImportAgain: () => void }
           onChange={(e) => setSort(e.target.value as SortKey)}
           className="rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-[13px] text-white/70 focus:outline-none"
         >
-          <option value="added">Recently added</option>
           <option value="title">Title</option>
           <option value="year">Year</option>
         </select>

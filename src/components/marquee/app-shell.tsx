@@ -39,6 +39,7 @@ export function AppShell() {
           setHasWatchlist(true);
           setTab("home");
         }}
+        onCancel={() => setShowOnboarding(false)}
       />
     );
   }
