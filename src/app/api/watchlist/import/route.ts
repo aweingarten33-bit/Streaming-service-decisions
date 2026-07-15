@@ -1,52 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
-import Papa from "papaparse";
 import { getSupabase } from "@/lib/pipeline/supabase";
+import { getUserFromRequest } from "@/lib/auth-server";
 import { findByImdbId, searchTitle, type TmdbCandidate } from "@/lib/pipeline/tmdb";
 import { disambiguateCandidates } from "@/lib/pipeline/disambiguate";
+import { upsertTitle } from "@/lib/marquee/upsert-title";
+import { parseImdbCsv, type ParsedImportRow } from "@/lib/marquee/imdb-csv";
 
-const IMDB_ID_COLUMN_HINTS = /^(const|imdb.?id)$/i;
-const TITLE_COLUMN_HINTS = /^(title|name)$/i;
-const YEAR_COLUMN_HINTS = /^year$/i;
-const IMDB_ID_PATTERN = /^tt\d+$/i;
-
-interface ParsedRow {
-  imdbId: string | null;
-  title: string | null;
-  year: number | null;
-}
-
-function parseRows(csvText: string): ParsedRow[] {
-  const { data } = Papa.parse<Record<string, string>>(csvText, {
-    header: true,
-    skipEmptyLines: true,
-  });
-  if (data.length === 0) return [];
-
-  const headers = Object.keys(data[0]);
-  const imdbIdKey = headers.find((h) => IMDB_ID_COLUMN_HINTS.test(h.trim()));
-  const titleKey = headers.find((h) => TITLE_COLUMN_HINTS.test(h.trim()));
-  const yearKey = headers.find((h) => YEAR_COLUMN_HINTS.test(h.trim()));
-
-  return data.map((row) => {
-    const imdbIdRaw = imdbIdKey ? row[imdbIdKey]?.trim() : undefined;
-    const yearRaw = yearKey ? row[yearKey]?.trim() : undefined;
-    return {
-      imdbId: imdbIdRaw && IMDB_ID_PATTERN.test(imdbIdRaw) ? imdbIdRaw : null,
-      title: titleKey ? (row[titleKey]?.trim() ?? null) : null,
-      year: yearRaw && /^\d{4}$/.test(yearRaw) ? Number(yearRaw) : null,
-    };
-  });
-}
-
-async function resolveRow(row: ParsedRow): Promise<TmdbCandidate | null> {
+async function resolveRow(row: ParsedImportRow): Promise<TmdbCandidate | null> {
   if (row.imdbId) {
     const exact = await findByImdbId(row.imdbId).catch(() => null);
     if (exact) return exact;
   }
-
   if (!row.title) return null;
 
-  const candidates = await searchTitle(row.title, "unknown").catch(() => []);
+  const candidates = await searchTitle(row.title, row.typeHint ?? "unknown").catch(() => []);
   if (candidates.length === 0) return null;
 
   const yearFiltered = row.year
@@ -64,44 +31,68 @@ async function resolveRow(row: ParsedRow): Promise<TmdbCandidate | null> {
 }
 
 export async function POST(req: NextRequest) {
-  const form = await req.formData().catch(() => null);
-  const deviceId = form?.get("deviceId");
-  const file = form?.get("file");
+  const user = await getUserFromRequest(req);
+  if (!user) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
 
-  if (typeof deviceId !== "string" || !deviceId) {
-    return NextResponse.json({ error: "Missing deviceId." }, { status: 400 });
-  }
+  const form = await req.formData().catch(() => null);
+  const file = form?.get("file");
+  const source =
+    typeof form?.get("source") === "string" ? (form.get("source") as string) : "imdb_csv";
+
   if (!(file instanceof Blob)) {
     return NextResponse.json({ error: "Missing CSV file." }, { status: 400 });
   }
 
   const csvText = await file.text();
-  const rows = parseRows(csvText);
+  const rows = parseImdbCsv(csvText);
   if (rows.length === 0) {
     return NextResponse.json({ error: "Couldn't find any rows in that file." }, { status: 400 });
   }
 
+  const supabase = getSupabase();
+  const { data: existingRows } = await supabase
+    .from("watchlist_items")
+    .select("tmdb_id, media_type")
+    .eq("user_id", user.id);
+  const existing = new Set((existingRows ?? []).map((r) => `${r.media_type}:${r.tmdb_id}`));
+
   let imported = 0;
-  const failed: string[] = [];
+  let duplicates = 0;
+  const needHelp: string[] = [];
 
   for (const row of rows) {
     const match = await resolveRow(row);
     if (!match) {
-      failed.push(row.title ?? row.imdbId ?? "unknown row");
+      needHelp.push(row.title ?? row.imdbId ?? "unknown row");
+      await supabase.from("unresolved_imports").insert({
+        user_id: user.id,
+        raw_title: row.title,
+        raw_year: row.year,
+        source,
+      });
       continue;
     }
-    const { error } = await getSupabase()
-      .from("watchlist")
+
+    const key = `${match.mediaType}:${match.tmdbId}`;
+    if (existing.has(key)) {
+      duplicates++;
+      continue;
+    }
+    existing.add(key);
+
+    await upsertTitle(match.tmdbId, match.mediaType).catch(() => null);
+    const { error } = await supabase
+      .from("watchlist_items")
       .upsert(
-        { device_id: deviceId, tmdb_id: match.tmdbId, media_type: match.mediaType },
-        { onConflict: "device_id,tmdb_id,media_type" },
+        { user_id: user.id, tmdb_id: match.tmdbId, media_type: match.mediaType, source },
+        { onConflict: "user_id,tmdb_id,media_type" },
       );
     if (error) {
-      failed.push(row.title ?? row.imdbId ?? "unknown row");
+      needHelp.push(row.title ?? row.imdbId ?? "unknown row");
       continue;
     }
     imported++;
   }
 
-  return NextResponse.json({ imported, total: rows.length, failed });
+  return NextResponse.json({ imported, duplicates, needHelp, total: rows.length });
 }

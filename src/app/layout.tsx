@@ -5,11 +5,11 @@ import "./globals.css";
 import { Grain } from "@/components/fx/grain";
 
 export const metadata: Metadata = {
-  title: "Watch DJ",
-  description: "Your personal movie & TV DJ — tell it what you're in the mood for.",
+  title: "Marquee",
+  description: "WTF are you in the mood for? Marquee picks one thing from your own watchlist.",
   openGraph: {
-    title: "Watch DJ",
-    description: "Your personal movie & TV DJ — tell it what you're in the mood for.",
+    title: "Marquee",
+    description: "WTF are you in the mood for? Marquee picks one thing from your own watchlist.",
     type: "website",
   },
   twitter: {

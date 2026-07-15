@@ -1,60 +1,42 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabase } from "@/lib/pipeline/supabase";
-import { getDetails } from "@/lib/pipeline/tmdb";
+import { getUserFromRequest } from "@/lib/auth-server";
+import { upsertTitle } from "@/lib/marquee/upsert-title";
+import { getWatchlistCandidates } from "@/lib/marquee/watchlist-data";
 
 export async function GET(req: NextRequest) {
-  const deviceId = req.nextUrl.searchParams.get("deviceId");
-  if (!deviceId) {
-    return NextResponse.json({ error: "Missing deviceId." }, { status: 400 });
-  }
+  const user = await getUserFromRequest(req);
+  if (!user) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
 
-  const { data: rows, error } = await getSupabase()
-    .from("watchlist")
-    .select("tmdb_id, media_type, added_at")
-    .eq("device_id", deviceId)
-    .order("added_at", { ascending: false });
-
-  if (error) {
+  const items = await getWatchlistCandidates(user.id).catch(() => null);
+  if (items === null) {
     return NextResponse.json({ error: "Could not load your list." }, { status: 500 });
   }
-
-  const titles = await Promise.all(
-    (rows ?? []).map(async (row) => {
-      const details = await getDetails(row.tmdb_id, row.media_type as "movie" | "tv").catch(
-        () => null,
-      );
-      if (!details) return null;
-      return {
-        tmdbId: details.tmdbId,
-        title: details.title,
-        mediaType: details.mediaType,
-        year: details.year,
-        genres: details.genres,
-        runtime: details.runtime,
-        posterPath: details.posterPath,
-        overview: details.overview,
-      };
-    }),
-  );
-
-  return NextResponse.json({ titles: titles.filter((t) => t !== null) });
+  return NextResponse.json({ items });
 }
 
 export async function POST(req: NextRequest) {
+  const user = await getUserFromRequest(req);
+  if (!user) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
+
   const body = await req.json().catch(() => ({}));
-  const deviceId: string | undefined = body.deviceId;
   const tmdbId: number | undefined = body.tmdbId;
   const mediaType: string | undefined = body.mediaType;
+  const source: string = typeof body.source === "string" ? body.source : "manual";
 
-  if (!deviceId || !tmdbId || (mediaType !== "movie" && mediaType !== "tv")) {
-    return NextResponse.json({ error: "Missing deviceId, tmdbId, or mediaType." }, { status: 400 });
+  if (!tmdbId || (mediaType !== "movie" && mediaType !== "tv")) {
+    return NextResponse.json({ error: "Missing tmdbId or mediaType." }, { status: 400 });
   }
 
+  await upsertTitle(tmdbId, mediaType).catch((err) => {
+    throw err;
+  });
+
   const { error } = await getSupabase()
-    .from("watchlist")
+    .from("watchlist_items")
     .upsert(
-      { device_id: deviceId, tmdb_id: tmdbId, media_type: mediaType },
-      { onConflict: "device_id,tmdb_id,media_type" },
+      { user_id: user.id, tmdb_id: tmdbId, media_type: mediaType, source },
+      { onConflict: "user_id,tmdb_id,media_type" },
     );
 
   if (error) {
@@ -63,20 +45,55 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ ok: true });
 }
 
-export async function DELETE(req: NextRequest) {
+export async function PATCH(req: NextRequest) {
+  const user = await getUserFromRequest(req);
+  if (!user) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
+
   const body = await req.json().catch(() => ({}));
-  const deviceId: string | undefined = body.deviceId;
   const tmdbId: number | undefined = body.tmdbId;
   const mediaType: string | undefined = body.mediaType;
+  const status: string | undefined = body.status;
 
-  if (!deviceId || !tmdbId || (mediaType !== "movie" && mediaType !== "tv")) {
-    return NextResponse.json({ error: "Missing deviceId, tmdbId, or mediaType." }, { status: 400 });
+  if (
+    !tmdbId ||
+    (mediaType !== "movie" && mediaType !== "tv") ||
+    (status !== "active" && status !== "watched")
+  ) {
+    return NextResponse.json(
+      { error: "Missing or invalid tmdbId, mediaType, or status." },
+      { status: 400 },
+    );
   }
 
   const { error } = await getSupabase()
-    .from("watchlist")
+    .from("watchlist_items")
+    .update({ status })
+    .eq("user_id", user.id)
+    .eq("tmdb_id", tmdbId)
+    .eq("media_type", mediaType);
+
+  if (error) {
+    return NextResponse.json({ error: "Could not update that title." }, { status: 500 });
+  }
+  return NextResponse.json({ ok: true });
+}
+
+export async function DELETE(req: NextRequest) {
+  const user = await getUserFromRequest(req);
+  if (!user) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
+
+  const body = await req.json().catch(() => ({}));
+  const tmdbId: number | undefined = body.tmdbId;
+  const mediaType: string | undefined = body.mediaType;
+
+  if (!tmdbId || (mediaType !== "movie" && mediaType !== "tv")) {
+    return NextResponse.json({ error: "Missing tmdbId or mediaType." }, { status: 400 });
+  }
+
+  const { error } = await getSupabase()
+    .from("watchlist_items")
     .delete()
-    .eq("device_id", deviceId)
+    .eq("user_id", user.id)
     .eq("tmdb_id", tmdbId)
     .eq("media_type", mediaType);
 
