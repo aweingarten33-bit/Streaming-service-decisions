@@ -5,6 +5,7 @@ const BASE = "https://www.googleapis.com/youtube/v3";
 const MAX_ATTEMPTS = 5;
 
 async function ytFetch<T>(path: string, params: Record<string, string>): Promise<T> {
+  if (!env.YOUTUBE_API_KEY) throw new Error("YOUTUBE_API_KEY is required for legacy YouTube jobs.");
   const url = new URL(`${BASE}${path}`);
   url.searchParams.set("key", env.YOUTUBE_API_KEY);
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
@@ -45,6 +46,7 @@ async function ytFetchAllowDisabled<T>(
   path: string,
   params: Record<string, string>,
 ): Promise<T | null> {
+  if (!env.YOUTUBE_API_KEY) throw new Error("YOUTUBE_API_KEY is required for legacy YouTube jobs.");
   const url = new URL(`${BASE}${path}`);
   url.searchParams.set("key", env.YOUTUBE_API_KEY);
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);

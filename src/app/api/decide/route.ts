@@ -66,17 +66,18 @@ export async function POST(req: NextRequest) {
     })
     .then(undefined, () => undefined);
 
-  const result = {
-    tmdbId: title.tmdb_id,
-    title: title.title,
-    year: title.year,
-    mediaType: title.media_type,
-    runtime: title.runtime,
-    posterPath: title.poster_path,
-    genres: title.genres,
-    streamingProviders: title.streaming_providers,
-    explanation,
-  };
-
-  return NextResponse.json({ result, results: [result], filters: intent, intent });
+  return NextResponse.json({
+    result: {
+      tmdbId: title.tmdb_id,
+      title: title.title,
+      year: title.year,
+      mediaType: title.media_type,
+      runtime: title.runtime,
+      posterPath: title.poster_path,
+      genres: title.genres,
+      streamingProviders: title.streaming_providers,
+      explanation,
+    },
+    intent,
+  });
 }
