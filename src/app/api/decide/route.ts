@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getUserFromRequest } from "@/lib/auth-server";
+import { getDeviceId } from "@/lib/device-server";
 import { getWatchlistCandidates } from "@/lib/marquee/watchlist-data";
 import { parseIntent } from "@/lib/marquee/intent";
 import { chooseOne, explainChoice } from "@/lib/marquee/scoring";
 
 export async function POST(req: NextRequest) {
-  const user = await getUserFromRequest(req);
-  if (!user) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
+  const deviceId = getDeviceId(req);
+  if (!deviceId) return NextResponse.json({ error: "Missing device id." }, { status: 400 });
 
   const body = await req.json().catch(() => ({}));
   const prompt: string = typeof body.prompt === "string" ? body.prompt.trim() : "";
@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Tell me what you're in the mood for." }, { status: 400 });
   }
 
-  const candidates = await getWatchlistCandidates(user.id);
+  const candidates = await getWatchlistCandidates(deviceId);
   if (candidates.length === 0) {
     return NextResponse.json({ emptyWatchlist: true });
   }

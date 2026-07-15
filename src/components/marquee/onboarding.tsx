@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { ONBOARDING, importSummary } from "@/lib/marquee/copy";
-import { useAuthedFetch } from "./use-authed-fetch";
+import { useDeviceFetch } from "./use-device-fetch";
 
 interface ImportResult {
   imported: number;
@@ -12,7 +12,7 @@ interface ImportResult {
 }
 
 export function Onboarding({ onDone }: { onDone: () => void }) {
-  const authedFetch = useAuthedFetch();
+  const deviceFetch = useDeviceFetch();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [importing, setImporting] = useState(false);
   const [result, setResult] = useState<ImportResult | null>(null);
@@ -26,7 +26,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
     form.append("file", file);
     form.append("source", "imdb_csv");
     try {
-      const res = await authedFetch("/api/watchlist/import", { method: "POST", body: form });
+      const res = await deviceFetch("/api/watchlist/import", { method: "POST", body: form });
       const data = await res.json();
       if (!res.ok) {
         setError(data.error ?? "Import failed.");

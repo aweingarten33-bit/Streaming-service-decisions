@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabase } from "@/lib/pipeline/supabase";
-import { getUserFromRequest } from "@/lib/auth-server";
+import { getDeviceId } from "@/lib/device-server";
 import { upsertTitle } from "@/lib/marquee/upsert-title";
 import { getWatchlistCandidates } from "@/lib/marquee/watchlist-data";
 
 export async function GET(req: NextRequest) {
-  const user = await getUserFromRequest(req);
-  if (!user) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
+  const deviceId = getDeviceId(req);
+  if (!deviceId) return NextResponse.json({ error: "Missing device id." }, { status: 400 });
 
-  const items = await getWatchlistCandidates(user.id).catch(() => null);
+  const items = await getWatchlistCandidates(deviceId).catch(() => null);
   if (items === null) {
     return NextResponse.json({ error: "Could not load your list." }, { status: 500 });
   }
@@ -16,8 +16,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const user = await getUserFromRequest(req);
-  if (!user) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
+  const deviceId = getDeviceId(req);
+  if (!deviceId) return NextResponse.json({ error: "Missing device id." }, { status: 400 });
 
   const body = await req.json().catch(() => ({}));
   const tmdbId: number | undefined = body.tmdbId;
@@ -35,8 +35,8 @@ export async function POST(req: NextRequest) {
   const { error } = await getSupabase()
     .from("watchlist_items")
     .upsert(
-      { user_id: user.id, tmdb_id: tmdbId, media_type: mediaType, source },
-      { onConflict: "user_id,tmdb_id,media_type" },
+      { device_id: deviceId, tmdb_id: tmdbId, media_type: mediaType, source },
+      { onConflict: "device_id,tmdb_id,media_type" },
     );
 
   if (error) {
@@ -46,8 +46,8 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
-  const user = await getUserFromRequest(req);
-  if (!user) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
+  const deviceId = getDeviceId(req);
+  if (!deviceId) return NextResponse.json({ error: "Missing device id." }, { status: 400 });
 
   const body = await req.json().catch(() => ({}));
   const tmdbId: number | undefined = body.tmdbId;
@@ -68,7 +68,7 @@ export async function PATCH(req: NextRequest) {
   const { error } = await getSupabase()
     .from("watchlist_items")
     .update({ status })
-    .eq("user_id", user.id)
+    .eq("device_id", deviceId)
     .eq("tmdb_id", tmdbId)
     .eq("media_type", mediaType);
 
@@ -79,8 +79,8 @@ export async function PATCH(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  const user = await getUserFromRequest(req);
-  if (!user) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
+  const deviceId = getDeviceId(req);
+  if (!deviceId) return NextResponse.json({ error: "Missing device id." }, { status: 400 });
 
   const body = await req.json().catch(() => ({}));
   const tmdbId: number | undefined = body.tmdbId;
@@ -93,7 +93,7 @@ export async function DELETE(req: NextRequest) {
   const { error } = await getSupabase()
     .from("watchlist_items")
     .delete()
-    .eq("user_id", user.id)
+    .eq("device_id", deviceId)
     .eq("tmdb_id", tmdbId)
     .eq("media_type", mediaType);
 

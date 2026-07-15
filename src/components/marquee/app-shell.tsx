@@ -1,9 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAuth } from "@/components/auth/auth-provider";
-import { SignIn } from "@/components/auth/sign-in";
-import { useAuthedFetch } from "./use-authed-fetch";
+import { useDeviceFetch } from "./use-device-fetch";
 import { useLanguage } from "./use-language";
 import { Onboarding } from "./onboarding";
 import { Home } from "./home";
@@ -13,26 +11,22 @@ import { SettingsScreen } from "./settings-screen";
 import { BottomNav, type Tab } from "./bottom-nav";
 
 export function AppShell() {
-  const { session, loading: authLoading } = useAuth();
-  const authedFetch = useAuthedFetch();
+  const deviceFetch = useDeviceFetch();
   const { language, setLanguage } = useLanguage();
   const [hasWatchlist, setHasWatchlist] = useState<boolean | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [tab, setTab] = useState<Tab>("home");
 
   useEffect(() => {
-    if (!session) return;
-    authedFetch("/api/watchlist")
+    deviceFetch("/api/watchlist")
       .then((res) => res.json())
       .then((data) => setHasWatchlist((data.items ?? []).length > 0));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session]);
+  }, []);
 
-  if (authLoading || (session && hasWatchlist === null)) {
+  if (hasWatchlist === null) {
     return <div className="min-h-screen bg-[#08080c]" />;
   }
-
-  if (!session) return <SignIn />;
 
   if (showOnboarding || hasWatchlist === false) {
     return (

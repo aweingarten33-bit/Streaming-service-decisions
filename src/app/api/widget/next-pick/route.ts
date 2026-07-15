@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getUserFromRequest } from "@/lib/auth-server";
+import { getDeviceId } from "@/lib/device-server";
 import { getWatchlistCandidates } from "@/lib/marquee/watchlist-data";
 
 /**
@@ -12,10 +12,10 @@ import { getWatchlistCandidates } from "@/lib/marquee/watchlist-data";
  * day but rotates daily.
  */
 export async function GET(req: NextRequest) {
-  const user = await getUserFromRequest(req);
-  if (!user) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
+  const deviceId = getDeviceId(req);
+  if (!deviceId) return NextResponse.json({ error: "Missing device id." }, { status: 400 });
 
-  const candidates = (await getWatchlistCandidates(user.id)).filter((c) => c.status !== "watched");
+  const candidates = (await getWatchlistCandidates(deviceId)).filter((c) => c.status !== "watched");
   if (candidates.length === 0) {
     return NextResponse.json({ result: null });
   }

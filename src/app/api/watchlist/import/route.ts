@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabase } from "@/lib/pipeline/supabase";
-import { getUserFromRequest } from "@/lib/auth-server";
+import { getDeviceId } from "@/lib/device-server";
 import { findByImdbId, searchTitle, type TmdbCandidate } from "@/lib/pipeline/tmdb";
 import { disambiguateCandidates } from "@/lib/pipeline/disambiguate";
 import { upsertTitle } from "@/lib/marquee/upsert-title";
@@ -31,8 +31,8 @@ async function resolveRow(row: ParsedImportRow): Promise<TmdbCandidate | null> {
 }
 
 export async function POST(req: NextRequest) {
-  const user = await getUserFromRequest(req);
-  if (!user) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
+  const deviceId = getDeviceId(req);
+  if (!deviceId) return NextResponse.json({ error: "Missing device id." }, { status: 400 });
 
   const form = await req.formData().catch(() => null);
   const file = form?.get("file");
@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
   const { data: existingRows } = await supabase
     .from("watchlist_items")
     .select("tmdb_id, media_type")
-    .eq("user_id", user.id);
+    .eq("device_id", deviceId);
   const existing = new Set((existingRows ?? []).map((r) => `${r.media_type}:${r.tmdb_id}`));
 
   let imported = 0;
@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
     if (!match) {
       needHelp.push(row.title ?? row.imdbId ?? "unknown row");
       await supabase.from("unresolved_imports").insert({
-        user_id: user.id,
+        device_id: deviceId,
         raw_title: row.title,
         raw_year: row.year,
         source,
@@ -84,8 +84,8 @@ export async function POST(req: NextRequest) {
     const { error } = await supabase
       .from("watchlist_items")
       .upsert(
-        { user_id: user.id, tmdb_id: match.tmdbId, media_type: match.mediaType, source },
-        { onConflict: "user_id,tmdb_id,media_type" },
+        { device_id: deviceId, tmdb_id: match.tmdbId, media_type: match.mediaType, source },
+        { onConflict: "device_id,tmdb_id,media_type" },
       );
     if (error) {
       needHelp.push(row.title ?? row.imdbId ?? "unknown row");

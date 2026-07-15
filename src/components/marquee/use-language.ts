@@ -2,15 +2,15 @@
 
 import { useEffect, useState } from "react";
 import type { Language } from "@/lib/marquee/copy";
-import { useAuthedFetch } from "./use-authed-fetch";
+import { useDeviceFetch } from "./use-device-fetch";
 
 export function useLanguage() {
-  const authedFetch = useAuthedFetch();
+  const deviceFetch = useDeviceFetch();
   const [language, setLanguageState] = useState<Language>("unfiltered");
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    authedFetch("/api/settings")
+    deviceFetch("/api/settings")
       .then((res) => res.json())
       .then((data) => {
         if (data.language === "clean" || data.language === "unfiltered") {
@@ -23,7 +23,7 @@ export function useLanguage() {
 
   async function setLanguage(next: Language) {
     setLanguageState(next);
-    await authedFetch("/api/settings", {
+    await deviceFetch("/api/settings", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ language: next }),
