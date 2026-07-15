@@ -18,7 +18,7 @@ export function PageWipe() {
           animate={{ scaleX: 0 }}
           exit={{ scaleX: 0 }}
           transition={{ duration: 0.7, ease: [0.7, 0, 0.3, 1] }}
-          style={{ transformOrigin: '100% 50%' }}
+          style={{ transformOrigin: "100% 50%" }}
           className="absolute inset-y-0 left-0 w-1/2 bg-ink"
         />
         <motion.div
@@ -26,10 +26,10 @@ export function PageWipe() {
           animate={{ scaleX: 0 }}
           exit={{ scaleX: 0 }}
           transition={{ duration: 0.7, ease: [0.7, 0, 0.3, 1] }}
-          style={{ transformOrigin: '0% 50%' }}
+          style={{ transformOrigin: "0% 50%" }}
           className="absolute inset-y-0 right-0 w-1/2 bg-ink"
         />
       </motion.div>
     </AnimatePresence>
-  )
+  );
 }

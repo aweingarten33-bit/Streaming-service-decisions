@@ -1,31 +1,31 @@
 "use client";
 
-import { motion, useScroll, useTransform } from 'framer-motion'
-import { useRef, type CSSProperties } from 'react'
+import { motion, useScroll, useTransform } from "framer-motion";
+import { useRef, type CSSProperties } from "react";
 
 /**
  * Cinematic hero — full-viewport, mobile-first. Layered parallax rings,
  * huge display headline, breathing "Explore" affordance.
  */
 export function JourneyHero() {
-  const ref = useRef<HTMLElement>(null)
-  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] })
-  const yNear = useTransform(scrollYProgress, [0, 1], ['0%', '10%'])
-  const opacity = useTransform(scrollYProgress, [0, 0.9], [1, 0])
+  const ref = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
+  const yNear = useTransform(scrollYProgress, [0, 1], ["0%", "10%"]);
+  const opacity = useTransform(scrollYProgress, [0, 0.9], [1, 0]);
 
   const renderWords = (text: string, delayStart: number, style?: CSSProperties) =>
-    text.split(' ').map((word, i) => (
+    text.split(" ").map((word, i) => (
       <motion.span
         key={`${word}-${i}`}
-        initial={{ opacity: 0, y: 32, filter: 'blur(10px)' }}
-        animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+        initial={{ opacity: 0, y: 32, filter: "blur(10px)" }}
+        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
         transition={{ duration: 0.85, delay: delayStart + i * 0.12, ease: [0.16, 1, 0.3, 1] }}
         style={style}
         className="mr-[0.22em] inline-block whitespace-nowrap"
       >
-        {word}{' '}
+        {word}{" "}
       </motion.span>
-    ))
+    ));
 
   return (
     <section
@@ -69,12 +69,12 @@ export function JourneyHero() {
           className="relative z-10 mb-4 h-px w-16 origin-left bg-gradient-to-r from-[#7fe8ff] to-transparent sm:mb-6"
         />
         <h1 className="relative z-10 max-w-[11ch] text-[clamp(3.2rem,17vw,5rem)] font-light leading-[0.92] text-white drop-shadow-[0_2px_24px_rgba(0,0,0,0.9)] sm:max-w-[12ch] sm:text-[86px] md:text-[112px]">
-          {renderWords('Play DFS like a', 0.65)}
-          {renderWords('chess player.', 1.15, {
-            backgroundImage: 'linear-gradient(90deg, #7fe8ff, #b884ff, #ff8ad6)',
-            WebkitBackgroundClip: 'text',
-            backgroundClip: 'text',
-            color: 'transparent',
+          {renderWords("Play DFS like a", 0.65)}
+          {renderWords("chess player.", 1.15, {
+            backgroundImage: "linear-gradient(90deg, #7fe8ff, #b884ff, #ff8ad6)",
+            WebkitBackgroundClip: "text",
+            backgroundClip: "text",
+            color: "transparent",
           })}
         </h1>
         <motion.p
@@ -86,7 +86,6 @@ export function JourneyHero() {
           In chess, every move shapes the position that follows. The same is true in DFS.
         </motion.p>
       </motion.div>
-
     </section>
-  )
+  );
 }

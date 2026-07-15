@@ -11,29 +11,29 @@ export function Footer() {
             DFS<span className="text-ink">.</span>ANALYSIS<span className="text-ink">.</span>ENGINE
           </span>
           <p className="mt-3 max-w-xs font-mono text-xs leading-relaxed text-muted-foreground">
-            A DFS decision-intelligence coach. We never build lineups. We pinpoint
-            where your edge leaks and show you exactly what to fix.
+            A DFS decision-intelligence coach. We never build lineups. We pinpoint where your edge
+            leaks and show you exactly what to fix.
           </p>
         </div>
         <FooterCol
           title="ANALYZE"
           links={[
-            ['Upload History', '/upload'],
-            ['My Reports', '/reports'],
+            ["Upload History", "/upload"],
+            ["My Reports", "/reports"],
           ]}
         />
         <FooterCol
           title="PRODUCT"
           links={[
-            ['Upload History', '/upload'],
-            ['Sample Report', '/reports'],
+            ["Upload History", "/upload"],
+            ["Sample Report", "/reports"],
           ]}
         />
         <FooterCol
           title="INFO"
           links={[
-            ['Home', '/'],
-            ['My Reports', '/reports'],
+            ["Home", "/"],
+            ["My Reports", "/reports"],
           ]}
         />
       </div>
@@ -44,7 +44,7 @@ export function Footer() {
         </div>
       </div>
     </footer>
-  )
+  );
 }
 
 function FooterCol({ title, links }: { title: string; links: [string, string][] }) {
@@ -66,5 +66,5 @@ function FooterCol({ title, links }: { title: string; links: [string, string][] 
         ))}
       </ul>
     </div>
-  )
+  );
 }

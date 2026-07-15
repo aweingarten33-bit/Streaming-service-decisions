@@ -1,18 +1,42 @@
 "use client";
 
-import { motion } from 'framer-motion'
-import { SplitChars } from '@/components/fx/split-chars'
-import { TiltCard } from '@/components/fx/tilt'
-import { ease, stagger } from '@/lib/motion'
+import { motion } from "framer-motion";
+import { SplitChars } from "@/components/fx/split-chars";
+import { TiltCard } from "@/components/fx/tilt";
+import { ease, stagger } from "@/lib/motion";
 
 const FEATURES = [
-  { tag: '01', title: 'Leak Detection', body: 'Every behavioral pattern costing you money — ranked by buy-in, format, sport, and entry style.' },
-  { tag: '02', title: 'AI Coach Narrative', body: 'A blunt DFS coach reads your numbers and tells you where your edge leaks. Never invents stats.' },
-  { tag: '03', title: 'Bankroll Risk Radar', body: 'Loss-chasing detection, peak exposure, format concentration. Tilt patterns flagged before they blow up.' },
-  { tag: '04', title: 'Capital Discipline Score', body: 'A 0–100 grade for how well your money tracks the segments you can actually beat.' },
-  { tag: '05', title: 'Reallocation Engine', body: 'What each losing segment cost you versus redeploying that capital into your winning pocket.' },
-  { tag: '06', title: 'Grandmaster Review', body: 'A formal diagnostic — health scorecard, root causes, phased roadmap. Exportable PDF or Word.' },
-]
+  {
+    tag: "01",
+    title: "Leak Detection",
+    body: "Every behavioral pattern costing you money — ranked by buy-in, format, sport, and entry style.",
+  },
+  {
+    tag: "02",
+    title: "AI Coach Narrative",
+    body: "A blunt DFS coach reads your numbers and tells you where your edge leaks. Never invents stats.",
+  },
+  {
+    tag: "03",
+    title: "Bankroll Risk Radar",
+    body: "Loss-chasing detection, peak exposure, format concentration. Tilt patterns flagged before they blow up.",
+  },
+  {
+    tag: "04",
+    title: "Capital Discipline Score",
+    body: "A 0–100 grade for how well your money tracks the segments you can actually beat.",
+  },
+  {
+    tag: "05",
+    title: "Reallocation Engine",
+    body: "What each losing segment cost you versus redeploying that capital into your winning pocket.",
+  },
+  {
+    tag: "06",
+    title: "Grandmaster Review",
+    body: "A formal diagnostic — health scorecard, root causes, phased roadmap. Exportable PDF or Word.",
+  },
+];
 
 export function EditorialFeatures() {
   return (
@@ -24,7 +48,10 @@ export function EditorialFeatures() {
         </div>
         <h2 className="font-serif text-5xl font-black leading-[1.02] tracking-[-0.02em] text-[#e8e6df] sm:text-7xl">
           <SplitChars text="Six lenses" />
-          <span className="italic text-[#f5d100]"> <SplitChars text="on your play." delay={0.3} /></span>
+          <span className="italic text-[#f5d100]">
+            {" "}
+            <SplitChars text="on your play." delay={0.3} />
+          </span>
         </h2>
       </div>
 
@@ -32,8 +59,8 @@ export function EditorialFeatures() {
         {FEATURES.map((f, i) => (
           <motion.div
             key={f.tag}
-            initial={{ opacity: 0, y: 32, filter: 'blur(10px)' }}
-            whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            initial={{ opacity: 0, y: 32, filter: "blur(10px)" }}
+            whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             viewport={{ once: true, amount: 0.35 }}
             transition={{ duration: 0.95, delay: stagger(i, 0.07), ease: ease.emphatic }}
           >
@@ -42,8 +69,8 @@ export function EditorialFeatures() {
               <motion.div
                 aria-hidden
                 className="pointer-events-none absolute inset-y-0 -left-1/2 w-1/2 bg-gradient-to-r from-transparent via-white/60 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-                animate={{ x: ['0%', '400%'] }}
-                transition={{ duration: 7, repeat: Infinity, ease: 'linear', delay: i * 0.4 }}
+                animate={{ x: ["0%", "400%"] }}
+                transition={{ duration: 7, repeat: Infinity, ease: "linear", delay: i * 0.4 }}
               />
               <div className="relative">
                 <div className="flex items-baseline justify-between">
@@ -65,5 +92,5 @@ export function EditorialFeatures() {
         ))}
       </div>
     </section>
-  )
+  );
 }

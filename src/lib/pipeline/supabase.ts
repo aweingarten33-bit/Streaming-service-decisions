@@ -1,7 +1,12 @@
-import { createClient } from "@supabase/supabase-js";
-import { env } from "./env";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { requireEnv } from "./env";
+
+let client: SupabaseClient | null = null;
 
 /** Server-side client using the service role key — pipeline scripts only, never expose to a browser bundle. */
-export const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
-  auth: { persistSession: false },
-});
+export function getSupabase(): SupabaseClient {
+  client ??= createClient(requireEnv("SUPABASE_URL"), requireEnv("SUPABASE_SERVICE_ROLE_KEY"), {
+    auth: { persistSession: false },
+  });
+  return client;
+}

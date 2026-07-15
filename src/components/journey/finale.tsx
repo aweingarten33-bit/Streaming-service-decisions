@@ -1,11 +1,14 @@
 "use client";
 
-import { motion } from 'framer-motion'
-import Link from 'next/link'
+import { motion } from "framer-motion";
+import Link from "next/link";
 
 export function JourneyFinale() {
   return (
-    <section id="finale" className="relative flex min-h-[100svh] flex-col items-center justify-center overflow-hidden px-5 py-24 text-center">
+    <section
+      id="finale"
+      className="relative flex min-h-[100svh] flex-col items-center justify-center overflow-hidden px-5 py-24 text-center"
+    >
       <motion.div
         initial={{ scale: 0.4, opacity: 0 }}
         whileInView={{ scale: 1, opacity: 1 }}
@@ -35,11 +38,11 @@ export function JourneyFinale() {
       </motion.div>
 
       <h2 className="relative z-10 text-4xl font-black leading-[0.95] tracking-tight text-white sm:text-5xl">
-        {'Your next slate'.split(' ').map((w, i) => (
+        {"Your next slate".split(" ").map((w, i) => (
           <motion.span
             key={i}
-            initial={{ opacity: 0, y: 30, filter: 'blur(12px)' }}
-            whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            initial={{ opacity: 0, y: 30, filter: "blur(12px)" }}
+            whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             viewport={{ once: true }}
             transition={{ duration: 0.9, delay: 0.3 + i * 0.08 }}
             className="mr-2 inline-block"
@@ -49,8 +52,8 @@ export function JourneyFinale() {
         ))}
         <br />
         <motion.span
-          initial={{ opacity: 0, y: 30, filter: 'blur(12px)' }}
-          whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+          initial={{ opacity: 0, y: 30, filter: "blur(12px)" }}
+          whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
           viewport={{ once: true }}
           transition={{ duration: 1, delay: 0.8 }}
           className="mt-1 inline-block bg-gradient-to-r from-[#7fe8ff] via-[#b884ff] to-[#ff8ad6] bg-clip-text text-transparent"
@@ -66,7 +69,8 @@ export function JourneyFinale() {
         transition={{ duration: 0.9, delay: 1.1 }}
         className="relative z-10 mt-6 max-w-md text-base leading-relaxed text-neutral-300"
       >
-        One CSV upload. A full strategy audit showing what's working, what's leaking, and what to change before you enter another contest.
+        One CSV upload. A full strategy audit showing what's working, what's leaking, and what to
+        change before you enter another contest.
       </motion.p>
 
       <motion.div
@@ -84,12 +88,18 @@ export function JourneyFinale() {
           <span className="relative z-10 grid h-8 w-8 place-items-center rounded-full bg-white text-white transition-transform duration-500 group-hover:translate-x-1">
             →
           </span>
-          <span aria-hidden className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_30%_50%,rgba(127,232,255,0.6),transparent_70%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+          <span
+            aria-hidden
+            className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_30%_50%,rgba(127,232,255,0.6),transparent_70%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+          />
         </Link>
-        <Link href="/reports" className="font-mono text-[11px] uppercase tracking-[0.35em] text-neutral-400 underline-offset-4 hover:text-white hover:underline">
+        <Link
+          href="/reports"
+          className="font-mono text-[11px] uppercase tracking-[0.35em] text-neutral-400 underline-offset-4 hover:text-white hover:underline"
+        >
           See a sample report →
         </Link>
       </motion.div>
     </section>
-  )
+  );
 }

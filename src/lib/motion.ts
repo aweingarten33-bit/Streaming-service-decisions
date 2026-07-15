@@ -18,15 +18,15 @@ export const ease = {
   anticipate: [0.68, -0.35, 0.32, 1.35] as const,
   /** Editorial — restrained, print-feeling. */
   editorial: [0.65, 0.05, 0.36, 1] as const,
-} as const
+} as const;
 
 /** Spring presets that share a family — same damping ratio, varied stiffness. */
 export const spring = {
-  gentle: { type: 'spring' as const, stiffness: 120, damping: 22, mass: 0.9 },
-  responsive: { type: 'spring' as const, stiffness: 260, damping: 26, mass: 0.7 },
-  snappy: { type: 'spring' as const, stiffness: 420, damping: 32, mass: 0.5 },
-  overshoot: { type: 'spring' as const, stiffness: 320, damping: 16, mass: 0.6 },
-}
+  gentle: { type: "spring" as const, stiffness: 120, damping: 22, mass: 0.9 },
+  responsive: { type: "spring" as const, stiffness: 260, damping: 26, mass: 0.7 },
+  snappy: { type: "spring" as const, stiffness: 420, damping: 32, mass: 0.5 },
+  overshoot: { type: "spring" as const, stiffness: 320, damping: 16, mass: 0.6 },
+};
 
 /** Stagger helper — golden-ratio pacing so cascades feel composed, not mechanical. */
-export const stagger = (i: number, base = 0.06) => i * base + (i % 2) * 0.018
+export const stagger = (i: number, base = 0.06) => i * base + (i % 2) * 0.018;

@@ -1,8 +1,7 @@
 "use client";
 
-
-import { motion } from 'framer-motion'
-import type { ReactNode } from 'react'
+import { motion } from "framer-motion";
+import type { ReactNode } from "react";
 
 /**
  * MaskReveal — the signature editorial reveal from the motion spec.
@@ -14,34 +13,34 @@ export function MaskReveal({
   children,
   delay = 0,
   className,
-  as = 'div',
+  as = "div",
   immediate = false,
 }: {
-  children: ReactNode
-  delay?: number
-  className?: string
-  as?: 'div' | 'span'
-  immediate?: boolean
+  children: ReactNode;
+  delay?: number;
+  className?: string;
+  as?: "div" | "span";
+  immediate?: boolean;
 }) {
-  const Mask = as === 'span' ? 'span' : 'div'
+  const Mask = as === "span" ? "span" : "div";
   const motionProps = immediate
-    ? { animate: { y: '0%' } }
+    ? { animate: { y: "0%" } }
     : {
-        whileInView: { y: '0%' },
+        whileInView: { y: "0%" },
         viewport: { once: true, amount: 0.1 } as const,
-      }
+      };
   return (
-    <Mask className={`reveal-mask ${className ?? ''}`}>
+    <Mask className={`reveal-mask ${className ?? ""}`}>
       <motion.span
-        style={{ display: 'block' }}
-        initial={{ y: '110%' }}
+        style={{ display: "block" }}
+        initial={{ y: "110%" }}
         transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay }}
         {...motionProps}
       >
         {children}
       </motion.span>
     </Mask>
-  )
+  );
 }
 
 /**
@@ -54,18 +53,18 @@ export function RiseReveal({
   className,
   immediate = false,
 }: {
-  children: ReactNode
-  delay?: number
-  y?: number
-  className?: string
-  immediate?: boolean
+  children: ReactNode;
+  delay?: number;
+  y?: number;
+  className?: string;
+  immediate?: boolean;
 }) {
   const motionProps = immediate
     ? { animate: { opacity: 1, y: 0 } }
     : {
         whileInView: { opacity: 1, y: 0 },
         viewport: { once: true, amount: 0.1 } as const,
-      }
+      };
   return (
     <motion.div
       initial={{ opacity: 0, y }}
@@ -75,5 +74,5 @@ export function RiseReveal({
     >
       {children}
     </motion.div>
-  )
+  );
 }

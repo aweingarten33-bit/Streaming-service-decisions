@@ -1,24 +1,24 @@
 "use client";
 
-import Link from 'next/link'
-import { motion, useScroll, useTransform } from 'framer-motion'
-import { useRef } from 'react'
-import { SplitChars } from '@/components/fx/split-chars'
-import { Magnetic } from '@/components/fx/magnetic'
+import Link from "next/link";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { useRef } from "react";
+import { SplitChars } from "@/components/fx/split-chars";
+import { Magnetic } from "@/components/fx/magnetic";
 
 /**
  * Cinematic hero — 10+ depth layers, drifting parallax, char-by-char
  * headline, magnetic CTAs. Dark backdrop lives at the landing scope level.
  */
 export function CinematicHero() {
-  const ref = useRef<HTMLDivElement>(null)
-  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] })
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
 
-  const yBack = useTransform(scrollYProgress, [0, 1], ['0%', '60%'])
-  const yMid = useTransform(scrollYProgress, [0, 1], ['0%', '35%'])
-  const yFront = useTransform(scrollYProgress, [0, 1], ['0%', '15%'])
-  const opacity = useTransform(scrollYProgress, [0, 0.8], [1, 0])
-  const scale = useTransform(scrollYProgress, [0, 1], [1, 1.08])
+  const yBack = useTransform(scrollYProgress, [0, 1], ["0%", "60%"]);
+  const yMid = useTransform(scrollYProgress, [0, 1], ["0%", "35%"]);
+  const yFront = useTransform(scrollYProgress, [0, 1], ["0%", "15%"]);
+  const opacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
+  const scale = useTransform(scrollYProgress, [0, 1], [1, 1.08]);
 
   return (
     <section
@@ -36,17 +36,14 @@ export function CinematicHero() {
       </motion.div>
 
       {/* depth layer 2 — mid ticker numbers */}
-      <motion.div
-        style={{ y: yMid }}
-        className="pointer-events-none absolute inset-0 opacity-25"
-      >
+      <motion.div style={{ y: yMid }} className="pointer-events-none absolute inset-0 opacity-25">
         {[
-          { t: '+128.4%', l: '8%', p: '18%' },
-          { t: '-42.1%', l: '84%', p: '22%' },
-          { t: 'ROI', l: '12%', p: '78%' },
-          { t: 'EV +$412', l: '78%', p: '72%' },
-          { t: 'ENTRIES 3,204', l: '46%', p: '12%' },
-          { t: 'TILT 0.24', l: '52%', p: '88%' },
+          { t: "+128.4%", l: "8%", p: "18%" },
+          { t: "-42.1%", l: "84%", p: "22%" },
+          { t: "ROI", l: "12%", p: "78%" },
+          { t: "EV +$412", l: "78%", p: "72%" },
+          { t: "ENTRIES 3,204", l: "46%", p: "12%" },
+          { t: "TILT 0.24", l: "52%", p: "88%" },
         ].map((n) => (
           <span
             key={n.t}
@@ -59,7 +56,10 @@ export function CinematicHero() {
       </motion.div>
 
       {/* depth layer 3 — front content */}
-      <motion.div style={{ y: yFront, opacity }} className="relative z-10 mx-auto max-w-6xl text-center">
+      <motion.div
+        style={{ y: yFront, opacity }}
+        className="relative z-10 mx-auto max-w-6xl text-center"
+      >
         <div className="mb-8 flex items-center justify-center gap-3 font-mono text-[11px] uppercase tracking-[0.32em] text-white/60">
           <span className="h-px w-10 bg-white/40" />
           <span>DFS Decision Intelligence</span>
@@ -76,13 +76,13 @@ export function CinematicHero() {
         </h1>
 
         <motion.p
-          initial={{ opacity: 0, y: 20, filter: 'blur(8px)' }}
-          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+          initial={{ opacity: 0, y: 20, filter: "blur(8px)" }}
+          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
           transition={{ duration: 1.1, delay: 1.1, ease: [0.16, 1, 0.3, 1] }}
           className="mx-auto mt-10 max-w-2xl font-serif text-lg leading-relaxed text-white/70 sm:text-xl"
         >
-          Upload your DraftKings or FanDuel history. We audit every entry, quantify what your
-          leaks cost, and hand back a decision-intelligence report. No lineups. Just the findings.
+          Upload your DraftKings or FanDuel history. We audit every entry, quantify what your leaks
+          cost, and hand back a decision-intelligence report. No lineups. Just the findings.
         </motion.p>
 
         <motion.div
@@ -97,7 +97,9 @@ export function CinematicHero() {
               className="group relative inline-flex items-center justify-center overflow-hidden border border-white/20 bg-white px-9 py-4 font-sans text-sm font-semibold uppercase tracking-[0.2em] text-black transition-colors"
             >
               <span className="relative z-10">Upload Your History</span>
-              <span className="relative z-10 ml-3 transition-transform group-hover:translate-x-1">→</span>
+              <span className="relative z-10 ml-3 transition-transform group-hover:translate-x-1">
+                →
+              </span>
             </Link>
           </Magnetic>
           <Magnetic>
@@ -113,12 +115,12 @@ export function CinematicHero() {
         {/* scroll cue */}
         <motion.div
           animate={{ y: [0, 10, 0] }}
-          transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
+          transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
           className="mt-20 font-mono text-[10px] uppercase tracking-[0.4em] text-white/50"
         >
           Scroll ↓
         </motion.div>
       </motion.div>
     </section>
-  )
+  );
 }

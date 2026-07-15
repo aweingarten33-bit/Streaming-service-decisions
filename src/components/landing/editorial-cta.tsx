@@ -1,10 +1,10 @@
 "use client";
 
-import Link from 'next/link'
-import { motion } from 'framer-motion'
-import { Magnetic } from '@/components/fx/magnetic'
-import { SplitChars } from '@/components/fx/split-chars'
-import { ease } from '@/lib/motion'
+import Link from "next/link";
+import { motion } from "framer-motion";
+import { Magnetic } from "@/components/fx/magnetic";
+import { SplitChars } from "@/components/fx/split-chars";
+import { ease } from "@/lib/motion";
 
 export function EditorialCTA() {
   return (
@@ -18,7 +18,10 @@ export function EditorialCTA() {
       />
       <h2 className="font-serif text-5xl font-black leading-[0.95] tracking-[-0.02em] text-[#e8e6df] sm:text-7xl">
         <SplitChars text="Read the audit" />
-        <span className="italic text-[#f5d100]"> <SplitChars text="on your own play." delay={0.3} /></span>
+        <span className="italic text-[#f5d100]">
+          {" "}
+          <SplitChars text="on your own play." delay={0.3} />
+        </span>
       </h2>
       <p className="mx-auto mt-6 max-w-xl font-serif text-lg leading-relaxed text-[#a8a69c] sm:text-xl">
         Twenty minutes with your history file. A report you can print, forward, or argue with.
@@ -36,11 +39,16 @@ export function EditorialCTA() {
             className="group relative inline-flex items-center overflow-hidden bg-[#e8e6df] px-10 py-5 font-mono text-[11px] font-semibold uppercase tracking-[0.32em] text-[#050508]"
           >
             <span className="relative z-10">Begin the Audit</span>
-            <span className="relative z-10 ml-4 transition-transform duration-500 ease-[cubic-bezier(.16,1,.3,1)] group-hover:translate-x-1.5">→</span>
-            <span aria-hidden className="absolute inset-0 origin-left scale-x-0 bg-[#f5d100] transition-transform duration-500 ease-[cubic-bezier(.16,1,.3,1)] group-hover:scale-x-100" />
+            <span className="relative z-10 ml-4 transition-transform duration-500 ease-[cubic-bezier(.16,1,.3,1)] group-hover:translate-x-1.5">
+              →
+            </span>
+            <span
+              aria-hidden
+              className="absolute inset-0 origin-left scale-x-0 bg-[#f5d100] transition-transform duration-500 ease-[cubic-bezier(.16,1,.3,1)] group-hover:scale-x-100"
+            />
           </Link>
         </Magnetic>
       </motion.div>
     </section>
-  )
+  );
 }

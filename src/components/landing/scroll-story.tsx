@@ -1,8 +1,8 @@
 "use client";
 
-import { motion, useScroll, useTransform, type MotionValue } from 'framer-motion'
-import { useRef } from 'react'
-import { SplitChars } from '@/components/fx/split-chars'
+import { motion, useScroll, useTransform, type MotionValue } from "framer-motion";
+import { useRef } from "react";
+import { SplitChars } from "@/components/fx/split-chars";
 
 /**
  * Sticky scroll-driven storytelling. The container is 400vh tall; the inner
@@ -11,30 +11,30 @@ import { SplitChars } from '@/components/fx/split-chars'
  */
 const STAGES = [
   {
-    kicker: 'Stage 01 · Ingest',
-    title: 'Your history becomes signal.',
-    body: 'Every contest, every entry, every dollar you\u2019ve ever staked \u2014 parsed, normalized, and reconciled into one auditable ledger.',
+    kicker: "Stage 01 · Ingest",
+    title: "Your history becomes signal.",
+    body: "Every contest, every entry, every dollar you\u2019ve ever staked \u2014 parsed, normalized, and reconciled into one auditable ledger.",
   },
   {
-    kicker: 'Stage 02 · Diagnose',
-    title: 'The leaks reveal themselves.',
-    body: 'We rank the behavioral patterns costing you the most money by buy-in, format, sport, and entry style. Nothing invented. Nothing hidden.',
+    kicker: "Stage 02 · Diagnose",
+    title: "The leaks reveal themselves.",
+    body: "We rank the behavioral patterns costing you the most money by buy-in, format, sport, and entry style. Nothing invented. Nothing hidden.",
   },
   {
-    kicker: 'Stage 03 · Attribute',
-    title: 'Variance separated from mistakes.',
-    body: 'We split structural losses from bad luck, then quantify what each losing segment cost versus redeploying that capital into your proven-winning pocket.',
+    kicker: "Stage 03 · Attribute",
+    title: "Variance separated from mistakes.",
+    body: "We split structural losses from bad luck, then quantify what each losing segment cost versus redeploying that capital into your proven-winning pocket.",
   },
   {
-    kicker: 'Stage 04 · Deliver',
-    title: 'A grandmaster\u2019s review.',
-    body: 'You get a formal diagnostic \u2014 health scorecard, root causes, phased action roadmap \u2014 the kind of review chess grandmasters run after every game.',
+    kicker: "Stage 04 · Deliver",
+    title: "A grandmaster\u2019s review.",
+    body: "You get a formal diagnostic \u2014 health scorecard, root causes, phased action roadmap \u2014 the kind of review chess grandmasters run after every game.",
   },
-]
+];
 
 export function ScrollStory() {
-  const ref = useRef<HTMLDivElement>(null)
-  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end end'] })
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
 
   return (
     <section ref={ref} className="relative" style={{ height: `${STAGES.length * 100}vh` }}>
@@ -53,7 +53,7 @@ export function ScrollStory() {
         </div>
       </div>
     </section>
-  )
+  );
 }
 
 function Stage({
@@ -62,20 +62,23 @@ function Stage({
   progress,
   data,
 }: {
-  index: number
-  total: number
-  progress: MotionValue<number>
-  data: (typeof STAGES)[number]
+  index: number;
+  total: number;
+  progress: MotionValue<number>;
+  data: (typeof STAGES)[number];
 }) {
-  const start = index / total
-  const end = (index + 1) / total
-  const mid = (start + end) / 2
-  const opacity = useTransform(progress, [start, mid - 0.02, mid + 0.02, end], [0, 1, 1, 0])
-  const y = useTransform(progress, [start, end], ['40px', '-40px'])
-  const scale = useTransform(progress, [start, end], [0.98, 1.02])
+  const start = index / total;
+  const end = (index + 1) / total;
+  const mid = (start + end) / 2;
+  const opacity = useTransform(progress, [start, mid - 0.02, mid + 0.02, end], [0, 1, 1, 0]);
+  const y = useTransform(progress, [start, end], ["40px", "-40px"]);
+  const scale = useTransform(progress, [start, end], [0.98, 1.02]);
 
   return (
-    <motion.div style={{ opacity, y, scale }} className="absolute inset-0 flex flex-col justify-center text-center">
+    <motion.div
+      style={{ opacity, y, scale }}
+      className="absolute inset-0 flex flex-col justify-center text-center"
+    >
       <div className="font-mono text-[11px] uppercase tracking-[0.32em] text-white/50">
         {data.kicker}
       </div>
@@ -86,7 +89,7 @@ function Stage({
         {data.body}
       </p>
     </motion.div>
-  )
+  );
 }
 
 function StageDot({
@@ -94,18 +97,13 @@ function StageDot({
   total,
   progress,
 }: {
-  index: number
-  total: number
-  progress: MotionValue<number>
+  index: number;
+  total: number;
+  progress: MotionValue<number>;
 }) {
-  const start = index / total
-  const end = (index + 1) / total
-  const scale = useTransform(progress, [start, (start + end) / 2, end], [0.6, 1.4, 0.6])
-  const opacity = useTransform(progress, [start, (start + end) / 2, end], [0.3, 1, 0.3])
-  return (
-    <motion.span
-      style={{ scale, opacity }}
-      className="block h-2 w-2 rounded-full bg-white"
-    />
-  )
+  const start = index / total;
+  const end = (index + 1) / total;
+  const scale = useTransform(progress, [start, (start + end) / 2, end], [0.6, 1.4, 0.6]);
+  const opacity = useTransform(progress, [start, (start + end) / 2, end], [0.3, 1, 0.3]);
+  return <motion.span style={{ scale, opacity }} className="block h-2 w-2 rounded-full bg-white" />;
 }

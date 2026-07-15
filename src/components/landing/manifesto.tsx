@@ -1,19 +1,16 @@
 "use client";
 
+import { motion } from "framer-motion";
+import { SectionHeader } from "@/components/punk/section-header";
 
-import { motion } from 'framer-motion'
-import { SectionHeader } from '@/components/punk/section-header'
-
-const LINES = [
-  'Every lineup you build\u2014and every lineup you lose to\u2014is data.',
-]
+const LINES = ["Every lineup you build\u2014and every lineup you lose to\u2014is data."];
 
 const CLOSERS = [
-  'The goal isn\u2019t to predict exactly what will happen.',
-  'The goal is to make the decision that gives you the greatest long-term edge.',
-  'Because championships aren\u2019t won by being right once.',
-  'They\u2019re won by making better decisions than everyone else\u2014again and again.',
-]
+  "The goal isn\u2019t to predict exactly what will happen.",
+  "The goal is to make the decision that gives you the greatest long-term edge.",
+  "Because championships aren\u2019t won by being right once.",
+  "They\u2019re won by making better decisions than everyone else\u2014again and again.",
+];
 
 export function Manifesto() {
   return (
@@ -74,9 +71,7 @@ export function Manifesto() {
           transition={{ duration: 0.5 }}
           className="mt-16 border-t-2 border-ink pt-8"
         >
-          <p className="edu-kicker">
-            Most DFS tools stop at optimizing lineups.
-          </p>
+          <p className="edu-kicker">Most DFS tools stop at optimizing lineups.</p>
           <p className="font-display mt-3 text-4xl font-bold leading-[1.05] tracking-[-0.01em] sm:text-6xl">
             This one optimizes <span className="italic">you.</span>
           </p>
@@ -90,5 +85,5 @@ export function Manifesto() {
         </motion.div>
       </div>
     </section>
-  )
+  );
 }

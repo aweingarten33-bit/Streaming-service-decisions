@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef } from "react";
 
 /** WebGL fragment shader — drifting aurora + noise. Cheap, GPU-native. */
 const FRAG = `
@@ -27,56 +27,58 @@ void main(){
   col*=vig;
   col+=hash(gl_FragCoord.xy+uT)*0.03;
   gl_FragColor=vec4(col,1.0);
-}`
-const VERT = `attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}`
+}`;
+const VERT = `attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}`;
 
 export function ShaderBackdrop() {
-  const ref = useRef<HTMLCanvasElement>(null)
+  const ref = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
-    const c = ref.current
-    if (!c) return
-    const gl = c.getContext('webgl', { antialias: false, premultipliedAlpha: false })
-    if (!gl) return
+    const c = ref.current;
+    if (!c) return;
+    const gl = c.getContext("webgl", { antialias: false, premultipliedAlpha: false });
+    if (!gl) return;
     const mkS = (t: number, s: string) => {
-      const sh = gl.createShader(t)!
-      gl.shaderSource(sh, s)
-      gl.compileShader(sh)
-      return sh
-    }
-    const prog = gl.createProgram()!
-    gl.attachShader(prog, mkS(gl.VERTEX_SHADER, VERT))
-    gl.attachShader(prog, mkS(gl.FRAGMENT_SHADER, FRAG))
-    gl.linkProgram(prog)
-    gl.useProgram(prog)
-    const buf = gl.createBuffer()
-    gl.bindBuffer(gl.ARRAY_BUFFER, buf)
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW)
-    const loc = gl.getAttribLocation(prog, 'p')
-    gl.enableVertexAttribArray(loc)
-    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0)
-    const uRes = gl.getUniformLocation(prog, 'uRes')
-    const uT = gl.getUniformLocation(prog, 'uT')
+      const sh = gl.createShader(t)!;
+      gl.shaderSource(sh, s);
+      gl.compileShader(sh);
+      return sh;
+    };
+    const prog = gl.createProgram()!;
+    gl.attachShader(prog, mkS(gl.VERTEX_SHADER, VERT));
+    gl.attachShader(prog, mkS(gl.FRAGMENT_SHADER, FRAG));
+    gl.linkProgram(prog);
+    gl.useProgram(prog);
+    const buf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+    const loc = gl.getAttribLocation(prog, "p");
+    gl.enableVertexAttribArray(loc);
+    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+    const uRes = gl.getUniformLocation(prog, "uRes");
+    const uT = gl.getUniformLocation(prog, "uT");
     const resize = () => {
-      const dpr = Math.min(window.devicePixelRatio || 1, 1.5)
-      c.width = c.clientWidth * dpr
-      c.height = c.clientHeight * dpr
-      gl.viewport(0, 0, c.width, c.height)
-      gl.uniform2f(uRes, c.width, c.height)
-    }
-    resize()
-    window.addEventListener('resize', resize)
-    const t0 = performance.now()
-    let raf = 0
+      const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+      c.width = c.clientWidth * dpr;
+      c.height = c.clientHeight * dpr;
+      gl.viewport(0, 0, c.width, c.height);
+      gl.uniform2f(uRes, c.width, c.height);
+    };
+    resize();
+    window.addEventListener("resize", resize);
+    const t0 = performance.now();
+    let raf = 0;
     const loop = () => {
-      gl.uniform1f(uT, (performance.now() - t0) / 1000)
-      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
-      raf = requestAnimationFrame(loop)
-    }
-    raf = requestAnimationFrame(loop)
+      gl.uniform1f(uT, (performance.now() - t0) / 1000);
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      raf = requestAnimationFrame(loop);
+    };
+    raf = requestAnimationFrame(loop);
     return () => {
-      cancelAnimationFrame(raf)
-      window.removeEventListener('resize', resize)
-    }
-  }, [])
-  return <canvas ref={ref} className="pointer-events-none absolute inset-0 h-full w-full opacity-60" />
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", resize);
+    };
+  }, []);
+  return (
+    <canvas ref={ref} className="pointer-events-none absolute inset-0 h-full w-full opacity-60" />
+  );
 }

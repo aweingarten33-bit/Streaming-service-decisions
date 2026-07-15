@@ -1,8 +1,7 @@
 "use client";
 
-
-import { motion } from 'framer-motion'
-import type { ReactNode } from 'react'
+import { motion } from "framer-motion";
+import type { ReactNode } from "react";
 
 /**
  * Cinematic scroll-reveal. Deliberately VISIBLE motion — a real rise + fade
@@ -21,10 +20,10 @@ export function Reveal({
   y = 44,
   className,
 }: {
-  children: ReactNode
-  delay?: number
-  y?: number
-  className?: string
+  children: ReactNode;
+  delay?: number;
+  y?: number;
+  className?: string;
 }) {
   return (
     <motion.div
@@ -36,9 +35,9 @@ export function Reveal({
     >
       {children}
     </motion.div>
-  )
+  );
 }
 
 export function Parallax({ children, className }: { children: ReactNode; className?: string }) {
-  return <div className={className}>{children}</div>
+  return <div className={className}>{children}</div>;
 }

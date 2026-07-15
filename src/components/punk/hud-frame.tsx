@@ -1,7 +1,6 @@
 "use client";
 
-
-import { cn } from '@/lib/utils'
+import { cn } from "@/lib/utils";
 
 /**
  * Technical HUD overlay — thin hairline frame inset from the edges,
@@ -12,14 +11,11 @@ export function HudFrame({
   className,
   crosshair = true,
 }: {
-  className?: string
-  crosshair?: boolean
+  className?: string;
+  crosshair?: boolean;
 }) {
   return (
-    <div
-      aria-hidden
-      className={cn('pointer-events-none absolute inset-0 z-30', className)}
-    >
+    <div aria-hidden className={cn("pointer-events-none absolute inset-0 z-30", className)}>
       {/* inset hairline rectangle */}
       <div className="absolute inset-4 border border-ink/15 md:inset-6" />
 
@@ -41,21 +37,33 @@ export function HudFrame({
 
       {/* bottom-left dotted readout */}
       <div className="absolute bottom-6 left-6 hidden font-mono text-[10px] tracking-[0.3em] text-ink/40 md:block">
-        {'· · · · ·'}
+        {"· · · · ·"}
       </div>
     </div>
-  )
+  );
 }
 
-function Corner({ className, pos }: { className: string; pos: 'tl' | 'tr' | 'bl' | 'br' }) {
-  const h = 'absolute h-3 w-px bg-ink/50'
-  const w = 'absolute h-px w-3 bg-ink/50'
+function Corner({ className, pos }: { className: string; pos: "tl" | "tr" | "bl" | "br" }) {
+  const h = "absolute h-3 w-px bg-ink/50";
+  const w = "absolute h-px w-3 bg-ink/50";
   return (
-    <div className={cn('absolute', className)}>
+    <div className={cn("absolute", className)}>
       <div className="relative h-3 w-3">
-        <span className={cn(h, pos.includes('t') ? 'top-0' : 'bottom-0', pos.includes('l') ? 'left-0' : 'right-0')} />
-        <span className={cn(w, pos.includes('t') ? 'top-0' : 'bottom-0', pos.includes('l') ? 'left-0' : 'right-0')} />
+        <span
+          className={cn(
+            h,
+            pos.includes("t") ? "top-0" : "bottom-0",
+            pos.includes("l") ? "left-0" : "right-0",
+          )}
+        />
+        <span
+          className={cn(
+            w,
+            pos.includes("t") ? "top-0" : "bottom-0",
+            pos.includes("l") ? "left-0" : "right-0",
+          )}
+        />
       </div>
     </div>
-  )
+  );
 }

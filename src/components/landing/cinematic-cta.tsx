@@ -1,9 +1,9 @@
 "use client";
 
-import Link from 'next/link'
-import { motion } from 'framer-motion'
-import { SplitChars } from '@/components/fx/split-chars'
-import { Magnetic } from '@/components/fx/magnetic'
+import Link from "next/link";
+import { motion } from "framer-motion";
+import { SplitChars } from "@/components/fx/split-chars";
+import { Magnetic } from "@/components/fx/magnetic";
 
 export function CinematicCTA() {
   return (
@@ -13,7 +13,7 @@ export function CinematicCTA() {
         aria-hidden
         className="pointer-events-none absolute left-1/2 top-1/2 -z-0 h-[70vh] w-[70vh] -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/10"
         animate={{ rotate: 360 }}
-        transition={{ duration: 60, repeat: Infinity, ease: 'linear' }}
+        transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
       >
         <span className="absolute left-1/2 top-0 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/80 shadow-[0_0_20px_rgba(255,255,255,0.9)]" />
       </motion.div>
@@ -21,15 +21,13 @@ export function CinematicCTA() {
         aria-hidden
         className="pointer-events-none absolute left-1/2 top-1/2 -z-0 h-[45vh] w-[45vh] -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/10"
         animate={{ rotate: -360 }}
-        transition={{ duration: 40, repeat: Infinity, ease: 'linear' }}
+        transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
       >
         <span className="absolute left-1/2 top-0 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#7f7fff] shadow-[0_0_16px_rgba(127,127,255,0.9)]" />
       </motion.div>
 
       <div className="relative z-10">
-        <div className="font-mono text-[11px] uppercase tracking-[0.32em] text-white/50">
-          Begin
-        </div>
+        <div className="font-mono text-[11px] uppercase tracking-[0.32em] text-white/50">Begin</div>
         <h2 className="font-display mt-6 text-6xl font-bold leading-[0.98] tracking-[-0.02em] text-white sm:text-8xl">
           <SplitChars text="Run the audit." />
         </h2>
@@ -49,5 +47,5 @@ export function CinematicCTA() {
         </div>
       </div>
     </section>
-  )
+  );
 }

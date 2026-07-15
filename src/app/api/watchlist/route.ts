@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/lib/pipeline/supabase";
+import { getSupabase } from "@/lib/pipeline/supabase";
 import { getDetails } from "@/lib/pipeline/tmdb";
 
 export async function GET(req: NextRequest) {
@@ -8,7 +8,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Missing deviceId." }, { status: 400 });
   }
 
-  const { data: rows, error } = await supabase
+  const { data: rows, error } = await getSupabase()
     .from("watchlist")
     .select("tmdb_id, media_type, added_at")
     .eq("device_id", deviceId)
@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Missing deviceId, tmdbId, or mediaType." }, { status: 400 });
   }
 
-  const { error } = await supabase
+  const { error } = await getSupabase()
     .from("watchlist")
     .upsert(
       { device_id: deviceId, tmdb_id: tmdbId, media_type: mediaType },
@@ -73,7 +73,7 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: "Missing deviceId, tmdbId, or mediaType." }, { status: 400 });
   }
 
-  const { error } = await supabase
+  const { error } = await getSupabase()
     .from("watchlist")
     .delete()
     .eq("device_id", deviceId)

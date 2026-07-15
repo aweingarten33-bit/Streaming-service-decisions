@@ -1,8 +1,7 @@
 "use client";
 
-
-import { useEffect } from 'react'
-import Lenis from 'lenis'
+import { useEffect } from "react";
+import Lenis from "lenis";
 
 /**
  * Smooth-scroll provider (from the motion spec — Lenis, lerp ~0.09).
@@ -12,28 +11,28 @@ import Lenis from 'lenis'
  */
 export function SmoothScroll() {
   useEffect(() => {
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0
-    if (reduce || isTouch) return
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const isTouch = "ontouchstart" in window || navigator.maxTouchPoints > 0;
+    if (reduce || isTouch) return;
 
     const lenis = new Lenis({
       lerp: 0.09,
       wheelMultiplier: 1,
       smoothWheel: true,
-    })
+    });
 
-    let rafId = 0
+    let rafId = 0;
     const raf = (time: number) => {
-      lenis.raf(time)
-      rafId = requestAnimationFrame(raf)
-    }
-    rafId = requestAnimationFrame(raf)
+      lenis.raf(time);
+      rafId = requestAnimationFrame(raf);
+    };
+    rafId = requestAnimationFrame(raf);
 
     return () => {
-      cancelAnimationFrame(rafId)
-      lenis.destroy()
-    }
-  }, [])
+      cancelAnimationFrame(rafId);
+      lenis.destroy();
+    };
+  }, []);
 
-  return null
+  return null;
 }
