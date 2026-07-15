@@ -5,7 +5,7 @@ import { Bookmark, ExternalLink, Search } from "lucide-react";
 import { getExploreCopy, type Language } from "@/lib/marquee/copy";
 import { EXPLORE_CATEGORIES } from "@/lib/marquee/list-search/categories";
 import type { PublicListSearchResult } from "@/lib/marquee/list-search/types";
-import { useAuthedFetch } from "./use-authed-fetch";
+import { useDeviceFetch } from "./use-device-fetch";
 
 interface SavedList {
   id: string;
@@ -24,14 +24,14 @@ type SearchState =
   | { kind: "error"; message: string };
 
 export function ExploreScreen({ language }: { language: Language }) {
-  const authedFetch = useAuthedFetch();
+  const deviceFetch = useDeviceFetch();
   const copy = getExploreCopy(language);
   const [query, setQuery] = useState("");
   const [state, setState] = useState<SearchState>({ kind: "idle" });
   const [saved, setSaved] = useState<SavedList[]>([]);
 
   function loadSaved() {
-    authedFetch("/api/explore/saved")
+    deviceFetch("/api/explore/saved")
       .then((res) => res.json())
       .then((data) => setSaved(data.items ?? []));
   }
@@ -45,7 +45,7 @@ export function ExploreScreen({ language }: { language: Language }) {
     if (!text.trim()) return;
     setState({ kind: "loading" });
     try {
-      const res = await authedFetch("/api/explore/search", {
+      const res = await deviceFetch("/api/explore/search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query: text }),
@@ -74,7 +74,7 @@ export function ExploreScreen({ language }: { language: Language }) {
       },
       ...prev,
     ]);
-    await authedFetch("/api/explore/saved", {
+    await deviceFetch("/api/explore/saved", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -88,7 +88,7 @@ export function ExploreScreen({ language }: { language: Language }) {
 
   async function removeSaved(id: string) {
     setSaved((prev) => prev.filter((s) => s.id !== id));
-    await authedFetch("/api/explore/saved", {
+    await deviceFetch("/api/explore/saved", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id }),

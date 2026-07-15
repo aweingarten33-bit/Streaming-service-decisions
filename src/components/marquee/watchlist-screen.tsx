@@ -3,20 +3,20 @@
 import { useEffect, useMemo, useState } from "react";
 import { RotateCcw, Check, X } from "lucide-react";
 import type { WatchlistCandidate } from "@/lib/marquee/types";
-import { useAuthedFetch } from "./use-authed-fetch";
+import { useDeviceFetch } from "./use-device-fetch";
 
 const TMDB_IMG = "https://image.tmdb.org/t/p";
 type SortKey = "added" | "title" | "year";
 
 export function WatchlistScreen({ onImportAgain }: { onImportAgain: () => void }) {
-  const authedFetch = useAuthedFetch();
+  const deviceFetch = useDeviceFetch();
   const [items, setItems] = useState<WatchlistCandidate[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<SortKey>("added");
 
   function refresh() {
-    authedFetch("/api/watchlist")
+    deviceFetch("/api/watchlist")
       .then((res) => res.json())
       .then((data) => setItems(data.items ?? []))
       .finally(() => setLoading(false));
@@ -30,7 +30,7 @@ export function WatchlistScreen({ onImportAgain }: { onImportAgain: () => void }
   async function toggleWatched(item: WatchlistCandidate) {
     const nextStatus = item.status === "watched" ? "active" : "watched";
     setItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, status: nextStatus } : i)));
-    await authedFetch("/api/watchlist", {
+    await deviceFetch("/api/watchlist", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ tmdbId: item.tmdbId, mediaType: item.mediaType, status: nextStatus }),
@@ -39,7 +39,7 @@ export function WatchlistScreen({ onImportAgain }: { onImportAgain: () => void }
 
   async function remove(item: WatchlistCandidate) {
     setItems((prev) => prev.filter((i) => i.id !== item.id));
-    await authedFetch("/api/watchlist", {
+    await deviceFetch("/api/watchlist", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ tmdbId: item.tmdbId, mediaType: item.mediaType }),

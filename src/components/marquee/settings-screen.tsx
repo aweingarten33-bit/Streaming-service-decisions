@@ -1,6 +1,5 @@
 "use client";
 
-import { useAuth } from "@/components/auth/auth-provider";
 import type { Language } from "@/lib/marquee/copy";
 
 export function SettingsScreen({
@@ -10,8 +9,6 @@ export function SettingsScreen({
   language: Language;
   onLanguageChange: (language: Language) => void;
 }) {
-  const { session, signOut } = useAuth();
-
   return (
     <div className="mx-auto w-full max-w-xl px-6 pb-28 pt-16">
       <h1 className="font-display text-2xl font-semibold text-[#F5EEDC]">Settings</h1>
@@ -48,15 +45,11 @@ export function SettingsScreen({
       </div>
 
       <div className="mt-8">
-        <p className="font-mono text-[11px] uppercase tracking-wider text-white/40">Account</p>
-        <p className="mt-2 text-sm text-white/60">{session?.user.email}</p>
-        <button
-          type="button"
-          onClick={() => signOut()}
-          className="mt-4 rounded-xl border border-white/15 px-4 py-2.5 text-sm font-medium text-white/70"
-        >
-          Sign Out
-        </button>
+        <p className="font-mono text-[11px] uppercase tracking-wider text-white/40">Your Data</p>
+        <p className="mt-2 text-sm text-white/60">
+          No account, no signup. Your watchlist lives on this device only -- clearing your browser
+          data or switching devices means starting over.
+        </p>
       </div>
     </div>
   );

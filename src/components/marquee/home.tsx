@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowUp } from "lucide-react";
 import { getCopy, type Language } from "@/lib/marquee/copy";
 import type { DecideIntent } from "@/lib/marquee/intent";
-import { useAuthedFetch } from "./use-authed-fetch";
+import { useDeviceFetch } from "./use-device-fetch";
 import { PromptSelector } from "./prompt-selector";
 import { ResultCard, type DecideResult } from "./result-card";
 
@@ -23,7 +23,7 @@ export function Home({
   language: Language;
   onNeedsImport: () => void;
 }) {
-  const authedFetch = useAuthedFetch();
+  const deviceFetch = useDeviceFetch();
   const copy = getCopy(language);
   const [prompt, setPrompt] = useState("");
   const [state, setState] = useState<DecideState>({ kind: "idle" });
@@ -47,7 +47,7 @@ export function Home({
     setState({ kind: "loading" });
     setLoadingMessage(copy.loadingMessages[0]);
     try {
-      const res = await authedFetch("/api/decide", {
+      const res = await deviceFetch("/api/decide", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt: text, excludeTmdbIds: excludeIds.current, relax }),
@@ -96,7 +96,7 @@ export function Home({
 
   async function markWatched() {
     if (state.kind !== "result") return;
-    await authedFetch("/api/watchlist", {
+    await deviceFetch("/api/watchlist", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

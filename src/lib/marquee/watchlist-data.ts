@@ -18,15 +18,15 @@ interface WatchlistItemRow {
   } | null;
 }
 
-/** Loads a user's watchlist joined with cached TMDB metadata -- the only pool `/api/decide` is ever allowed to pick from. */
-export async function getWatchlistCandidates(userId: string): Promise<WatchlistCandidate[]> {
+/** Loads a device's watchlist joined with cached TMDB metadata -- the only pool `/api/decide` is ever allowed to pick from. */
+export async function getWatchlistCandidates(deviceId: string): Promise<WatchlistCandidate[]> {
   const { data, error } = await getSupabase()
     .from("watchlist_items")
     .select(
       `id, tmdb_id, media_type, status,
        titles!inner ( title, year, genres, runtime, poster_path, backdrop_path, streaming_providers, tmdb_rating )`,
     )
-    .eq("user_id", userId);
+    .eq("device_id", deviceId);
 
   if (error) throw new Error(`Failed to load watchlist: ${error.message}`);
 

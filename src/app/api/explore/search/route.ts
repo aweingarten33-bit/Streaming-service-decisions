@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getUserFromRequest } from "@/lib/auth-server";
+import { getDeviceId } from "@/lib/device-server";
 import { RateLimitedError, searchPublicLists } from "@/lib/marquee/list-search/search";
 
 const bodySchema = z.object({ query: z.string().trim().min(1).max(80) });
 
 export async function POST(req: NextRequest) {
-  const user = await getUserFromRequest(req);
-  if (!user) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
+  const deviceId = getDeviceId(req);
+  if (!deviceId) return NextResponse.json({ error: "Missing device id." }, { status: 400 });
 
   const parsed = bodySchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const results = await searchPublicLists(parsed.data.query, user.id);
+    const results = await searchPublicLists(parsed.data.query, deviceId);
     return NextResponse.json({ results });
   } catch (err) {
     if (err instanceof RateLimitedError) {
