@@ -1,5 +1,12 @@
 import { describe, expect, test } from "bun:test";
-import { getCopy, getPrompt, PROMPT_BANK, HEADLINE, importSummary } from "@/lib/marquee/copy";
+import {
+  getCopy,
+  getExploreCopy,
+  getPrompt,
+  PROMPT_BANK,
+  HEADLINE,
+  importSummary,
+} from "@/lib/marquee/copy";
 
 describe("Unfiltered vs Clean-ish copy", () => {
   test("headline is fixed regardless of language setting", () => {
@@ -35,6 +42,31 @@ describe("Unfiltered vs Clean-ish copy", () => {
   test("not every prompt is aggressively profane", () => {
     const profaneCount = PROMPT_BANK.filter((p) => /fuck|shit/i.test(p.unfiltered)).length;
     expect(profaneCount).toBeLessThan(PROMPT_BANK.length);
+  });
+});
+
+describe("Explore Lists copy (Unfiltered vs Clean-ish)", () => {
+  test("no-results empty state matches the product spec", () => {
+    expect(getExploreCopy("unfiltered").noResults).toBe(
+      "Apparently nobody made that exact list yet. Try saying it less specifically.",
+    );
+  });
+
+  test("clean-ish no-results state has no profanity and differs from unfiltered", () => {
+    const clean = getExploreCopy("clean").noResults;
+    expect(clean).not.toBe(getExploreCopy("unfiltered").noResults);
+    expect(/shit|fuck/i.test(clean)).toBe(false);
+  });
+
+  test("search-failed error state matches the product spec", () => {
+    expect(getExploreCopy("unfiltered").searchFailed).toBe(
+      "The internet is being useless. Try that again.",
+    );
+  });
+
+  test("both languages share the same Open List in IMDb action label", () => {
+    expect(getExploreCopy("unfiltered").openInImdb).toBe("Open List in IMDb");
+    expect(getExploreCopy("clean").openInImdb).toBe("Open List in IMDb");
   });
 });
 

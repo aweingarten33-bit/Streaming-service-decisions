@@ -152,6 +152,46 @@ export const ONBOARDING = {
   reviewWeirdOnes: (count: number) => `Review the ${count} Weird One${count === 1 ? "" : "s"}`,
 };
 
+interface ExploreCopySet {
+  headline: string;
+  searchPlaceholder: string;
+  noResults: string;
+  searchFailed: string;
+  openInImdb: string;
+  save: string;
+  saved: string;
+  savedListsTitle: string;
+  noSavedLists: string;
+}
+
+const EXPLORE_UNFILTERED: ExploreCopySet = {
+  headline: "Find people's lists. Steal their taste.",
+  searchPlaceholder: "Forgotten '90s thrillers, weird documentaries, whatever...",
+  noResults: "Apparently nobody made that exact list yet. Try saying it less specifically.",
+  searchFailed: "The internet is being useless. Try that again.",
+  openInImdb: "Open List in IMDb",
+  save: "Save",
+  saved: "Saved",
+  savedListsTitle: "Saved Lists",
+  noSavedLists: "Nothing saved yet. Find a list you like and keep it here.",
+};
+
+const EXPLORE_CLEAN: ExploreCopySet = {
+  headline: "Find people's lists. Borrow their taste.",
+  searchPlaceholder: "Forgotten '90s thrillers, weird documentaries, whatever...",
+  noResults: "Nobody's made that exact list yet. Try saying it a little more broadly.",
+  searchFailed: "That didn't work. Try again in a second.",
+  openInImdb: "Open List in IMDb",
+  save: "Save",
+  saved: "Saved",
+  savedListsTitle: "Saved Lists",
+  noSavedLists: "Nothing saved yet. Find a list you like and keep it here.",
+};
+
+export function getExploreCopy(language: Language): ExploreCopySet {
+  return language === "clean" ? EXPLORE_CLEAN : EXPLORE_UNFILTERED;
+}
+
 export function importSummary(imported: number, duplicates: number, needHelp: number): string {
   const parts = [`Done. ${imported} title${imported === 1 ? "" : "s"} imported.`];
   if (duplicates > 0) parts.push(`${duplicates} duplicate${duplicates === 1 ? "" : "s"} ignored.`);

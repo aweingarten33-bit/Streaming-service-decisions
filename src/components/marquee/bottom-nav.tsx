@@ -1,13 +1,14 @@
 "use client";
 
-import { Home as HomeIcon, ListVideo, Settings as SettingsIcon } from "lucide-react";
+import { Compass, Home as HomeIcon, ListVideo, Settings as SettingsIcon } from "lucide-react";
 
-export type Tab = "home" | "watchlist" | "settings";
+export type Tab = "home" | "watchlist" | "explore" | "settings";
 
 export function BottomNav({ tab, onChange }: { tab: Tab; onChange: (tab: Tab) => void }) {
   const items: { key: Tab; label: string; icon: typeof HomeIcon }[] = [
     { key: "home", label: "Home", icon: HomeIcon },
     { key: "watchlist", label: "My Watchlist", icon: ListVideo },
+    { key: "explore", label: "Explore", icon: Compass },
     { key: "settings", label: "Settings", icon: SettingsIcon },
   ];
 
