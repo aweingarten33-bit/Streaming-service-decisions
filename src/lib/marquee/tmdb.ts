@@ -112,11 +112,11 @@ export async function getDetails(
       ? (data.credits?.crew.find((c) => c.job === "Director")?.name ?? null)
       : (data.created_by?.[0]?.name ?? null);
 
-  const youtubeVideos = (data.videos?.results ?? []).filter((v) => v.site === "YouTube");
+  const trailerVideos = (data.videos?.results ?? []).filter((v) => v.site === "YouTube");
   const trailerKey =
-    youtubeVideos.find((v) => v.type === "Trailer" && v.official)?.key ??
-    youtubeVideos.find((v) => v.type === "Trailer")?.key ??
-    youtubeVideos.find((v) => v.type === "Teaser")?.key ??
+    trailerVideos.find((v) => v.type === "Trailer" && v.official)?.key ??
+    trailerVideos.find((v) => v.type === "Trailer")?.key ??
+    trailerVideos.find((v) => v.type === "Teaser")?.key ??
     null;
 
   return {

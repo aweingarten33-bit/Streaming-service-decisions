@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/lib/pipeline/supabase";
+import { supabase } from "@/lib/marquee/supabase";
 import { parseIntent } from "@/lib/marquee/intent";
 import { chooseOne, explainChoice, type WatchlistDecisionItem } from "@/lib/marquee/scoring";
 
@@ -13,6 +13,7 @@ export async function POST(req: NextRequest) {
       { error: "Tell Marquee what kind of night this is." },
       { status: 400 },
     );
+  await supabase.from("devices").upsert({ id: deviceId });
 
   const intent = await parseIntent(prompt);
   const { data, error } = await supabase

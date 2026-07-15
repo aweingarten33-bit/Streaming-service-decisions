@@ -37,7 +37,7 @@ const fixtures: Fixture[] = [
   {
     prompt: "Something funny but not stupid",
     expectedDescriptors: ["funny_but_dark", "rewatchable"],
-    note: "Comedy intent should prefer curator evidence about tone over comedy genre labels alone.",
+    note: "Comedy intent should prefer explicit watchlist fit over generic comedy labels alone.",
   },
   {
     prompt: "A comfort movie that is not too childish",

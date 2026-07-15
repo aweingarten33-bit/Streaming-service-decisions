@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/lib/pipeline/supabase";
+import { supabase } from "@/lib/marquee/supabase";
 
 export async function GET(req: NextRequest) {
   const deviceId = req.nextUrl.searchParams.get("deviceId");
   const search = req.nextUrl.searchParams.get("search")?.trim();
   const sort = req.nextUrl.searchParams.get("sort") ?? "recent";
   if (!deviceId) return NextResponse.json({ items: [] });
+  await supabase.from("devices").upsert({ id: deviceId });
 
   let query = supabase
     .from("viewer_watchlist")
@@ -35,6 +36,7 @@ export async function POST(req: NextRequest) {
   if (!deviceId || !Number.isFinite(tmdbId)) {
     return NextResponse.json({ error: "Missing watchlist item." }, { status: 400 });
   }
+  await supabase.from("devices").upsert({ id: deviceId });
 
   const { error } = await supabase.from("viewer_watchlist").upsert(
     {
@@ -59,6 +61,7 @@ export async function PATCH(req: NextRequest) {
   if (!deviceId || !Number.isFinite(tmdbId)) {
     return NextResponse.json({ error: "Missing watchlist item." }, { status: 400 });
   }
+  await supabase.from("devices").upsert({ id: deviceId });
 
   const { error } = await supabase
     .from("viewer_watchlist")
@@ -77,6 +80,7 @@ export async function DELETE(req: NextRequest) {
   if (!deviceId || !Number.isFinite(tmdbId)) {
     return NextResponse.json({ error: "Missing watchlist item." }, { status: 400 });
   }
+  await supabase.from("devices").upsert({ id: deviceId });
 
   const { error } = await supabase
     .from("viewer_watchlist")

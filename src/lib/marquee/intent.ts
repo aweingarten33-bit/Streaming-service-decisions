@@ -1,4 +1,4 @@
-import { callClaudeJSON } from "@/lib/pipeline/llm";
+import { callClaudeJSON } from "@/lib/marquee/llm";
 
 export interface DecideIntent {
   mediaType: "movie" | "tv" | "any";

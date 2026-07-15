@@ -1,37 +1,20 @@
-# Recommendation evaluation examples
+# Marquee decision examples
 
-Use these prompts as manual regression checks whenever the descriptor taxonomy,
-evidence aggregation, ranking, or "more like this" logic changes.
+These are manual prompts the watchlist decision flow should handle without ever
+asking the AI to recommend a title directly.
 
-## Mood and emotional-state prompts
+- "Everything looks like shit."
+- "Don't make me think."
+- "I got like 90 minutes."
+- "Give me something that gets good immediately."
+- "I'm probably gonna be on my phone."
+- "I want something that'll make me forget my phone exists."
+- "Something but not a whole fucking commitment."
+- "Dark thriller under 2 hours."
 
-- "I feel like shit."
-- "I need something comforting but not childish."
-- "Give me something uplifting that does not feel cheesy."
-- "I want a cathartic cry."
-- "I want something low-stress tonight."
-- "I want something bleak but beautiful."
+Expected behavior:
 
-## Weirdness and taste prompts
-
-- "I want a bizarre movie."
-- "Something surreal and funny but dark."
-- "Give me a cult movie that feels unhinged."
-- "I want something like After Hours."
-- "I liked The Lobster but want something warmer."
-
-## Practical constraints
-
-- "Something funny but not stupid."
-- "A short movie under 90 minutes that still feels complete."
-- "A comfort movie that is not too childish."
-- "A visually stunning slow burn."
-
-## Expected review criteria
-
-- The returned titles should have evidence-backed descriptors matching the
-  request, not just broad genre overlap.
-- The explanation should cite trusted recommendation evidence rather than
-  generic plot or popularity.
-- "More like this" should favor shared evidence descriptors and curator signal,
-  not just IMDb votes or primary genre.
+1. AI or local fallback translates the prompt into structured intent.
+2. Deterministic scoring searches only the user's unwatched watchlist items.
+3. The API returns exactly one title.
+4. The explanation is short and practical.

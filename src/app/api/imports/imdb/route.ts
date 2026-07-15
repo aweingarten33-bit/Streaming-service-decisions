@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/lib/pipeline/supabase";
-import { getDetails, getWatchProviders, searchTitle } from "@/lib/pipeline/tmdb";
-import type { MediaType, ResolvedMediaType } from "@/lib/pipeline/types";
+import { supabase } from "@/lib/marquee/supabase";
+import { getDetails, getWatchProviders, searchTitle } from "@/lib/marquee/tmdb";
+import type { MediaType, ResolvedMediaType } from "@/lib/marquee/types";
 
 interface ImportRow {
   title: string;
@@ -20,6 +20,7 @@ export async function POST(req: NextRequest) {
   const deviceId = typeof body.deviceId === "string" ? body.deviceId : null;
   const rows = Array.isArray(body.rows) ? (body.rows as ImportRow[]) : [];
   if (!deviceId) return NextResponse.json({ error: "Missing deviceId." }, { status: 400 });
+  await supabase.from("devices").upsert({ id: deviceId });
   if (rows.length === 0)
     return NextResponse.json({ error: "No IMDb rows found." }, { status: 400 });
 
