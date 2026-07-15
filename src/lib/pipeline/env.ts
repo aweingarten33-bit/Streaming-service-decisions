@@ -7,6 +7,8 @@ const schema = z.object({
   TMDB_API_KEY: z.string().optional(),
   SUPABASE_URL: z.string().url("SUPABASE_URL must be a valid URL").optional(),
   SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
+  GOOGLE_CSE_API_KEY: z.string().optional(),
+  GOOGLE_CSE_CX: z.string().optional(),
 });
 
 const parsed = schema.safeParse(process.env);
