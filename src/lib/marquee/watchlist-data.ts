@@ -1,13 +1,6 @@
 import { getSupabase } from "@/lib/pipeline/supabase";
 import type { WatchlistCandidate } from "./types";
 
-export interface SavedTasteSource {
-  id: string;
-  title: string;
-  description: string | null;
-  note: string | null;
-}
-
 interface WatchlistItemRow {
   id: string;
   tmdb_id: number;
@@ -26,18 +19,6 @@ interface WatchlistItemRow {
     overview: string | null;
     trailer_key: string | null;
   } | null;
-}
-
-/** Loads saved IMDb list metadata that can act as lightweight taste signals without scraping list contents. */
-export async function getSavedTasteSources(deviceId: string): Promise<SavedTasteSource[]> {
-  const { data, error } = await getSupabase()
-    .from("saved_lists")
-    .select("id, title, description, note")
-    .eq("device_id", deviceId)
-    .order("created_at", { ascending: false });
-
-  if (error) throw new Error(`Failed to load saved lists: ${error.message}`);
-  return (data ?? []) as SavedTasteSource[];
 }
 
 /** Loads a device's watchlist joined with cached TMDB metadata -- the only title pool `/api/decide` is ever allowed to pick from. */

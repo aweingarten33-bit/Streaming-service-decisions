@@ -56,26 +56,6 @@ export interface ScoredCandidate {
 export interface ChooseOptions {
   excludeTmdbIds?: number[];
   relax?: boolean;
-  tasteSourceText?: string[];
-}
-
-/**
- * Soft bonus from saved Explore Lists metadata (title/description/note the
- * user chose to save -- never the list's actual contents, per the
- * never-scrape rule). Substring-matching a candidate's own title against
- * that text is too noisy to be real signal, so this only rewards a genre or
- * movie/tv keyword actually appearing in what the user saved.
- */
-function tasteSourceScore(item: WatchlistCandidate, tasteSourceText: string[] = []): number {
-  if (tasteSourceText.length === 0) return 0;
-  const haystack = tasteSourceText.join(" ").toLowerCase();
-  let score = 0;
-  for (const genre of item.genres) {
-    if (haystack.includes(genre.toLowerCase())) score += 1.5;
-  }
-  if (item.mediaType === "tv" && /\b(tv|show|series|season|episode)\b/.test(haystack)) score += 1;
-  if (item.mediaType === "movie" && /\b(movie|film|cinema)\b/.test(haystack)) score += 1;
-  return Math.min(score, 4);
 }
 
 /**
@@ -89,7 +69,7 @@ export function chooseOne(
   candidates: WatchlistCandidate[],
   options: ChooseOptions = {},
 ): ScoredCandidate | null {
-  const { excludeTmdbIds = [], relax = false, tasteSourceText = [] } = options;
+  const { excludeTmdbIds = [], relax = false } = options;
   const pool = candidates
     .filter((c) => c.status !== "watched")
     .filter((c) => !excludeTmdbIds.includes(c.tmdbId))
@@ -114,7 +94,6 @@ export function chooseOne(
       if (intent.hookSpeed === "fast" && (item.tmdbRating ?? 0) >= 7) score += 2;
       if (intent.backgroundFriendly && item.genres.some((g) => ["Comedy", "Animation"].includes(g)))
         score += 2;
-      score += tasteSourceScore(item, tasteSourceText);
       score += (item.tmdbRating ?? 0) * 0.3;
 
       return { item, score };
@@ -125,16 +104,9 @@ export function chooseOne(
 }
 
 /** Practical, specific explanations -- never generic "this captivating masterpiece" AI copy. */
-export function explainChoice(
-  intent: DecideIntent,
-  item: WatchlistCandidate,
-  tasteSourceCount = 0,
-): string {
+export function explainChoice(intent: DecideIntent, item: WatchlistCandidate): string {
   const runtime = item.runtime ? `${item.runtime} minutes` : null;
 
-  if (tasteSourceCount > 0) {
-    return `This lines up with your saved IMDb list taste sources and still fits the mood you asked for.`;
-  }
   if (intent.maxRuntimeMinutes && runtime) {
     return `You said you had about ${intent.maxRuntimeMinutes} minutes. This is ${runtime}, so it actually fits.`;
   }

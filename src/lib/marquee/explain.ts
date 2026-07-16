@@ -12,7 +12,6 @@ export async function explainChoiceAI(
   intent: DecideIntent,
   item: WatchlistCandidate,
   originalPrompt: string,
-  tasteSourceCount = 0,
 ): Promise<string> {
   const facts = [
     `Title: ${item.title}${item.year ? ` (${item.year})` : ""}`,
@@ -24,7 +23,6 @@ export async function explainChoiceAI(
       : item.tmdbRating
         ? `TMDB rating: ${item.tmdbRating}/10`
         : null,
-    tasteSourceCount > 0 ? "Also lines up with the user's saved IMDb list taste sources." : null,
   ]
     .filter(Boolean)
     .join("\n");
@@ -42,5 +40,5 @@ export async function explainChoiceAI(
   } catch {
     // fall through to the deterministic template
   }
-  return explainChoiceFallback(intent, item, tasteSourceCount);
+  return explainChoiceFallback(intent, item);
 }

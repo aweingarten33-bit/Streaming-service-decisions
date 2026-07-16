@@ -49,7 +49,6 @@ export function Home({
   const [state, setState] = useState<DecideState>({ kind: "idle" });
   const [loadingMessage, setLoadingMessage] = useState(copy.loadingMessages[0]);
   const [interstitial, setInterstitial] = useState<string | null>(null);
-  const [useSavedLists, setUseSavedLists] = useState(false);
   const [groupMode, setGroupMode] = useState<"solo" | "two" | "group">("solo");
   const [pendingRejection, setPendingRejection] = useState<"another" | "idle" | null>(null);
   const [teaser, setTeaser] = useState<string | null>(null);
@@ -97,7 +96,6 @@ export function Home({
           excludeTmdbIds: excludeIds.current,
           relax,
           mediaType: mediaTypeFilter,
-          useSavedLists,
           rejectionReason,
         }),
       });
@@ -236,21 +234,6 @@ export function Home({
             </button>
           ))}
         </div>
-        <label className="flex items-start gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-xs text-white/60">
-          <input
-            type="checkbox"
-            checked={useSavedLists}
-            onChange={(e) => setUseSavedLists(e.target.checked)}
-            className="mt-0.5 accent-[#E3B24B]"
-          />
-          <span>
-            Let saved IMDb lists influence this pick
-            <span className="mt-0.5 block text-white/35">
-              Nudges today's pick toward the genres/vibe of lists you've saved in Explore -- it only
-              picks from your own watchlist, it doesn't add their titles to it.
-            </span>
-          </span>
-        </label>
         <p className="text-center text-xs text-white/40">
           Choose from the dropdown above, or just type how you feel below.
         </p>

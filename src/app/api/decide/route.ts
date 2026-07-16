@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDeviceId } from "@/lib/device-server";
-import { getSavedTasteSources, getWatchlistCandidates } from "@/lib/marquee/watchlist-data";
+import { getWatchlistCandidates } from "@/lib/marquee/watchlist-data";
 import { parseIntent } from "@/lib/marquee/intent";
 import { chooseOne } from "@/lib/marquee/scoring";
 import { explainChoiceAI } from "@/lib/marquee/explain";
@@ -17,7 +17,6 @@ export async function POST(req: NextRequest) {
     body.mediaType === "movie" || body.mediaType === "tv" || body.mediaType === "any"
       ? body.mediaType
       : undefined;
-  const useSavedLists: boolean = body.useSavedLists === true;
   const rejectionReason: string =
     typeof body.rejectionReason === "string" ? body.rejectionReason : "";
 
@@ -30,10 +29,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ emptyWatchlist: true });
   }
 
-  const tasteSources = useSavedLists ? await getSavedTasteSources(deviceId).catch(() => []) : [];
-  const tasteSourceText = tasteSources.map((source) =>
-    [source.title, source.description, source.note].filter(Boolean).join(" "),
-  );
   const adjustedPrompt = rejectionReason
     ? `${prompt}. Avoid this rejected option because: ${rejectionReason}.`
     : prompt;
@@ -43,14 +38,14 @@ export async function POST(req: NextRequest) {
   // the user shouldn't have to phrase their mood to also carry the media
   // type.
   const intent = mediaType ? { ...parsed, mediaType } : parsed;
-  const choice = chooseOne(intent, candidates, { excludeTmdbIds, relax, tasteSourceText });
+  const choice = chooseOne(intent, candidates, { excludeTmdbIds, relax });
 
   if (!choice) {
     return NextResponse.json({ noMatch: true, intent, relaxed: relax });
   }
 
   const { item } = choice;
-  const explanation = await explainChoiceAI(intent, item, prompt, tasteSources.length);
+  const explanation = await explainChoiceAI(intent, item, prompt);
   return NextResponse.json({
     intent,
     result: {
@@ -67,7 +62,6 @@ export async function POST(req: NextRequest) {
       overview: item.overview,
       trailerKey: item.trailerKey,
       explanation,
-      tasteSourceCount: tasteSources.length,
     },
   });
 }

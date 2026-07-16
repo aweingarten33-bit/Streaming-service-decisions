@@ -104,17 +104,6 @@ describe("chooseOne", () => {
     expect(chooseOne(intent, pool)).toBeNull();
     expect(chooseOne(intent, pool, { relax: true })).not.toBeNull();
   });
-
-  test("saved-list taste sources give a modest boost to a matching genre", () => {
-    const pool = [
-      candidate({ tmdbId: 1, genres: ["Comedy"], tmdbRating: 6 }),
-      candidate({ tmdbId: 2, genres: ["Drama"], tmdbRating: 6 }),
-    ];
-    const choice = chooseOne(baseIntent, pool, {
-      tasteSourceText: ["Underrated 90s Comedies Nobody Talks About"],
-    });
-    expect(choice?.item.tmdbId).toBe(1);
-  });
 });
 
 describe("explainChoice", () => {
