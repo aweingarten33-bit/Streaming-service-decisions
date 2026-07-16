@@ -67,7 +67,7 @@ interface CopySet {
 }
 
 const UNFILTERED: CopySet = {
-  inputPlaceholder: "Everything looks like shit. Help me out.",
+  inputPlaceholder: "What kind of mood are you in?",
   primaryActionLabel: "Put This Shit On",
   giveMeAnother: "Give Me Another",
   notTonight: "Not Tonight",
@@ -94,7 +94,7 @@ const UNFILTERED: CopySet = {
 };
 
 const CLEAN: CopySet = {
-  inputPlaceholder: "Everything looks like a mess. Help me out.",
+  inputPlaceholder: "What kind of mood are you in?",
   primaryActionLabel: "Put This On",
   giveMeAnother: "Give Me Another",
   notTonight: "Not Tonight",
