@@ -11,7 +11,9 @@
     "format": "prettier --write .",
     "test": "bun test",
     "run-sql": "bun run scripts/run-sql-file.ts",
-    "sync-imdb-ratings": "bun run scripts/sync-imdb-ratings.ts"
+    "sync-imdb-ratings": "bun run scripts/sync-imdb-ratings.ts",
+    "ui:search": "21st search",
+    "ui:add": "21st add"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.68.0",
@@ -33,6 +35,7 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@21st-dev/cli": "^1.7.0",
     "@eslint/js": "^9.32.0",
     "@tailwindcss/postcss": "^4.2.1",
     "@types/bun": "^1.3.14",
