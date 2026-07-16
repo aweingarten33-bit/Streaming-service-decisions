@@ -94,7 +94,7 @@ export function WatchlistScreen({ onImportAgain }: { onImportAgain: () => void }
   return (
     <div className="mx-auto w-full max-w-xl px-6 pb-12 pt-16">
       <div className="flex items-center justify-between">
-        <h1 className="font-display text-2xl font-semibold text-ink">My Watchlist</h1>
+        <h1 className="spray-glow font-display text-2xl font-semibold text-ink">My Watchlist</h1>
         <button
           type="button"
           onClick={onImportAgain}
@@ -103,16 +103,18 @@ export function WatchlistScreen({ onImportAgain }: { onImportAgain: () => void }
           <RotateCcw size={12} /> Import
         </button>
       </div>
-      <div className="stencil-rule mt-4" />
+      <div className="drip-edge stencil-rule mt-4" />
 
       <form
         onSubmit={(e) => {
           e.preventDefault();
           searchManualTitle(manualQuery);
         }}
-        className="mt-5 rounded-2xl border border-rule bg-ink/5 p-3"
+        className="wall-texture mt-5 rounded-2xl border border-rule bg-ink/5 p-3"
       >
-        <p className="text-xs font-medium uppercase tracking-wider text-ink/40">Add a title</p>
+        <p className="tape-strip inline-block px-2 py-0.5 text-xs font-bold text-black/70 uppercase tracking-wider">
+          Add a title
+        </p>
         <div className="mt-2 flex gap-2">
           <input
             value={manualQuery}
@@ -180,7 +182,7 @@ export function WatchlistScreen({ onImportAgain }: { onImportAgain: () => void }
 
       {loading && <p className="mt-8 text-center text-sm text-ink/30">Loading...</p>}
       {!loading && visible.length === 0 && (
-        <p className="mt-8 text-center text-sm text-ink/30">Nothing here yet.</p>
+        <p className="scrawl mt-8 text-center text-lg text-ink/40">Nothing here yet.</p>
       )}
 
       <div className="mt-4 space-y-2">

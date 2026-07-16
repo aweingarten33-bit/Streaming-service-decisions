@@ -11,8 +11,8 @@ export function SettingsScreen({
 }) {
   return (
     <div className="mx-auto w-full max-w-xl px-6 pb-12 pt-16">
-      <h1 className="font-display text-2xl font-semibold text-ink">Settings</h1>
-      <div className="stencil-rule mt-4" />
+      <h1 className="spray-glow font-display text-2xl font-semibold text-ink">Settings</h1>
+      <div className="drip-edge stencil-rule mt-4" />
 
       <div className="mt-6">
         <p className="font-mono text-[11px] uppercase tracking-wider text-ink/40">Language</p>
@@ -47,7 +47,7 @@ export function SettingsScreen({
 
       <div className="mt-8">
         <p className="font-mono text-[11px] uppercase tracking-wider text-ink/40">Your Data</p>
-        <p className="mt-2 text-sm text-ink-2">
+        <p className="scrawl mt-2 text-base text-ink-2">
           No account, no signup. Your watchlist lives on this device only -- clearing your browser
           data or switching devices means starting over.
         </p>

@@ -9,30 +9,37 @@
 @import "@fontsource/inter/600.css";
 @import "@fontsource/space-mono/400.css";
 @import "@fontsource/space-mono/700.css";
+@import "@fontsource/permanent-marker/400.css";
 
 @custom-variant dark (&:is(.dark *));
 
 /* Hallmark · macrostructure: existing app screens (redesign, not greenfield) · designed-as-app
- * theme: custom (v6 -- ported 1:1 from a user-supplied reference
- * implementation ("StreamDecide"), not designed fresh. Warm dark palette
- * (not jet-black/neon), display type Archivo Black/Anton, body Inter,
- * mono Space Mono. A reusable spray-noise SVG turbulence texture and a
- * spray-stroke SVG displacement filter (see layout.tsx) are the two
- * signature techniques carried over -- straight borders/underlines run
- * through the filter so they read as an actual rough spray stroke.)
- * vibe: "an underground gallery show, spray-painted concrete, warm bulb light"
- * paper: near-black warm brown · ink: warm cream · muted: warm grey-brown · accent: burnt-orange/rust (still the ONLY accent)
- * display: Archivo Black / Anton (loud, condensed, all-caps) · body: Inter · mono: Space Mono
- * axes: dark / warm-editorial / chromatic-rust
- * studied: yes (reference code provided, ported exactly) · context: explicit · design-system: design.md · v6
- * pre-emit critique: P4 H4 E4 S3 R3 V4 (palette/type/texture all pinned to
- * the reference rather than invented -- less room for drift than v1-v5.)
+ * theme: custom (v7 -- ported from a second, more literally Banksy
+ * reference ("StreamDecide" + Banksy pass), corrected per explicit
+ * instruction: "it's a concrete wall spray painted black" -- the
+ * reference's own palette was light-concrete/day-mode, but this app's
+ * wall is black (matching the /welcome splash), just warm-tinted rather
+ * than neutral grey so it still reads as paint, not a processed grey.
+ * Carries over: true red accent (not the v6 burnt-orange), the
+ * spray-stroke SVG filter, a scrawled Permanent-Marker annotation layer,
+ * and concrete/brick wall-texture utilities (recolored for a dark
+ * surface -- the reference's versions assume a light wall and darken;
+ * this one lightens, the same fix as Grain's blend-mode earlier.)
+ * vibe: "concrete wall, spray-painted black, one red stencil, someone's
+ * been writing on it in marker"
+ * paper: black concrete (warm-tinted, not neutral) · ink: warm off-white · muted: warm grey · accent: true red (still the ONLY accent)
+ * display: Archivo Black / Anton · body: Inter · mono: Space Mono · scrawl: Permanent Marker
+ * axes: dark / warm-editorial / chromatic-red
+ * studied: yes (reference code provided) · context: explicit · design-system: design.md · v7
+ * pre-emit critique: P4 H4 E4 S3 R3 V4 (same as v6 -- palette corrected
+ * per explicit follow-up instruction, not re-guessed.)
  */
 
 @theme inline {
   --font-display: "Archivo Black", "Anton", sans-serif;
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "Space Mono", ui-monospace, monospace;
+  --font-scrawl: "Permanent Marker", cursive;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -70,24 +77,24 @@
 :root {
   color-scheme: dark;
 
-  /* ===== v6: ported from the "StreamDecide" reference -- exact hex
-     computed from its HSL tokens (hsl(20 5% 4%) background, hsl(36 23% 87%)
-     foreground, etc), except --red which uses its literal --accent-raw
-     (#c4522a) rather than my HSL-derived approximation. Warm dark, not
-     jet-black: browns/creams instead of true neutrals, one burnt-orange/
-     rust accent. Kept as hex, not oklch: this app's Grain overlay uses
+  /* ===== v7: a concrete wall spray-painted black, not the reference's
+     literal light-concrete/day palette. Warm-tinted near-black (R>G>B
+     slightly throughout) rather than a neutral processed grey -- per
+     explicit instruction, black should still read as paint/soot, not a
+     flat grey fill. True red accent (#e3170a, the Banksy-pass reference's
+     literal value). Kept as hex, not oklch: this app's Grain overlay uses
      mix-blend-mode, and oklch()-declared colors render as solid black in
      real Chromium when blended -- confirmed earlier by testing. ===== */
-  --paper: #0b0a0a;
-  --paper-2: #131211;
-  --paper-3: #201e1d;
-  --ink: #e5dfd6;
-  --ink-2: #cec2b1;
-  --rule: #3d3734;
-  --muted: #8a7e75;
-  --red: #c4522a;
-  --red-ink: #f9f8f6;
-  --focus-ring: #c4522a;
+  --paper: #0d0c0a;
+  --paper-2: #17150f;
+  --paper-3: #211e17;
+  --ink: #efe9df;
+  --ink-2: #b8b0a3;
+  --rule: #55504a;
+  --muted: #8c8478;
+  --red: #e3170a;
+  --red-ink: #fbf8f4;
+  --focus-ring: #e3170a;
   --spray-noise: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
 
   --background: var(--paper);
@@ -170,30 +177,157 @@
     }
   }
 
-  /* a single paint drip under a graffiti element -- gravity-drawn, not
-     symmetrical. Reserved for the nav menu wordmark, one hit only. */
-  .paint-drip {
+  /* an irregular paint-drip silhouette hanging off an element's bottom
+     edge -- ported from the Banksy reference's exact clip-path. The
+     reference used `background: inherit` (matching whichever wall panel
+     it sat on); this app only ever wants a red drip (single-accent
+     discipline, and it composes with gradient/translucent backgrounds
+     that "inherit" wouldn't render cleanly against), so it's pinned to
+     --red. Needs an ancestor without `overflow: hidden` to actually show.
+     Reserved for one hit per screen, never tiled everywhere. */
+  .drip-edge {
     position: relative;
   }
-  .paint-drip::after {
+  .drip-edge::after {
     content: "";
     position: absolute;
-    left: 8%;
-    top: 100%;
-    width: 3px;
-    height: 0;
+    bottom: -12px;
+    left: 0;
+    right: 0;
+    height: 12px;
     background: var(--red);
-    animation: drip-down 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.6s both;
+    clip-path: polygon(
+      0% 0%,
+      5% 0%,
+      5% 60%,
+      6% 100%,
+      7% 60%,
+      7% 0%,
+      15% 0%,
+      15% 40%,
+      16% 100%,
+      17% 40%,
+      17% 0%,
+      28% 0%,
+      28% 80%,
+      29% 100%,
+      30% 80%,
+      30% 0%,
+      42% 0%,
+      42% 55%,
+      43% 100%,
+      44% 55%,
+      44% 0%,
+      60% 0%,
+      60% 70%,
+      61% 100%,
+      62% 70%,
+      62% 0%,
+      75% 0%,
+      75% 45%,
+      76% 100%,
+      77% 45%,
+      77% 0%,
+      88% 0%,
+      88% 65%,
+      89% 100%,
+      90% 65%,
+      90% 0%,
+      100% 0%
+    );
   }
-  @keyframes drip-down {
-    from {
-      height: 0;
-      opacity: 0.9;
-    }
-    to {
-      height: 22px;
-      opacity: 0.7;
-    }
+
+  /* BANKSY WALL TEXTURE -- exposed concrete grain. Ported from the
+     reference, but lightened rather than darkened: its version assumes a
+     light wall and adds subtle black lines; ours is a black wall, so it
+     adds subtle white/highlight lines instead (same fix as Grain's
+     mix-blend-mode earlier -- darkening on near-black is invisible). */
+  .wall-texture {
+    background-image:
+      repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 2px,
+        rgb(255 255 255 / 4%) 2px,
+        rgb(255 255 255 / 4%) 4px
+      ),
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 8px,
+        rgb(255 255 255 / 5%) 8px,
+        rgb(255 255 255 / 5%) 9px
+      );
+  }
+
+  /* BANKSY BRICK -- subtle brick-line overlay, same lightened-for-dark fix. */
+  .brick-texture {
+    background-image:
+      repeating-linear-gradient(
+        transparent 0px,
+        transparent 28px,
+        rgb(255 255 255 / 6%) 28px,
+        rgb(255 255 255 / 6%) 30px
+      ),
+      repeating-linear-gradient(
+        90deg,
+        transparent 0px,
+        transparent 48px,
+        rgb(255 255 255 / 4%) 48px,
+        rgb(255 255 255 / 4%) 50px
+      );
+    background-size: 100px 30px;
+  }
+
+  /* STENCIL SPRAY GLOW -- overspray halo on text/elements. Lightened for a
+     dark wall: the reference's glow darkens (for light text on a light
+     wall); this one lightens, since our type sits light-on-black. */
+  .spray-glow {
+    text-shadow:
+      0 0 20px rgb(255 255 255 / 20%),
+      0 0 40px rgb(255 255 255 / 10%),
+      2px 2px 0 rgb(0 0 0 / 40%);
+  }
+  .spray-glow-red {
+    text-shadow:
+      0 0 20px rgb(227 23 10 / 45%),
+      0 0 40px rgb(227 23 10 / 22%),
+      2px 2px 0 rgb(0 0 0 / 40%);
+  }
+
+  /* TORN TAPE -- a masking-tape strip, stuck on crooked. */
+  .tape-strip {
+    background: rgb(240 235 215 / 70%);
+    transform: rotate(-1deg);
+    box-shadow: 1px 1px 3px rgb(0 0 0 / 30%);
+    border-left: 1px solid rgb(0 0 0 / 15%);
+    border-right: 1px solid rgb(0 0 0 / 15%);
+  }
+
+  /* SCRAWL -- a handwritten marker annotation, as if someone tagged the
+     wall after the stencil went up. Defaults to --ink (visible on black);
+     the reference's default was near-black, meant for its light wall. */
+  .scrawl {
+    font-family: var(--font-scrawl);
+    color: var(--ink);
+    transform: rotate(-2deg);
+    display: inline-block;
+  }
+
+  /* STENCIL BORDER -- a rough spray-paint border box, hard offset shadow.
+     Defaults to --ink (visible on black) rather than the reference's
+     near-black default. */
+  .stencil-box {
+    position: relative;
+    border: 3px solid var(--ink);
+    box-shadow:
+      3px 3px 0 var(--ink),
+      -1px -1px 8px rgb(0 0 0 / 15%);
+  }
+  .stencil-box-red {
+    position: relative;
+    border: 3px solid var(--red);
+    box-shadow: 3px 3px 0 var(--red);
   }
 
   /* the recurring structural signature: a thick red "cut here" perforation,
@@ -234,8 +368,8 @@
     inset: -20% -25% auto -25%;
     height: 120%;
     background:
-      radial-gradient(rgb(196 82 42 / 55%) 1.5px, transparent 1.8px),
-      radial-gradient(rgb(196 82 42 / 35%) 1px, transparent 1.4px);
+      radial-gradient(rgb(227 23 10 / 55%) 1.5px, transparent 1.8px),
+      radial-gradient(rgb(227 23 10 / 35%) 1px, transparent 1.4px);
     background-size:
       22px 22px,
       13px 13px;
@@ -353,8 +487,7 @@
     .envelope-reveal,
     .stagger-in,
     .loading-dots::after,
-    .spray-reveal,
-    .paint-drip::after {
+    .spray-reveal {
       animation: none;
     }
     .spray-reveal {

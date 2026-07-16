@@ -179,10 +179,10 @@ export function Home({
 
   return (
     <div className="mx-auto flex w-full max-w-xl flex-col items-center px-6 pb-12 pt-16">
-      <h1 className="stagger-in font-display text-center text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
+      <h1 className="spray-glow stagger-in font-display text-center text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
         {"WTF are you in the mood for?"}
       </h1>
-      <div className="stencil-rule stagger-in stagger-in-1 mx-auto mt-4 w-10" />
+      <div className="drip-edge stencil-rule stagger-in stagger-in-1 mx-auto mt-4 w-10" />
       {teaser && (
         <p className="stagger-in stagger-in-2 mt-3 text-center text-sm text-ink-2">{teaser}</p>
       )}
@@ -235,7 +235,7 @@ export function Home({
             </button>
           ))}
         </div>
-        <p className="text-center text-xs text-ink/50">
+        <p className="scrawl text-center text-base text-ink/60">
           Choose from the dropdown above, or just type how you feel below.
         </p>
         <form
@@ -243,7 +243,7 @@ export function Home({
             e.preventDefault();
             submit(prompt);
           }}
-          className="shadow-stamp-sm stagger-in stagger-in-4 flex items-center gap-2 rounded-2xl border-2 border-rule bg-paper-2 px-3 py-2 transition-colors focus-within:border-red"
+          className="wall-texture shadow-stamp-sm stagger-in stagger-in-4 flex items-center gap-2 rounded-2xl border-2 border-rule bg-paper-2 px-3 py-2 transition-colors focus-within:border-red"
         >
           <input
             value={prompt}

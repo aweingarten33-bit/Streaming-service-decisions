@@ -130,14 +130,14 @@ export function ExploreScreen({ language }: { language: Language }) {
 
   return (
     <div className="mx-auto w-full max-w-xl px-6 pb-12 pt-16">
-      <h1 className="font-display text-2xl font-semibold text-ink">{copy.headline}</h1>
+      <h1 className="spray-glow font-display text-2xl font-semibold text-ink">{copy.headline}</h1>
 
       <form
         onSubmit={(e) => {
           e.preventDefault();
           runSearch(query);
         }}
-        className="mt-4 flex items-center gap-2 rounded-2xl border border-rule bg-paper/70 px-3 py-2 backdrop-blur-xl transition-colors focus-within:border-red/50"
+        className="drip-edge wall-texture mt-4 flex items-center gap-2 rounded-2xl border border-rule bg-paper/70 px-3 py-2 backdrop-blur-xl transition-colors focus-within:border-red/50"
       >
         <input
           value={query}
@@ -156,7 +156,7 @@ export function ExploreScreen({ language }: { language: Language }) {
       </form>
 
       <div className="mt-3 flex flex-wrap gap-2">
-        {EXPLORE_CATEGORIES.map((category) => (
+        {EXPLORE_CATEGORIES.map((category, i) => (
           <button
             key={category.label}
             type="button"
@@ -164,7 +164,9 @@ export function ExploreScreen({ language }: { language: Language }) {
               setQuery(category.query);
               runSearch(category.query);
             }}
-            className="btn-press rounded-full border border-rule bg-ink/5 px-3 py-1.5 text-xs font-medium text-ink-2"
+            className={`btn-press rounded-full border border-rule bg-ink/5 px-3 py-1.5 text-xs font-medium text-ink-2 ${
+              i % 2 === 0 ? "-rotate-1" : "rotate-1"
+            }`}
           >
             {category.label}
           </button>
@@ -237,7 +239,7 @@ export function ExploreScreen({ language }: { language: Language }) {
         </p>
         <div className="stencil-rule mt-3" />
         {saved.length === 0 ? (
-          <p className="mt-3 text-sm text-ink/40">{copy.noSavedLists}</p>
+          <p className="scrawl mt-3 text-base text-ink/40">{copy.noSavedLists}</p>
         ) : (
           <div className="mt-3 space-y-2">
             {saved.map((item) => {
