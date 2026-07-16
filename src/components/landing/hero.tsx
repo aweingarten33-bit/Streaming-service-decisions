@@ -34,8 +34,7 @@ export function Hero() {
   return (
     <section className="relative flex h-screen w-full flex-col overflow-hidden bg-black">
       {/* Background video, with a moody gradient underneath so the frame
-          still reads as intentional before a real hero-bg asset is dropped
-          into public/videos/. */}
+          still reads as intentional while it loads. */}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a12] via-black to-[#0a0a12]" />
         <video
@@ -47,7 +46,7 @@ export function Hero() {
           style={{ objectPosition: "center 25%" }}
         >
           <source src="/videos/hero-bg.mp4" type="video/mp4" />
-          <source src="/videos/hero-bg.mov" type="video/quicktime" />
+          <source src="/videos/hero-bg.webm" type="video/webm" />
         </video>
         <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/5 to-black/50" />
       </div>
