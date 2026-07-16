@@ -63,6 +63,7 @@ export async function POST(req: NextRequest) {
       backdropPath: item.backdropPath,
       streamingProviders: item.streamingProviders,
       tmdbRating: item.tmdbRating,
+      imdbRating: item.imdbRating,
       overview: item.overview,
       trailerKey: item.trailerKey,
       explanation,

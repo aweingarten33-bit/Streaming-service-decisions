@@ -11,6 +11,7 @@ export interface WatchlistCandidate {
   backdropPath: string | null;
   streamingProviders: string[];
   tmdbRating: number | null;
+  imdbRating: number | null;
   overview: string | null;
   trailerKey: string | null;
 }

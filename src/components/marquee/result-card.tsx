@@ -16,6 +16,7 @@ export interface DecideResult {
   backdropPath: string | null;
   streamingProviders: string[];
   tmdbRating: number | null;
+  imdbRating: number | null;
   overview: string | null;
   trailerKey: string | null;
   explanation: string;
@@ -48,6 +49,13 @@ export function ResultCard({
 
   const watchUrl = `https://www.themoviedb.org/${result.mediaType}/${result.tmdbId}/watch`;
 
+  const rating =
+    result.imdbRating != null
+      ? { value: result.imdbRating, label: "IMDb" }
+      : result.tmdbRating != null
+        ? { value: result.tmdbRating, label: "TMDB" }
+        : null;
+
   const matchedBits: string[] = [];
   if (intent) {
     if (intent.maxRuntimeMinutes) matchedBits.push(`under ${intent.maxRuntimeMinutes} min`);
@@ -78,8 +86,10 @@ export function ResultCard({
           {result.year && <span>{result.year}</span>}
           <span>{result.mediaType}</span>
           {runtimeLabel && <span>{runtimeLabel}</span>}
-          {result.tmdbRating != null && (
-            <span className="text-[#E3B24B]">★ {result.tmdbRating.toFixed(1)}</span>
+          {rating && (
+            <span className="text-[#E3B24B]">
+              ★ {rating.value.toFixed(1)} {rating.label}
+            </span>
           )}
         </div>
 

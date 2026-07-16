@@ -101,7 +101,7 @@ export async function POST(req: NextRequest) {
     }
     existing.add(key);
 
-    await upsertTitle(match.tmdbId, match.mediaType).catch(() => null);
+    await upsertTitle(match.tmdbId, match.mediaType, row.imdbId).catch(() => null);
     const { error } = await supabase
       .from("watchlist_items")
       .upsert(

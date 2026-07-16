@@ -1,12 +1,25 @@
 import { getSupabase } from "@/lib/pipeline/supabase";
-import { getDetails, getWatchProviders } from "@/lib/pipeline/tmdb";
+import { getDetails, getExternalIds, getWatchProviders } from "@/lib/pipeline/tmdb";
 import type { ResolvedMediaType } from "@/lib/pipeline/types";
 
-/** Fetches live TMDB details and caches them in `titles` -- shared by every place a title enters a user's watchlist. */
-export async function upsertTitle(tmdbId: number, mediaType: ResolvedMediaType): Promise<void> {
-  const [details, streamingProviders] = await Promise.all([
+/**
+ * Fetches live TMDB details and caches them in `titles` -- shared by every
+ * place a title enters a user's watchlist. `knownImdbId` lets CSV import
+ * pass through the id it already parsed from the export instead of paying
+ * for an extra TMDB round trip; anything else (manual search-add) resolves
+ * it via TMDB's external-ids lookup. The real IMDb rating itself isn't
+ * fetched here -- that's a bulk-dataset sync (see scripts/sync-imdb-ratings.ts),
+ * not a per-title API call.
+ */
+export async function upsertTitle(
+  tmdbId: number,
+  mediaType: ResolvedMediaType,
+  knownImdbId?: string | null,
+): Promise<void> {
+  const [details, streamingProviders, imdbId] = await Promise.all([
     getDetails(tmdbId, mediaType),
     getWatchProviders(tmdbId, mediaType).catch(() => []),
+    knownImdbId !== undefined ? knownImdbId : getExternalIds(tmdbId, mediaType).catch(() => null),
   ]);
 
   const { error } = await getSupabase().from("titles").upsert(
@@ -24,6 +37,7 @@ export async function upsertTitle(tmdbId: number, mediaType: ResolvedMediaType):
       tmdb_vote_count: details.voteCount,
       overview: details.overview,
       trailer_key: details.trailerKey,
+      imdb_id: imdbId,
       updated_at: new Date().toISOString(),
     },
     { onConflict: "tmdb_id,media_type" },

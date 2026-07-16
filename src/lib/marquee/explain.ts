@@ -19,7 +19,11 @@ export async function explainChoiceAI(
     `Type: ${item.mediaType}`,
     item.runtime ? `Runtime: ${item.runtime} minutes` : null,
     item.genres.length > 0 ? `Genres: ${item.genres.join(", ")}` : null,
-    item.tmdbRating ? `Rating: ${item.tmdbRating}/10` : null,
+    item.imdbRating
+      ? `IMDb rating: ${item.imdbRating}/10`
+      : item.tmdbRating
+        ? `TMDB rating: ${item.tmdbRating}/10`
+        : null,
     tasteSourceCount > 0 ? "Also lines up with the user's saved IMDb list taste sources." : null,
   ]
     .filter(Boolean)

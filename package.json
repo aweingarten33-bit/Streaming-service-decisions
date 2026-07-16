@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "test": "bun test",
-    "run-sql": "bun run scripts/run-sql-file.ts"
+    "run-sql": "bun run scripts/run-sql-file.ts",
+    "sync-imdb-ratings": "bun run scripts/sync-imdb-ratings.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.68.0",
