@@ -77,7 +77,13 @@ export function Theater({
         <primitive object={clonedScene} scale={1.4} />
       </group>
 
-      <pointLight ref={bulbRef} position={[0.1, 0.55, 0.75]} color={WARM_BULB} distance={4} decay={2} />
+      <pointLight
+        ref={bulbRef}
+        position={[0.1, 0.55, 0.75]}
+        color={WARM_BULB}
+        distance={4}
+        decay={2}
+      />
 
       <mesh position={[0.1, 0.55, -5.1]} rotation={[Math.PI / 2, 0, 0]}>
         <cylinderGeometry args={[0.06, 2.2, 12, 24, 1, true]} />
