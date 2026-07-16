@@ -18,13 +18,13 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#08080c",
+  themeColor: "#0f0d0a",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
-      <body className="bg-[#08080c] text-white antialiased">
+      <body className="bg-background text-foreground antialiased">
         <Grain />
         <main>{children}</main>
       </body>

@@ -179,15 +179,16 @@ export function Home({
 
   return (
     <div className="mx-auto flex w-full max-w-xl flex-col items-center px-6 pb-28 pt-16">
-      <h1 className="font-display text-center text-4xl font-semibold tracking-tight text-[#F5EEDC] sm:text-5xl">
+      <h1 className="font-display text-center text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
         {"WTF are you in the mood for?"}
       </h1>
-      {teaser && <p className="mt-2 text-center text-sm text-white/40">{teaser}</p>}
+      <div className="stencil-rule mx-auto mt-4 w-10" />
+      {teaser && <p className="mt-3 text-center text-sm text-ink-2">{teaser}</p>}
 
       <div
         role="group"
         aria-label="Movie or TV show"
-        className="mt-6 flex w-full gap-2 rounded-xl border border-white/10 bg-white/5 p-1"
+        className="mt-6 flex w-full gap-2 rounded-xl border border-rule bg-ink/5 p-1"
       >
         {(
           [
@@ -202,9 +203,7 @@ export function Home({
             aria-pressed={mediaTypeFilter === value}
             onClick={() => setMediaTypeFilter(value)}
             className={`flex-1 rounded-lg py-2 text-[13px] font-medium transition-colors ${
-              mediaTypeFilter === value
-                ? "bg-[#E3B24B]/15 text-[#F5EEDC]"
-                : "text-white/50 hover:text-white/80"
+              mediaTypeFilter === value ? "bg-gold/15 text-ink" : "text-ink-2 hover:text-ink"
             }`}
           >
             {label}
@@ -226,15 +225,15 @@ export function Home({
               onClick={() => setGroupMode(value as typeof groupMode)}
               className={`rounded-full border px-3 py-2 text-xs font-medium ${
                 groupMode === value
-                  ? "border-[#E3B24B]/60 bg-[#E3B24B]/15 text-[#F5EEDC]"
-                  : "border-white/10 bg-white/5 text-white/50"
+                  ? "border-gold/60 bg-gold/15 text-ink"
+                  : "border-rule bg-ink/5 text-ink-2"
               }`}
             >
               {label}
             </button>
           ))}
         </div>
-        <p className="text-center text-xs text-white/40">
+        <p className="text-center text-xs text-ink/40">
           Choose from the dropdown above, or just type how you feel below.
         </p>
         <form
@@ -242,19 +241,19 @@ export function Home({
             e.preventDefault();
             submit(prompt);
           }}
-          className="flex items-center gap-2 rounded-2xl border border-white/15 bg-black/40 px-3 py-2 backdrop-blur-xl transition-colors focus-within:border-[#E3B24B]/50"
+          className="flex items-center gap-2 rounded-2xl border border-rule bg-paper/70 px-3 py-2 backdrop-blur-xl transition-colors focus-within:border-gold/50"
         >
           <input
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             placeholder={copy.inputPlaceholder}
-            className="min-w-0 flex-1 bg-transparent py-2.5 text-[15px] text-[#F5EEDC] placeholder:text-white/40 focus:outline-none"
+            className="min-w-0 flex-1 bg-transparent py-2.5 text-[15px] text-ink placeholder:text-ink/40 focus:outline-none"
           />
           <button
             type="submit"
             disabled={state.kind === "loading"}
             aria-label="Send"
-            className="grid h-10 w-10 flex-none place-items-center rounded-xl bg-gradient-to-br from-[#f2ca6d] to-[#c8933a] text-[#181104] transition-transform hover:brightness-110 disabled:opacity-50"
+            className="grid h-10 w-10 flex-none place-items-center rounded-xl bg-gold text-gold-ink transition-transform hover:brightness-110 disabled:opacity-50"
           >
             <ArrowUp size={18} />
           </button>
@@ -262,28 +261,30 @@ export function Home({
       </div>
 
       <div className="mt-8 w-full">
-        {interstitial && <p className="mb-3 text-center text-sm text-white/50">{interstitial}</p>}
+        {interstitial && <p className="mb-3 text-center text-sm text-ink-2">{interstitial}</p>}
 
         {state.kind === "loading" && (
-          <p className="text-center text-sm text-white/50" role="status" aria-live="polite">
+          <p className="text-center text-sm text-ink-2" role="status" aria-live="polite">
             {loadingMessage}
           </p>
         )}
 
         {state.kind === "result" && (
-          <ResultCard
-            result={state.result}
-            intent={state.intent}
-            language={language}
-            onGiveMeAnother={giveMeAnother}
-            onNotTonight={notTonight}
-            onMarkWatched={markWatched}
-          />
+          <div className="envelope-reveal">
+            <ResultCard
+              result={state.result}
+              intent={state.intent}
+              language={language}
+              onGiveMeAnother={giveMeAnother}
+              onNotTonight={notTonight}
+              onMarkWatched={markWatched}
+            />
+          </div>
         )}
 
         {pendingRejection && (
-          <div className="mt-3 rounded-2xl border border-white/10 bg-white/5 p-4">
-            <p className="text-sm font-medium text-[#F5EEDC]">What was wrong with that one?</p>
+          <div className="mt-3 rounded-2xl border border-rule bg-ink/5 p-4">
+            <p className="text-sm font-medium text-ink">What was wrong with that one?</p>
             <div className="mt-3 grid grid-cols-2 gap-2">
               {["Too heavy", "Too long", "Wrong vibe", "Not for the room", "Already seen"].map(
                 (reason) => (
@@ -291,7 +292,7 @@ export function Home({
                     key={reason}
                     type="button"
                     onClick={() => rejectWithReason(reason)}
-                    className="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-xs font-medium text-white/70"
+                    className="rounded-xl border border-rule bg-paper/50 px-3 py-2 text-xs font-medium text-ink-2"
                   >
                     {reason}
                   </button>
@@ -302,12 +303,12 @@ export function Home({
         )}
 
         {state.kind === "emptyWatchlist" && (
-          <div className="rounded-2xl border border-white/10 bg-white/5 px-5 py-6 text-center">
-            <p className="text-sm text-white/70">{copy.emptyWatchlist}</p>
+          <div className="rounded-2xl border border-rule bg-ink/5 px-5 py-6 text-center">
+            <p className="text-sm text-ink-2">{copy.emptyWatchlist}</p>
             <button
               type="button"
               onClick={onNeedsImport}
-              className="mt-4 rounded-xl bg-gradient-to-br from-[#f2ca6d] to-[#c8933a] px-5 py-2.5 text-sm font-semibold text-[#181104]"
+              className="mt-4 rounded-xl bg-gold px-5 py-2.5 text-sm font-semibold text-gold-ink"
             >
               {copy.emptyWatchlistAction}
             </button>
@@ -315,13 +316,13 @@ export function Home({
         )}
 
         {state.kind === "noMatch" && (
-          <div className="rounded-2xl border border-white/10 bg-white/5 px-5 py-6 text-center">
-            <p className="text-sm text-white/70">{copy.noMatch}</p>
+          <div className="rounded-2xl border border-rule bg-ink/5 px-5 py-6 text-center">
+            <p className="text-sm text-ink-2">{copy.noMatch}</p>
             {!state.relaxed && (
               <button
                 type="button"
                 onClick={() => decide(lastPrompt.current, true)}
-                className="mt-4 rounded-xl bg-gradient-to-br from-[#f2ca6d] to-[#c8933a] px-5 py-2.5 text-sm font-semibold text-[#181104]"
+                className="mt-4 rounded-xl bg-gold px-5 py-2.5 text-sm font-semibold text-gold-ink"
               >
                 {copy.relaxAction}
               </button>

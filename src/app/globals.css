@@ -3,8 +3,7 @@
 @import "tw-animate-css";
 @import "@fontsource/playfair-display/400.css";
 @import "@fontsource/playfair-display/700.css";
-@import "@fontsource/source-serif-4/400.css";
-@import "@fontsource/source-serif-4/600.css";
+@import "@fontsource/playfair-display/900.css";
 @import "@fontsource/archivo/400.css";
 @import "@fontsource/archivo/500.css";
 @import "@fontsource/archivo/600.css";
@@ -14,116 +13,82 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Hallmark · macrostructure: existing app screens (redesign, not greenfield)
+ * theme: custom · vibe: "stencil-cut rebellion, spotlit restraint, envelope-reveal glamour"
+ * paper: oklch(9% 0.015 75) · accent: oklch(72% 0.13 78)
+ * display: Playfair Display (roman only) · body: Archivo · mono: JetBrains Mono
+ * axes: dark / roman-serif / chromatic-other (chromatic-gold ~78°)
+ * studied: no · context: explicit · v0.8.0
+ * pre-emit critique: P4 H4 E4 S4 R4 V4
+ */
 
 @theme inline {
   --font-display: "Playfair Display", Georgia, serif;
-  --font-serif: "Source Serif 4", Georgia, serif;
   --font-sans: "Archivo", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
-}
-
-
-
-/* ============================================================
-   DFS ANALYSIS ENGINE
-   Clean white technical HUD aesthetic (kprverse-inspired)
-   + cartoon punk football energy
-   ============================================================ */
-
-@theme inline {
-  --font-display: var(--font-display);
-  --font-serif: var(--font-serif);
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-mono);
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
 
-  /* Brand palette */
-  --color-lime: var(--lime);
-  --color-profit: var(--profit);
-  --color-hotred: var(--hotred);
-  --color-orange: var(--orange);
-  --color-ink: var(--ink);
+  /* Named theme tokens -- reference these by name, never inline a raw
+     oklch()/hex value in a component. */
   --color-paper: var(--paper);
-
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-
-  --radius-sm: 0px;
-  --radius-md: 0px;
-  --radius-lg: 0px;
-  --radius-xl: 0px;
+  --color-paper-2: var(--paper-2);
+  --color-paper-3: var(--paper-3);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-rule: var(--rule);
+  --color-gold: var(--gold);
+  --color-gold-ink: var(--gold-ink);
+  --color-focus: var(--focus-ring);
 }
 
 :root {
-  color-scheme: light;
+  color-scheme: dark;
 
-  /* ===== Editorial palette — NYT (70) × professional-services resume (30).
-     Near-black ink on warm paper-white, one restrained accent. ===== */
-  --ink: #121212;          /* editorial near-black (softer than pure #000) */
-  --paper: #ffffff;
-  --lime: #1a7f37;         /* restrained editorial green for positives */
-  --profit: #1a7f37;
-  --hotred: #b31b1b;       /* muted editorial red (not neon) */
-  --orange: #8a6d1a;       /* muted ochre accent */
+  /* ===== Stencil-cut rebellion (Banksy) x spotlit restraint (Apple) x
+     envelope-reveal glamour (the Academy Awards). A dark, warm-tinted stage
+     -- never a flat #000 -- with one gold accent doing double duty as both
+     the statuette gold and Banksy's iconic single-color accent.
+     Design intent is oklch(9% 0.015 75) / oklch(72% 0.13 78) etc (see the
+     stamp above) -- shipped here as the equivalent hex instead, because this
+     app's existing Grain overlay (fx/grain.tsx) uses mix-blend-mode: multiply,
+     and that combination with oklch()-declared colors renders as solid black
+     in at least one real Chromium build. Confirmed by swapping in these exact
+     hex values live and watching the render fix itself. ===== */
+  --paper: #040200;
+  --paper-2: #0b0602;
+  --paper-3: #140e06;
+  --ink: #f6f1eb;
+  --ink-2: #a9a49c;
+  --rule: #2a2319;
+  --muted: #6e6860;
+  --gold: #d19936;
+  --gold-ink: #171008;
+  --focus-ring: #eba000;
 
-  --accent-ink: #326891;   /* NYT-ish restrained link blue, used sparingly */
-
-  --background: #ffffff;
-  --foreground: #121212;
-  --card: #ffffff;
-  --card-foreground: #121212;
-  --popover: #ffffff;
-  --popover-foreground: #121212;
-  --primary: #121212;
-  --primary-foreground: #ffffff;
-  --secondary: #f7f7f5;    /* warm off-white section band */
-  --secondary-foreground: #121212;
-  --muted: #f7f7f5;
-  --muted-foreground: #6b6b6b;
-  --accent: #326891;
-  --accent-foreground: #ffffff;
-  --destructive: #b31b1b;
-  --destructive-foreground: #ffffff;
-  --border: #121212;
-  --input: #dcdcd6;
-  --ring: #121212;
-
-  --radius: 0px;
-
-  --chart-1: #1a7f37;
-  --chart-2: #b31b1b;
-  --chart-3: #326891;
-  --chart-4: #121212;
-  --chart-5: #a8a29e;
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --primary: var(--gold);
+  --primary-foreground: var(--gold-ink);
+  --muted-foreground: var(--muted);
+  --accent: var(--paper-2);
+  --accent-foreground: var(--ink);
+  --border: var(--rule);
+  --input: var(--rule);
+  --ring: var(--focus-ring);
 }
 
 @layer base {
-  * {
-    @apply border-border;
-    border-radius: 0 !important;
-  }
   html {
     @apply bg-background;
   }
@@ -131,230 +96,56 @@
     @apply bg-background text-foreground font-sans antialiased;
   }
   ::selection {
-    background: #121212;
-    color: #ffffff;
+    background: var(--gold);
+    color: var(--gold-ink);
   }
   ::-webkit-scrollbar {
     width: 10px;
     height: 10px;
   }
   ::-webkit-scrollbar-track {
-    background: #ffffff;
+    background: var(--paper);
   }
   ::-webkit-scrollbar-thumb {
-    background: #c8c8c2;
-    border: 2px solid #ffffff;
+    background: var(--rule);
+    border: 2px solid var(--paper);
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #121212;
+    background: var(--muted);
   }
 }
 
 @layer utilities {
   .font-display {
-    font-family: var(--font-display), 'Georgia', serif;
-  }
-  .font-serif {
-    font-family: var(--font-serif), 'Georgia', serif;
+    font-family: var(--font-display), Georgia, serif;
   }
 
-  /* technical dotted grid, very subtle on white */
-  .grid-dots {
-    background-image: radial-gradient(rgba(18, 18, 18, 0.07) 1px, transparent 1px);
-    background-size: 26px 26px;
-  }
-  .grid-dots-light {
-    background-image: radial-gradient(rgba(18, 18, 18, 0.05) 1px, transparent 1px);
-    background-size: 26px 26px;
-  }
-  .grid-lines {
-    background-image:
-      linear-gradient(to right, rgba(18, 18, 18, 0.045) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(18, 18, 18, 0.045) 1px, transparent 1px);
-    background-size: 60px 60px;
-  }
-
-  /* ===== Editorial helpers (NYT × resume) ===== */
-  /* the thin authoritative black rule that divides editorial sections */
-  .edu-rule {
-    height: 2px;
-    background: #121212;
-    border: 0;
-  }
-  .edu-hairline {
+  /* the one central move: a hairline gold rule that "cuts" a section open --
+     Banksy's single stencil-edge, used once per reveal, never decoratively
+     repeated. */
+  .stencil-rule {
     height: 1px;
-    background: rgba(18, 18, 18, 0.18);
-    border: 0;
-  }
-  /* mono metadata label, like "5 MIN READ" / "SECTION 01" */
-  .edu-kicker {
-    font-family: var(--font-mono), monospace;
-    font-size: 11px;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: #6b6b6b;
-  }
-  /* masked text reveal — clip container, child rises up into view */
-  .reveal-mask {
-    overflow: hidden;
-    display: block;
+    background: var(--gold);
   }
 
-  /* hard shadow — subtle editorial block edge (used sparingly) */
-  .shadow-hard {
-    box-shadow: 4px 4px 0 0 #121212;
+  /* the envelope-reveal -- one deliberate motion, not a suite of them. A
+     beat of stillness, then the pick rises into the spotlight. */
+  .envelope-reveal {
+    animation: envelope-reveal 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
-  .shadow-hard-sm {
-    box-shadow: 3px 3px 0 0 #121212;
-  }
-  .shadow-hard-lime {
-    box-shadow: 4px 4px 0 0 var(--lime);
-  }
-  .shadow-hard-red {
-    box-shadow: 4px 4px 0 0 var(--hotred);
-  }
-
-  /* wordmark with artwork bleeding through the letterforms */
-  .wordmark-clip {
-    background-image: url('/hero-art.png');
-    background-size: cover;
-    background-position: center 28%;
-    background-repeat: no-repeat;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: transparent;
-    filter: contrast(1.08) saturate(1.1);
-  }
-  /* children must also be transparent so the parent's clipped bg shows through */
-  .wordmark-clip span {
-    -webkit-text-fill-color: transparent;
-    color: transparent;
-  }
-
-  .marquee-track {
-    animation: marquee 26s linear infinite;
-  }
-  @keyframes marquee {
-    from {
-      transform: translateX(0);
-    }
-    to {
-      transform: translateX(-50%);
-    }
-  }
-  @keyframes blink {
-    0%,
-    49% {
-      opacity: 1;
-    }
-    50%,
-    100% {
-      opacity: 0;
-    }
-  }
-  .cursor-blink::after {
-    content: '_';
-    animation: blink 1s steps(1) infinite;
-  }
-}
-
-@layer utilities {
-  /* ============================================================
-     CSS-only animated data-field (mobile / no-WebGL fallback)
-     A slowly drifting dotted grid over a soft navy wash.
-     Pure compositor transforms — no GPU stress, no battery drain.
-     ============================================================ */
-  .css-datafield {
-    background-color: #ffffff;
-    background-image:
-      radial-gradient(circle at 50% 30%, rgba(23, 42, 77, 0.09), transparent 62%),
-      radial-gradient(rgba(23, 42, 77, 0.20) 1.2px, transparent 1.6px);
-    background-size:
-      100% 100%,
-      26px 26px;
-    background-position:
-      center,
-      0 0;
-    animation: datafield-drift 8s linear infinite;
-  }
-  @keyframes datafield-drift {
-    from {
-      background-position:
-        center,
-        0 0;
-    }
-    to {
-      background-position:
-        center,
-        26px 26px;
-    }
-  }
-
-  /* ============================================================
-     POLA-style cinematic motion helpers
-     Slow, soft, eased — applied via framer-motion in components,
-     these are supporting CSS utilities for parallax + polish.
-     ============================================================ */
-  .pola-blur-in {
-    animation: pola-blur-in 1.1s cubic-bezier(0.16, 1, 0.3, 1) both;
-  }
-  @keyframes pola-blur-in {
+  @keyframes envelope-reveal {
     from {
       opacity: 0;
-      filter: blur(8px);
-      transform: translateY(24px);
+      transform: translateY(16px);
     }
     to {
       opacity: 1;
-      filter: blur(0);
       transform: translateY(0);
     }
   }
   @media (prefers-reduced-motion: reduce) {
-    .pola-blur-in {
+    .envelope-reveal {
       animation: none;
     }
-  }
-
-  /* Hide native cursor when custom cursor is active (desktop pointers only). */
-  .cursor-none-root,
-  .cursor-none-root * {
-    cursor: none !important;
-  }
-}
-
-@layer utilities {
-  /* Underline sweep for inline links — hover expands a hairline from left. */
-  .link-sweep {
-    position: relative;
-    display: inline-block;
-  }
-  .link-sweep::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    bottom: -2px;
-    height: 1px;
-    width: 100%;
-    background: currentColor;
-    transform: scaleX(0);
-    transform-origin: 100% 50%;
-    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .link-sweep:hover::after {
-    transform: scaleX(1);
-    transform-origin: 0% 50%;
-  }
-
-  /* Image hover: desaturate at rest, full color on hover, subtle scale. */
-  .img-desat {
-    filter: grayscale(1) contrast(1.02);
-    transition: filter 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-    will-change: transform, filter;
-  }
-  .img-desat:hover {
-    filter: grayscale(0) contrast(1.06);
-    transform: scale(1.03);
   }
 }
