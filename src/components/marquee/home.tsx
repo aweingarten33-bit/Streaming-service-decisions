@@ -178,10 +178,21 @@ export function Home({
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-xl flex-col items-center px-6 pb-12 pt-16">
-      <h1 className="spray-glow stagger-in font-display text-center text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
-        {"WTF are you in the mood for?"}
-      </h1>
+    <div className="relative mx-auto flex w-full max-w-xl flex-col items-center px-6 pb-12 pt-16">
+      {/* the hero moment -- torn notebook pages stacked and taped down,
+          like the reference's layered "STREAM DECIDE" card, instead of
+          the headline just floating on bare paper */}
+      <div className="relative mb-2 w-full">
+        <div className="bg-paper-3 absolute inset-2 -z-10 -rotate-2 rounded-sm" />
+        <div className="bg-paper-2 shadow-stamp absolute inset-1 -z-10 rotate-1 rounded-sm border-2 border-rule" />
+        <div className="tape-strip pointer-events-none absolute -top-3 left-1/2 z-10 h-5 w-20 -translate-x-1/2 rotate-2" />
+
+        <div className="relative px-4 pt-6 pb-5">
+          <h1 className="spray-glow stagger-in font-display text-center text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
+            {"WTF are you in the mood for?"}
+          </h1>
+        </div>
+      </div>
       <div className="drip-edge stencil-rule stagger-in stagger-in-1 mx-auto mt-4 w-10" />
       {teaser && (
         <p className="stagger-in stagger-in-2 mt-3 text-center text-sm text-ink-2">{teaser}</p>

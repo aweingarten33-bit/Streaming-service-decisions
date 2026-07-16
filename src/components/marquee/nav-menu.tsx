@@ -46,12 +46,12 @@ export function NavMenu({ tab, onChange }: { tab: Tab; onChange: (tab: Tab) => v
 
   return (
     <>
-      <header className="pointer-events-none fixed inset-x-0 top-0 z-[70] mix-blend-difference">
+      <header className="pointer-events-none fixed inset-x-0 top-0 z-[70]">
         <div className="flex items-center justify-between p-5">
           <button
             type="button"
             onClick={() => select("home")}
-            className="pointer-events-auto font-display text-xl tracking-tighter text-white uppercase"
+            className={`pointer-events-auto font-display text-xl tracking-tighter uppercase transition-colors ${open ? "text-white" : "text-ink"}`}
           >
             Marquee
           </button>
@@ -61,7 +61,7 @@ export function NavMenu({ tab, onChange }: { tab: Tab; onChange: (tab: Tab) => v
             onClick={() => setOpen((v) => !v)}
             aria-label={open ? "Close menu" : "Open menu"}
             aria-expanded={open}
-            className="pointer-events-auto relative flex h-10 w-12 flex-col justify-center gap-2"
+            className={`pointer-events-auto relative flex h-10 w-12 flex-col justify-center gap-2 transition-colors ${open ? "text-white" : "text-ink"}`}
           >
             <motion.span
               animate={{
@@ -104,13 +104,19 @@ export function NavMenu({ tab, onChange }: { tab: Tab; onChange: (tab: Tab) => v
               onClick={() => setOpen(false)}
             />
 
-            {/* secondary parallax panel -- textured wall, arrives a beat behind */}
+            {/* secondary parallax panel -- textured wall, arrives a beat behind.
+                Hardcoded dark colors, not the app's (now light) tokens -- this
+                menu is the deliberate day/night exception, per the reference. */}
             <motion.div
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ duration: 0.8, ease: EASE, delay: 0.05 }}
-              className="wall-texture pointer-events-auto absolute inset-y-0 left-0 w-[92vw] border-r border-rule bg-paper-3 md:w-[65vw]"
+              className="pointer-events-auto absolute inset-y-0 left-0 w-[92vw] border-r border-white/10 bg-[#1a1a1a] md:w-[65vw]"
+              style={{
+                backgroundImage:
+                  "repeating-linear-gradient(90deg, transparent, transparent 2px, rgb(255 255 255 / 3%) 2px, rgb(255 255 255 / 3%) 4px), repeating-linear-gradient(0deg, transparent, transparent 8px, rgb(255 255 255 / 4%) 8px, rgb(255 255 255 / 4%) 9px)",
+              }}
             />
 
             {/* primary panel -- the actual menu content */}
@@ -119,7 +125,7 @@ export function NavMenu({ tab, onChange }: { tab: Tab; onChange: (tab: Tab) => v
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ duration: 0.8, ease: EASE }}
-              className="pointer-events-auto absolute inset-y-0 left-0 flex w-[88vw] flex-col justify-center overflow-hidden border-r-[4px] border-red bg-paper-2 md:w-[60vw]"
+              className="pointer-events-auto absolute inset-y-0 left-0 flex w-[88vw] flex-col justify-center overflow-hidden border-r-[4px] border-red bg-[#0f0f0f] md:w-[60vw]"
             >
               <div className="absolute inset-0 bg-[image:var(--spray-noise)] opacity-20" />
 
@@ -136,7 +142,7 @@ export function NavMenu({ tab, onChange }: { tab: Tab; onChange: (tab: Tab) => v
                   >
                     <span
                       className={`font-mono text-xs font-bold transition-colors md:text-sm ${
-                        tab === key ? "text-red" : "text-ink/40"
+                        tab === key ? "text-red" : "text-white/40"
                       } group-hover:text-red`}
                     >
                       {num}
@@ -145,8 +151,8 @@ export function NavMenu({ tab, onChange }: { tab: Tab; onChange: (tab: Tab) => v
                     <div className="relative overflow-hidden">
                       <motion.div
                         whileTap={{ scale: 0.95 }}
-                        className={`spray-glow font-display text-[11vw] leading-[0.95] tracking-tighter uppercase transition-colors duration-300 sm:text-6xl md:text-7xl lg:text-8xl ${
-                          tab === key ? "text-red" : "text-ink"
+                        className={`font-display text-[11vw] leading-[0.95] tracking-tighter uppercase transition-colors duration-300 sm:text-6xl md:text-7xl lg:text-8xl ${
+                          tab === key ? "text-red" : "text-white"
                         } group-hover:text-red`}
                       >
                         {label}
@@ -164,9 +170,11 @@ export function NavMenu({ tab, onChange }: { tab: Tab; onChange: (tab: Tab) => v
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.5, delay: 0.8 }}
-                  className="relative mt-12 border-t-2 border-rule pt-8 md:mt-24"
+                  className="relative mt-12 border-t-2 border-white/20 pt-8 md:mt-24"
                 >
-                  <p className="scrawl text-xl text-ink">No decision paralysis. Just press play.</p>
+                  <p className="scrawl text-xl" style={{ color: "#fff" }}>
+                    No decision paralysis. Just press play.
+                  </p>
                 </motion.div>
               </nav>
             </motion.div>

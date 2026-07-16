@@ -14,25 +14,25 @@
 @custom-variant dark (&:is(.dark *));
 
 /* Hallmark · macrostructure: existing app screens (redesign, not greenfield) · designed-as-app
- * theme: custom (v7 -- ported from a second, more literally Banksy
- * reference ("StreamDecide" + Banksy pass), corrected per explicit
- * instruction: "it's a concrete wall spray painted black" -- the
- * reference's own palette was light-concrete/day-mode, but this app's
- * wall is black (matching the /welcome splash), just warm-tinted rather
- * than neutral grey so it still reads as paint, not a processed grey.
- * Carries over: true red accent (not the v6 burnt-orange), the
- * spray-stroke SVG filter, a scrawled Permanent-Marker annotation layer,
- * and concrete/brick wall-texture utilities (recolored for a dark
- * surface -- the reference's versions assume a light wall and darken;
- * this one lightens, the same fix as Grain's blend-mode earlier.)
- * vibe: "concrete wall, spray-painted black, one red stencil, someone's
- * been writing on it in marker"
- * paper: black concrete (warm-tinted, not neutral) · ink: warm off-white · muted: warm grey · accent: true red (still the ONLY accent)
+ * theme: custom (v8 -- corrected against the actual LIVE reference deploy,
+ * not just its source. v6/v7 misread "concrete wall spray painted black"
+ * as the whole app; the real reference is light graph-paper/cream, with
+ * only the nav menu staying dark as a day/night contrast. This version:
+ * light paper base restored, Grain back to mix-blend-multiply, wall/brick
+ * texture and spray-glow back to darkening (not lightening), grid-paper
+ * body background added. The menu (nav-menu.tsx) hardcodes its own dark
+ * colors rather than inheriting these tokens, so it doesn't flip light too.
+ * v6/v7's other additions carry over as-is: true red accent, Archivo
+ * Black/Anton display type, spray-stroke SVG filter, Permanent-Marker
+ * scrawl layer.
+ * vibe: "torn notebook pages taped to a corkboard, one red stencil, the
+ * menu is a blacked-out room next door"
+ * paper: cream graph-paper · ink: near-black · muted: warm grey · accent: true red (still the ONLY accent)
  * display: Archivo Black / Anton · body: Inter · mono: Space Mono · scrawl: Permanent Marker
- * axes: dark / warm-editorial / chromatic-red
- * studied: yes (reference code provided) · context: explicit · design-system: design.md · v7
- * pre-emit critique: P4 H4 E4 S3 R3 V4 (same as v6 -- palette corrected
- * per explicit follow-up instruction, not re-guessed.)
+ * axes: light / warm-editorial / chromatic-red
+ * studied: yes (live reference deploy, not just source) · context: explicit · design-system: design.md · v8
+ * pre-emit critique: P4 H4 E4 S3 R3 V4 (same as v6/v7 -- palette corrected
+ * against the live reference, not re-guessed.)
  */
 
 @theme inline {
@@ -75,25 +75,28 @@
 }
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 
-  /* ===== v7: a concrete wall spray-painted black, not the reference's
-     literal light-concrete/day palette. Warm-tinted near-black (R>G>B
-     slightly throughout) rather than a neutral processed grey -- per
-     explicit instruction, black should still read as paint/soot, not a
-     flat grey fill. True red accent (#e3170a, the Banksy-pass reference's
-     literal value). Kept as hex, not oklch: this app's Grain overlay uses
-     mix-blend-mode, and oklch()-declared colors render as solid black in
-     real Chromium when blended -- confirmed earlier by testing. ===== */
-  --paper: #0d0c0a;
-  --paper-2: #17150f;
-  --paper-3: #211e17;
-  --ink: #efe9df;
-  --ink-2: #b8b0a3;
-  --rule: #55504a;
-  --muted: #8c8478;
+  /* ===== v8: corrected against the actual live reference deploy (not just
+     its source), which is light -- graph-paper cream background, layered
+     torn-paper cards with thick black borders, bold black display type,
+     one red accent. The dark treatment (v6/v7) was a misread of "concrete
+     wall spray painted black" applied to the whole app; the reference only
+     keeps the NAV MENU dark, as a day/night contrast against this light
+     base -- see nav-menu.tsx, which hardcodes its own dark colors rather
+     than inheriting these tokens. Kept as hex, not oklch: this app's Grain
+     overlay uses mix-blend-mode, and oklch()-declared colors render as
+     solid black in real Chromium when blended -- confirmed earlier by
+     testing. ===== */
+  --paper: #ece7d8;
+  --paper-2: #f5f2e6;
+  --paper-3: #ddd6c2;
+  --ink: #1a1a1a;
+  --ink-2: #4a4640;
+  --rule: #1a1a1a;
+  --muted: #7d7666;
   --red: #e3170a;
-  --red-ink: #fbf8f4;
+  --red-ink: #f9f8f4;
   --focus-ring: #e3170a;
   --spray-noise: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
 
@@ -125,9 +128,29 @@
 @layer base {
   html {
     @apply bg-background;
+    /* the /welcome splash is black and full-bleed; without this, iOS
+       Safari's elastic overscroll bounce reveals a flash of this (now
+       light) body background past the splash's own edges. */
+    overscroll-behavior-y: none;
   }
   body {
     @apply bg-background text-foreground font-sans antialiased;
+    /* graph-paper grid, the reference's signature backdrop texture */
+    background-image:
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 27px,
+        rgb(0 0 0 / 6%) 27px,
+        rgb(0 0 0 / 6%) 28px
+      ),
+      repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 27px,
+        rgb(0 0 0 / 6%) 27px,
+        rgb(0 0 0 / 6%) 28px
+      );
   }
   ::selection {
     background: var(--red);
@@ -237,62 +260,58 @@
     );
   }
 
-  /* BANKSY WALL TEXTURE -- exposed concrete grain. Ported from the
-     reference, but lightened rather than darkened: its version assumes a
-     light wall and adds subtle black lines; ours is a black wall, so it
-     adds subtle white/highlight lines instead (same fix as Grain's
-     mix-blend-mode earlier -- darkening on near-black is invisible). */
+  /* BANKSY WALL TEXTURE -- exposed concrete/paper grain, darkening lines
+     (this app's main surface is light paper, matching the reference). */
   .wall-texture {
     background-image:
       repeating-linear-gradient(
         90deg,
         transparent,
         transparent 2px,
-        rgb(255 255 255 / 4%) 2px,
-        rgb(255 255 255 / 4%) 4px
+        rgb(0 0 0 / 3%) 2px,
+        rgb(0 0 0 / 3%) 4px
       ),
       repeating-linear-gradient(
         0deg,
         transparent,
         transparent 8px,
-        rgb(255 255 255 / 5%) 8px,
-        rgb(255 255 255 / 5%) 9px
+        rgb(0 0 0 / 4%) 8px,
+        rgb(0 0 0 / 4%) 9px
       );
   }
 
-  /* BANKSY BRICK -- subtle brick-line overlay, same lightened-for-dark fix. */
+  /* BANKSY BRICK -- subtle brick-line overlay. */
   .brick-texture {
     background-image:
       repeating-linear-gradient(
         transparent 0px,
         transparent 28px,
-        rgb(255 255 255 / 6%) 28px,
-        rgb(255 255 255 / 6%) 30px
+        rgb(0 0 0 / 6%) 28px,
+        rgb(0 0 0 / 6%) 30px
       ),
       repeating-linear-gradient(
         90deg,
         transparent 0px,
         transparent 48px,
-        rgb(255 255 255 / 4%) 48px,
-        rgb(255 255 255 / 4%) 50px
+        rgb(0 0 0 / 4%) 48px,
+        rgb(0 0 0 / 4%) 50px
       );
     background-size: 100px 30px;
   }
 
-  /* STENCIL SPRAY GLOW -- overspray halo on text/elements. Lightened for a
-     dark wall: the reference's glow darkens (for light text on a light
-     wall); this one lightens, since our type sits light-on-black. */
+  /* STENCIL SPRAY GLOW -- overspray halo on text/elements. Dark shadow,
+     since type sits dark-on-light paper here. */
   .spray-glow {
     text-shadow:
-      0 0 20px rgb(255 255 255 / 20%),
-      0 0 40px rgb(255 255 255 / 10%),
-      2px 2px 0 rgb(0 0 0 / 40%);
+      0 0 20px rgb(0 0 0 / 15%),
+      0 0 40px rgb(0 0 0 / 8%),
+      1px 1px 0 rgb(0 0 0 / 10%);
   }
   .spray-glow-red {
     text-shadow:
-      0 0 20px rgb(227 23 10 / 45%),
-      0 0 40px rgb(227 23 10 / 22%),
-      2px 2px 0 rgb(0 0 0 / 40%);
+      0 0 20px rgb(227 23 10 / 40%),
+      0 0 40px rgb(227 23 10 / 20%),
+      1px 1px 0 rgb(0 0 0 / 10%);
   }
 
   /* TORN TAPE -- a masking-tape strip, stuck on crooked. */
