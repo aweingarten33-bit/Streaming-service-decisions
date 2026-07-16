@@ -233,11 +233,11 @@ export function ExploreScreen({ language }: { language: Language }) {
         )}
       </div>
 
-      <div className="mt-10">
+      <div className="mt-6">
         <p className="font-mono text-[11px] uppercase tracking-wider text-ink/40">
           {copy.savedListsTitle}
         </p>
-        <div className="stencil-rule mt-3" />
+        <div className="stencil-rule mt-1.5" />
         {saved.length === 0 ? (
           <p className="scrawl mt-3 text-base text-ink/40">{copy.noSavedLists}</p>
         ) : (

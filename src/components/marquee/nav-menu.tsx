@@ -47,11 +47,13 @@ export function NavMenu({ tab, onChange }: { tab: Tab; onChange: (tab: Tab) => v
 
   return (
     <>
-      <header className="pointer-events-none fixed inset-x-0 top-0 z-[70]">
+      <header
+        className={`pointer-events-none fixed inset-x-0 top-0 z-[70] transition-colors ${
+          open ? "" : "bg-paper/85 border-rule/10 border-b backdrop-blur-md"
+        }`}
+      >
         <div className="flex items-center justify-between p-5">
-          {tab === "home" ? (
-            <span />
-          ) : (
+          {open ? (
             <button
               type="button"
               onClick={() => select("home")}
@@ -59,6 +61,8 @@ export function NavMenu({ tab, onChange }: { tab: Tab; onChange: (tab: Tab) => v
             >
               Marquee
             </button>
+          ) : (
+            <span />
           )}
 
           <button
