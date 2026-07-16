@@ -4,96 +4,33 @@ import { useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { EffectComposer, DepthOfField, Bloom, Vignette } from "@react-three/postprocessing";
 import * as THREE from "three";
-import { FloatingPoster, type PosterConfig } from "./floating-poster";
-import { AtmosphereParticles } from "./atmosphere-particles";
+import { Theater } from "./chapters/theater";
+import { PopcornField } from "./chapters/popcorn-field";
+import { FlashAndTracks } from "./chapters/flash-and-tracks";
+import { Finale } from "./chapters/finale";
 import type { ScrollStore } from "./scroll-store";
 
-// Locked Banksy tokens only (globals.css) -- never a second saturated hue.
+// Locked Banksy tokens only -- never a second saturated hue baseline (the
+// eras chapter is the one deliberate, content-justified exception, scoped
+// entirely to its own shader/lighting).
 const INK = "#0a0a0a";
 const RED_INK = "#f5f0e6";
-const RED = "#d81e2c";
 const INK_2 = "#4a483f";
 
-const POSTERS: PosterConfig[] = [
-  {
-    position: [-3.4, 1.3, -8],
-    size: [1.1, 1.65],
-    accent: false,
-    floatSpeed: 0.5,
-    floatIntensity: 0.5,
-    rotationIntensity: 0.25,
-    parallax: 0.15,
-  },
-  {
-    position: [3.1, -1.0, -7],
-    size: [1.2, 1.8],
-    accent: false,
-    floatSpeed: 0.6,
-    floatIntensity: 0.6,
-    rotationIntensity: 0.3,
-    parallax: 0.18,
-  },
-  {
-    position: [-1.6, -1.7, -5.4],
-    size: [1.3, 1.95],
-    accent: false,
-    floatSpeed: 0.45,
-    floatIntensity: 0.55,
-    rotationIntensity: 0.2,
-    parallax: 0.26,
-  },
-  {
-    position: [2.0, 1.6, -4.4],
-    size: [1.4, 2.1],
-    accent: true,
-    floatSpeed: 0.55,
-    floatIntensity: 0.6,
-    rotationIntensity: 0.3,
-    parallax: 0.32,
-  },
-  {
-    position: [-3.6, -0.4, -3.2],
-    size: [1.5, 2.25],
-    accent: false,
-    floatSpeed: 0.5,
-    floatIntensity: 0.65,
-    rotationIntensity: 0.25,
-    parallax: 0.4,
-  },
-  {
-    position: [0.3, -2.1, -2.4],
-    size: [1.5, 2.25],
-    accent: false,
-    floatSpeed: 0.6,
-    floatIntensity: 0.6,
-    rotationIntensity: 0.3,
-    parallax: 0.46,
-  },
-  {
-    position: [3.6, 0.7, -1.4],
-    size: [1.7, 2.55],
-    accent: false,
-    floatSpeed: 0.45,
-    floatIntensity: 0.7,
-    rotationIntensity: 0.35,
-    parallax: 0.55,
-  },
-  {
-    position: [-1.2, 1.9, -0.6],
-    size: [1.7, 2.55],
-    accent: true,
-    floatSpeed: 0.5,
-    floatIntensity: 0.7,
-    rotationIntensity: 0.3,
-    parallax: 0.62,
-  },
-];
-
+// One continuous camera path spanning the whole page. Matches the named
+// RANGES in scroll-store.ts -- each waypoint's fraction is (index / (N-1)).
 const CAMERA_WAYPOINTS: { position: [number, number, number]; lookAt: [number, number, number] }[] =
   [
-    { position: [0, 0, 9], lookAt: [0, 0, -3] },
-    { position: [-1.6, 0.6, 4], lookAt: [0.6, -0.2, -4] },
-    { position: [1.2, -0.5, 1], lookAt: [-0.4, 0.3, -5] },
+    { position: [0, 0.5, 4], lookAt: [0, -0.3, -2.5] }, // darkness: establishing shot
+    { position: [0, 0.35, 1.2], lookAt: [0.1, 0.45, -2.5] }, // push toward the lens
+    { position: [0.1, 0.5, -1.5], lookAt: [0.5, 0, -6] }, // through the lens, into the field
+    { position: [1.2, 0.4, -6], lookAt: [2, -1, -10] }, // weaving among kernels
+    { position: [0, 0, -12], lookAt: [0, -1, -18] }, // stretching toward the road
+    { position: [0.5, -0.6, -16], lookAt: [0, -1.5, -22] }, // approaching the flash
+    { position: [0, -1, -18], lookAt: [0, -1.5, -25] }, // the flash beat -- sharp, not glide-y
+    { position: [1, -1, -25], lookAt: [0, -1.48, -30] }, // following the burning tracks
+    { position: [2, 0, -15], lookAt: [0, -1.3, -22] }, // eras settle out
+    { position: [3.2, 1.4, -4], lookAt: [0.5, -1, -18] }, // finale: wide, asymmetrical
   ];
 
 function CameraRig({
@@ -103,8 +40,8 @@ function CameraRig({
   scrollStore: ScrollStore;
   reducedMotion: boolean;
 }) {
-  const posTarget = useRef(new THREE.Vector3(0, 0, 9));
-  const lookTarget = useRef(new THREE.Vector3(0, 0, -3));
+  const posTarget = useRef(new THREE.Vector3());
+  const lookTarget = useRef(new THREE.Vector3());
 
   useFrame(({ camera, pointer, clock }) => {
     const s = Math.max(0, Math.min(scrollStore.section, CAMERA_WAYPOINTS.length - 1));
@@ -124,13 +61,18 @@ function CameraRig({
       THREE.MathUtils.lerp(a.lookAt[2], b.lookAt[2], f),
     );
 
-    if (!reducedMotion) {
+    // The flash beat (waypoint index 6) is the one moment camera motion
+    // should read as a reactive snap, not a smooth glide -- everywhere else,
+    // idle drift + pointer parallax layer on top.
+    const isFlashBeat = i === 6;
+    if (!reducedMotion && !isFlashBeat) {
       const t = clock.getElapsedTime();
-      posTarget.current.x += Math.sin(t * 0.15) * 0.25 + pointer.x * 0.3;
-      posTarget.current.y += Math.cos(t * 0.12) * 0.15 + pointer.y * 0.15;
+      posTarget.current.x += Math.sin(t * 0.15) * 0.2 + pointer.x * 0.25;
+      posTarget.current.y += Math.cos(t * 0.12) * 0.12 + pointer.y * 0.12;
     }
 
-    camera.position.lerp(posTarget.current, reducedMotion ? 1 : 0.05);
+    const lerpFactor = reducedMotion ? 1 : isFlashBeat ? 0.18 : 0.055;
+    camera.position.lerp(posTarget.current, lerpFactor);
     camera.lookAt(lookTarget.current);
   });
 
@@ -146,50 +88,43 @@ export function HeroScene({
   reducedMotion: boolean;
   mobileTier: boolean;
 }) {
-  const posters = mobileTier ? POSTERS.slice(0, 5) : POSTERS;
-
   return (
     <Canvas
       dpr={mobileTier ? [1, 1] : [1, 1.5]}
-      gl={{ antialias: true, powerPreference: "high-performance", alpha: false }}
-      camera={{ position: [0, 0, 9], fov: 50 }}
+      gl={{
+        antialias: true,
+        powerPreference: "high-performance",
+        alpha: false,
+        toneMapping: THREE.ACESFilmicToneMapping,
+      }}
+      camera={{ position: [0, 0.5, 4], fov: 50 }}
     >
       <color attach="background" args={[INK]} />
-      {/* Camera sits at z=9; posters span z=-8..-0.6, so real camera-to-poster
-          distance is ~9.6-17. Fog range must clear that whole span or every
-          poster reads as 100% fogged (i.e. invisible, same color as bg). */}
-      <fog attach="fog" args={[INK, 11, 27]} />
+      <fog attach="fog" args={[INK, 8, 38]} />
 
-      <ambientLight intensity={0.85} color={INK_2} />
-      <directionalLight position={[5, 8, 5]} intensity={2.4} color={RED_INK} />
-      {/* Point lights use physically-based (candela-like) units in modern
-          three.js -- 1.x intensities are imperceptible at scene scale. */}
-      <pointLight position={[-5, -1, 2]} intensity={45} color={RED} decay={2} />
+      <ambientLight intensity={0.3} color={INK_2} />
+      <directionalLight position={[4, 6, 3]} intensity={0.5} color={RED_INK} />
 
-      <AtmosphereParticles
-        count={mobileTier ? 20 : 50}
-        color={RED}
-        opacity={0.28}
+      <Theater scrollStore={scrollStore} reducedMotion={reducedMotion} mobileTier={mobileTier} />
+      <PopcornField
+        scrollStore={scrollStore}
         reducedMotion={reducedMotion}
+        mobileTier={mobileTier}
       />
-
-      {posters.map((cfg, i) => (
-        <FloatingPoster
-          key={i}
-          config={cfg}
-          reducedMotion={reducedMotion}
-          mobileTier={mobileTier}
-          scrollStore={scrollStore}
-        />
-      ))}
+      <FlashAndTracks
+        scrollStore={scrollStore}
+        reducedMotion={reducedMotion}
+        mobileTier={mobileTier}
+      />
+      <Finale scrollStore={scrollStore} reducedMotion={reducedMotion} />
 
       <CameraRig scrollStore={scrollStore} reducedMotion={reducedMotion} />
 
       {!reducedMotion && !mobileTier && (
         <EffectComposer multisampling={0}>
-          <DepthOfField focusDistance={0.015} focalLength={0.045} bokehScale={2.5} height={480} />
-          <Bloom intensity={0.4} luminanceThreshold={0.35} luminanceSmoothing={0.25} mipmapBlur />
-          <Vignette eskil={false} offset={0.3} darkness={0.5} />
+          <DepthOfField focusDistance={0.015} focalLength={0.045} bokehScale={2.2} height={480} />
+          <Bloom intensity={0.35} luminanceThreshold={0.35} luminanceSmoothing={0.25} mipmapBlur />
+          <Vignette eskil={false} offset={0.3} darkness={0.55} />
         </EffectComposer>
       )}
     </Canvas>

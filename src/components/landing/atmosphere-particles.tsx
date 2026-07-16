@@ -21,7 +21,7 @@ const VERTEX_SHADER = `
     pos.x += cos(uTime * 0.1 + aPhase * 1.3) * 0.25;
 
     vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
-    gl_PointSize = aSize * (300.0 / -mvPosition.z);
+    gl_PointSize = aSize * (80.0 / -mvPosition.z);
     gl_Position = projectionMatrix * mvPosition;
   }
 `;
@@ -33,7 +33,7 @@ const FRAGMENT_SHADER = `
   void main() {
     vec2 uv = gl_PointCoord - vec2(0.5);
     float d = length(uv);
-    float alpha = smoothstep(0.5, 0.0, d);
+    float alpha = 1.0 - smoothstep(0.0, 0.5, d);
     gl_FragColor = vec4(uColor, alpha * uOpacity);
   }
 `;
