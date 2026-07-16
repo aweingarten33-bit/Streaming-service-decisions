@@ -1,12 +1,21 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { RotateCcw, Check, X } from "lucide-react";
+import { RotateCcw, Check, X, Plus } from "lucide-react";
 import type { WatchlistCandidate } from "@/lib/marquee/types";
 import { useDeviceFetch } from "./use-device-fetch";
 
 const TMDB_IMG = "https://image.tmdb.org/t/p";
 type SortKey = "title" | "year";
+
+interface SearchResult {
+  tmdbId: number;
+  title: string;
+  mediaType: "movie" | "tv";
+  year: number | null;
+  posterPath: string | null;
+  overview: string | null;
+}
 
 export function WatchlistScreen({ onImportAgain }: { onImportAgain: () => void }) {
   const deviceFetch = useDeviceFetch();
@@ -14,6 +23,9 @@ export function WatchlistScreen({ onImportAgain }: { onImportAgain: () => void }
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<SortKey>("title");
+  const [manualQuery, setManualQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [searching, setSearching] = useState(false);
 
   function refresh() {
     deviceFetch("/api/watchlist")
@@ -35,6 +47,30 @@ export function WatchlistScreen({ onImportAgain }: { onImportAgain: () => void }
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ tmdbId: item.tmdbId, mediaType: item.mediaType, status: nextStatus }),
     });
+  }
+
+  async function searchManualTitle(text: string) {
+    if (!text.trim()) return;
+    setSearching(true);
+    const res = await deviceFetch(`/api/watchlist/search?q=${encodeURIComponent(text)}`);
+    const data = await res.json();
+    setSearchResults(data.results ?? []);
+    setSearching(false);
+  }
+
+  async function addManualTitle(result: SearchResult) {
+    await deviceFetch("/api/watchlist", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        tmdbId: result.tmdbId,
+        mediaType: result.mediaType,
+        source: "manual",
+      }),
+    });
+    setManualQuery("");
+    setSearchResults([]);
+    refresh();
   }
 
   async function remove(item: WatchlistCandidate) {
@@ -67,6 +103,62 @@ export function WatchlistScreen({ onImportAgain }: { onImportAgain: () => void }
           <RotateCcw size={12} /> Import
         </button>
       </div>
+
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          searchManualTitle(manualQuery);
+        }}
+        className="mt-5 rounded-2xl border border-white/10 bg-white/5 p-3"
+      >
+        <p className="text-xs font-medium uppercase tracking-wider text-white/40">Add a title</p>
+        <div className="mt-2 flex gap-2">
+          <input
+            value={manualQuery}
+            onChange={(e) => setManualQuery(e.target.value)}
+            placeholder="Search movie or show..."
+            className="min-w-0 flex-1 rounded-xl border border-white/10 bg-black/20 px-4 py-2.5 text-[14px] text-white placeholder:text-white/30 focus:border-[#E3B24B]/40 focus:outline-none"
+          />
+          <button
+            type="submit"
+            disabled={searching}
+            className="rounded-xl bg-gradient-to-br from-[#f2ca6d] to-[#c8933a] px-4 text-sm font-semibold text-[#181104] disabled:opacity-50"
+          >
+            Search
+          </button>
+        </div>
+        {searchResults.length > 0 && (
+          <div className="mt-3 space-y-2">
+            {searchResults.slice(0, 5).map((result) => (
+              <button
+                key={`${result.mediaType}:${result.tmdbId}`}
+                type="button"
+                onClick={() => addManualTitle(result)}
+                className="flex w-full items-center gap-3 rounded-xl bg-black/20 p-2 text-left hover:bg-white/10"
+              >
+                {result.posterPath ? (
+                  <img
+                    src={`${TMDB_IMG}/w92${result.posterPath}`}
+                    alt=""
+                    className="h-14 w-10 rounded object-cover"
+                  />
+                ) : (
+                  <div className="h-14 w-10 rounded bg-white/10" />
+                )}
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-medium text-[#F5EEDC]">
+                    {result.title}
+                  </span>
+                  <span className="font-mono text-[11px] uppercase tracking-wider text-white/40">
+                    {result.year ?? ""} · {result.mediaType}
+                  </span>
+                </span>
+                <Plus size={16} className="text-[#E3B24B]" />
+              </button>
+            ))}
+          </div>
+        )}
+      </form>
 
       <div className="mt-4 flex gap-2">
         <input

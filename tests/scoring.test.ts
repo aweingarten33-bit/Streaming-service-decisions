@@ -58,7 +58,7 @@ describe("chooseOne", () => {
   test("relax=true drops the mediaType hard filter", () => {
     const pool = [candidate({ tmdbId: 1, mediaType: "tv" })];
     const intent = { ...baseIntent, mediaType: "movie" as const };
-    expect(chooseOne(intent, pool, [], true)).not.toBeNull();
+    expect(chooseOne(intent, pool, { relax: true })).not.toBeNull();
   });
 
   test("never returns an item marked watched", () => {
@@ -73,7 +73,7 @@ describe("chooseOne", () => {
     ];
     const first = chooseOne(baseIntent, pool);
     expect(first?.item.tmdbId).toBe(1);
-    const second = chooseOne(baseIntent, pool, [1]);
+    const second = chooseOne(baseIntent, pool, { excludeTmdbIds: [1] });
     expect(second?.item.tmdbId).toBe(2);
   });
 
@@ -99,7 +99,18 @@ describe("chooseOne", () => {
     const pool = [candidate({ tmdbId: 1, runtime: null })];
     const intent = { ...baseIntent, maxRuntimeMinutes: 90 };
     expect(chooseOne(intent, pool)).toBeNull();
-    expect(chooseOne(intent, pool, [], true)).not.toBeNull();
+    expect(chooseOne(intent, pool, { relax: true })).not.toBeNull();
+  });
+
+  test("saved-list taste sources give a modest boost to a matching genre", () => {
+    const pool = [
+      candidate({ tmdbId: 1, genres: ["Comedy"], tmdbRating: 6 }),
+      candidate({ tmdbId: 2, genres: ["Drama"], tmdbRating: 6 }),
+    ];
+    const choice = chooseOne(baseIntent, pool, {
+      tasteSourceText: ["Underrated 90s Comedies Nobody Talks About"],
+    });
+    expect(choice?.item.tmdbId).toBe(1);
   });
 });
 

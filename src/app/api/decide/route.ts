@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDeviceId } from "@/lib/device-server";
-import { getWatchlistCandidates } from "@/lib/marquee/watchlist-data";
+import { getSavedTasteSources, getWatchlistCandidates } from "@/lib/marquee/watchlist-data";
 import { parseIntent } from "@/lib/marquee/intent";
 import { chooseOne, explainChoice } from "@/lib/marquee/scoring";
 
@@ -16,6 +16,9 @@ export async function POST(req: NextRequest) {
     body.mediaType === "movie" || body.mediaType === "tv" || body.mediaType === "any"
       ? body.mediaType
       : undefined;
+  const useSavedLists: boolean = body.useSavedLists === true;
+  const rejectionReason: string =
+    typeof body.rejectionReason === "string" ? body.rejectionReason : "";
 
   if (!prompt) {
     return NextResponse.json({ error: "Tell me what you're in the mood for." }, { status: 400 });
@@ -26,12 +29,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ emptyWatchlist: true });
   }
 
-  const parsed = await parseIntent(prompt);
+  const tasteSources = useSavedLists ? await getSavedTasteSources(deviceId).catch(() => []) : [];
+  const tasteSourceText = tasteSources.map((source) =>
+    [source.title, source.description, source.note].filter(Boolean).join(" "),
+  );
+  const adjustedPrompt = rejectionReason
+    ? `${prompt}. Avoid this rejected option because: ${rejectionReason}.`
+    : prompt;
+
+  const parsed = await parseIntent(adjustedPrompt);
   // An explicit Movie/TV toggle always wins over whatever the text implies --
   // the user shouldn't have to phrase their mood to also carry the media
   // type.
   const intent = mediaType ? { ...parsed, mediaType } : parsed;
-  const choice = chooseOne(intent, candidates, excludeTmdbIds, relax);
+  const choice = chooseOne(intent, candidates, { excludeTmdbIds, relax, tasteSourceText });
 
   if (!choice) {
     return NextResponse.json({ noMatch: true, intent, relaxed: relax });
@@ -49,7 +60,8 @@ export async function POST(req: NextRequest) {
       posterPath: item.posterPath,
       backdropPath: item.backdropPath,
       streamingProviders: item.streamingProviders,
-      explanation: explainChoice(intent, item),
+      explanation: explainChoice(intent, item, tasteSources.length),
+      tasteSourceCount: tasteSources.length,
     },
   });
 }
