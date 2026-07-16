@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDeviceId } from "@/lib/device-server";
 import { getSavedTasteSources, getWatchlistCandidates } from "@/lib/marquee/watchlist-data";
 import { parseIntent } from "@/lib/marquee/intent";
-import { chooseOne, explainChoice } from "@/lib/marquee/scoring";
+import { chooseOne } from "@/lib/marquee/scoring";
+import { explainChoiceAI } from "@/lib/marquee/explain";
 
 export async function POST(req: NextRequest) {
   const deviceId = getDeviceId(req);
@@ -49,6 +50,7 @@ export async function POST(req: NextRequest) {
   }
 
   const { item } = choice;
+  const explanation = await explainChoiceAI(intent, item, prompt, tasteSources.length);
   return NextResponse.json({
     intent,
     result: {
@@ -60,7 +62,7 @@ export async function POST(req: NextRequest) {
       posterPath: item.posterPath,
       backdropPath: item.backdropPath,
       streamingProviders: item.streamingProviders,
-      explanation: explainChoice(intent, item, tasteSources.length),
+      explanation,
       tasteSourceCount: tasteSources.length,
     },
   });

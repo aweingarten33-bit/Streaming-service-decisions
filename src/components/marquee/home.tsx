@@ -18,6 +18,23 @@ type DecideState =
 
 type MediaTypeFilter = "any" | "movie" | "tv";
 
+/** Cheap, instant, no network call -- keyword-matches the typed prompt to lead with a more specific loading line before falling back to the generic rotation. */
+function flavoredLoadingMessages(text: string, generic: string[]): string[] {
+  const lower = text.toLowerCase();
+  const flavored: string[] = [];
+  if (/\b(dark|thriller|scary|horror)\b/.test(lower))
+    flavored.push("Digging through the dark stuff…");
+  if (/\b(funny|laugh|comedy)\b/.test(lower))
+    flavored.push("Looking for something actually funny…");
+  if (/\b(\d{2,3})\s*(min|minutes)\b/.test(lower) || /\b(90|ninety)\b/.test(lower)) {
+    flavored.push("Checking what actually fits your time…");
+  }
+  if (/\bphone\b/.test(lower))
+    flavored.push("Finding something that survives you checking your phone…");
+  if (/\bweird\b/.test(lower)) flavored.push("Hunting for the good kind of weird…");
+  return flavored.length > 0 ? [...flavored, ...generic] : generic;
+}
+
 export function Home({
   language,
   onNeedsImport,
@@ -35,19 +52,28 @@ export function Home({
   const [useSavedLists, setUseSavedLists] = useState(false);
   const [groupMode, setGroupMode] = useState<"solo" | "two" | "group">("solo");
   const [pendingRejection, setPendingRejection] = useState<"another" | "idle" | null>(null);
+  const [teaser, setTeaser] = useState<string | null>(null);
   const lastPrompt = useRef("");
   const excludeIds = useRef<number[]>([]);
   const lastRejected = useRef<{ tmdbId: number; mediaType: string } | null>(null);
+  const activeLoadingMessages = useRef(copy.loadingMessages);
+
+  useEffect(() => {
+    deviceFetch(`/api/home-teaser?language=${language}`)
+      .then((res) => res.json())
+      .then((data) => setTeaser(data.teaser ?? null))
+      .catch(() => setTeaser(null));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [language]);
 
   useEffect(() => {
     if (state.kind !== "loading") return;
     let i = 0;
     const id = setInterval(() => {
-      i = (i + 1) % copy.loadingMessages.length;
-      setLoadingMessage(copy.loadingMessages[i]);
+      i = (i + 1) % activeLoadingMessages.current.length;
+      setLoadingMessage(activeLoadingMessages.current[i]);
     }, 1400);
     return () => clearInterval(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.kind]);
 
   function promptWithGroupMode(text: string) {
@@ -59,8 +85,9 @@ export function Home({
   }
 
   async function decide(text: string, relax = false, rejectionReason = "") {
+    activeLoadingMessages.current = flavoredLoadingMessages(text, copy.loadingMessages);
     setState({ kind: "loading" });
-    setLoadingMessage(copy.loadingMessages[0]);
+    setLoadingMessage(activeLoadingMessages.current[0]);
     try {
       const res = await deviceFetch("/api/decide", {
         method: "POST",
@@ -157,6 +184,7 @@ export function Home({
       <h1 className="font-display text-center text-4xl font-semibold tracking-tight text-[#F5EEDC] sm:text-5xl">
         {"WTF are you in the mood for?"}
       </h1>
+      {teaser && <p className="mt-2 text-center text-sm text-white/40">{teaser}</p>}
 
       <div
         role="group"
