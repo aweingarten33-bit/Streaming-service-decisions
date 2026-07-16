@@ -133,13 +133,23 @@ export const ONBOARDING = {
   headline: "Let's get your IMDb watchlist in here.",
   supporting:
     "IMDb already has the stuff you wanna watch. Export it once, upload it here, and we'll handle the rest.",
+  // Why a CSV at all, instead of just connecting an account: IMDb has no
+  // public way for an app to read someone's watchlist directly. A CSV
+  // export -- IMDb's own built-in way for you to get your own data out --
+  // is the only real option, and it only has to happen once.
+  whyCsv:
+    "Why a file? IMDb doesn't let outside apps read your watchlist directly. Exporting it yourself is the only way -- it's a one-time, one-minute thing.",
+  browserOnlyWarning:
+    "This only works from a browser (Safari, Chrome, etc.) -- not the IMDb phone app. If you're on your phone, open imdb.com in your browser, not the app.",
   primaryAction: "Open My IMDb Watchlist",
   secondaryAction: "I Already Have the CSV",
   steps: [
-    "Open your IMDb Watchlist.",
-    "Use IMDb's export option to download the CSV.",
-    "Come back here and upload it.",
-    "We'll match everything and clean up duplicates.",
+    "Open imdb.com in a browser and sign in (not the IMDb app).",
+    'Click your account icon (top right), then "Your Watchlist."',
+    'On your Watchlist page, find the "Export" link near the top of the list.',
+    'Tap Export -- a file (usually named "WATCHLIST.csv") downloads to your device.',
+    'Come back here and tap "I Already Have the CSV" to select that file.',
+    "We'll match every title against our database and flag anything we can't confidently identify.",
   ],
   imdbWatchlistUrl: "https://www.imdb.com/list/watchlist",
   pickSomething: "Let's Pick Something",

@@ -236,14 +236,20 @@ export function Home({
             </button>
           ))}
         </div>
-        <label className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-xs text-white/60">
+        <label className="flex items-start gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-xs text-white/60">
           <input
             type="checkbox"
             checked={useSavedLists}
             onChange={(e) => setUseSavedLists(e.target.checked)}
-            className="accent-[#E3B24B]"
+            className="mt-0.5 accent-[#E3B24B]"
           />
-          Let saved IMDb lists influence this pick
+          <span>
+            Let saved IMDb lists influence this pick
+            <span className="mt-0.5 block text-white/35">
+              Nudges today's pick toward the genres/vibe of lists you've saved in Explore -- it only
+              picks from your own watchlist, it doesn't add their titles to it.
+            </span>
+          </span>
         </label>
         <p className="text-center text-xs text-white/40">
           Choose from the dropdown above, or just type how you feel below.

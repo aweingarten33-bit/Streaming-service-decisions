@@ -130,6 +130,10 @@ export function Onboarding({ onDone, onCancel }: { onDone: () => void; onCancel:
             {ONBOARDING.headline}
           </h1>
           <p className="mt-3 max-w-xs text-sm text-white/60">{ONBOARDING.supporting}</p>
+          <p className="mt-3 max-w-xs text-xs text-white/40">{ONBOARDING.whyCsv}</p>
+          <p className="mt-2 max-w-xs text-xs font-medium text-[#E3B24B]/80">
+            {ONBOARDING.browserOnlyWarning}
+          </p>
 
           <div className="mt-8 w-full max-w-xs space-y-2">
             <a
