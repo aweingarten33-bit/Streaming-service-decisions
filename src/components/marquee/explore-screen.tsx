@@ -1,11 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Bookmark, ExternalLink, Search } from "lucide-react";
-import { getExploreCopy, type Language } from "@/lib/marquee/copy";
+import { Bookmark, ExternalLink, ListPlus, Search } from "lucide-react";
+import { getExploreCopy, importSummary, type Language } from "@/lib/marquee/copy";
 import { EXPLORE_CATEGORIES } from "@/lib/marquee/list-search/categories";
 import type { PublicListSearchResult } from "@/lib/marquee/list-search/types";
 import { useDeviceFetch } from "./use-device-fetch";
+
+interface ImportOutcome {
+  imported: number;
+  duplicates: number;
+  needHelp: string[];
+  total: number;
+}
 
 interface SavedList {
   id: string;
@@ -29,6 +36,10 @@ export function ExploreScreen({ language }: { language: Language }) {
   const [query, setQuery] = useState("");
   const [state, setState] = useState<SearchState>({ kind: "idle" });
   const [saved, setSaved] = useState<SavedList[]>([]);
+  const [importingId, setImportingId] = useState<string | null>(null);
+  const [importResults, setImportResults] = useState<
+    Record<string, ImportOutcome | { error: string }>
+  >({});
 
   function loadSaved() {
     deviceFetch("/api/explore/saved")
@@ -84,6 +95,26 @@ export function ExploreScreen({ language }: { language: Language }) {
       }),
     });
     loadSaved();
+  }
+
+  async function importSavedList(id: string) {
+    setImportingId(id);
+    try {
+      const res = await deviceFetch("/api/explore/saved/import", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+      const data = await res.json();
+      setImportResults((prev) => ({
+        ...prev,
+        [id]: res.ok ? data : { error: data.error ?? "Couldn't add that list." },
+      }));
+    } catch {
+      setImportResults((prev) => ({ ...prev, [id]: { error: "Couldn't add that list." } }));
+    } finally {
+      setImportingId(null);
+    }
   }
 
   async function removeSaved(id: string) {
@@ -210,31 +241,61 @@ export function ExploreScreen({ language }: { language: Language }) {
           <p className="mt-3 text-sm text-white/40">{copy.noSavedLists}</p>
         ) : (
           <div className="mt-3 space-y-2">
-            {saved.map((item) => (
-              <div key={item.id} className="flex items-center gap-3 rounded-xl bg-white/5 p-3">
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-[14px] font-medium text-[#F5EEDC]">{item.title}</p>
-                  <p className="truncate font-mono text-[11px] text-white/40">{item.url}</p>
+            {saved.map((item) => {
+              const outcome = importResults[item.id];
+              return (
+                <div key={item.id} className="rounded-xl bg-white/5 p-3">
+                  <div className="flex items-center gap-3">
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-[14px] font-medium text-[#F5EEDC]">
+                        {item.title}
+                      </p>
+                      <p className="truncate font-mono text-[11px] text-white/40">{item.url}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => importSavedList(item.id)}
+                      disabled={importingId === item.id}
+                      aria-label="Add this list's titles to my watchlist"
+                      className="grid h-8 w-8 flex-none place-items-center rounded-full bg-white/5 text-white/40 disabled:opacity-50"
+                    >
+                      <ListPlus size={14} />
+                    </button>
+                    <a
+                      href={item.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={copy.openInImdb}
+                      className="grid h-8 w-8 flex-none place-items-center rounded-full bg-white/5 text-white/40"
+                    >
+                      <ExternalLink size={14} />
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => removeSaved(item.id)}
+                      aria-label="Remove"
+                      className="grid h-8 w-8 flex-none place-items-center rounded-full bg-white/5 text-white/40"
+                    >
+                      &times;
+                    </button>
+                  </div>
+                  {importingId === item.id && (
+                    <p className="mt-2 text-xs text-white/40">Adding this list's titles…</p>
+                  )}
+                  {outcome && importingId !== item.id && (
+                    <p className="mt-2 text-xs text-white/50">
+                      {"error" in outcome
+                        ? outcome.error
+                        : importSummary(
+                            outcome.imported,
+                            outcome.duplicates,
+                            outcome.needHelp.length,
+                          )}
+                    </p>
+                  )}
                 </div>
-                <a
-                  href={item.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={copy.openInImdb}
-                  className="grid h-8 w-8 flex-none place-items-center rounded-full bg-white/5 text-white/40"
-                >
-                  <ExternalLink size={14} />
-                </a>
-                <button
-                  type="button"
-                  onClick={() => removeSaved(item.id)}
-                  aria-label="Remove"
-                  className="grid h-8 w-8 flex-none place-items-center rounded-full bg-white/5 text-white/40"
-                >
-                  &times;
-                </button>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
