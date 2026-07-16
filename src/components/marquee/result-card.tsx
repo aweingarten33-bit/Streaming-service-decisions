@@ -66,7 +66,7 @@ export function ResultCard({
   }
 
   return (
-    <div className="shadow-stamp w-full overflow-hidden rounded-3xl border-2 border-rule bg-paper-2">
+    <div className="shadow-stamp wall-texture w-full overflow-hidden rounded-3xl border-2 border-rule bg-paper-2">
       <div className="relative h-56 w-full border-b-2 border-rule sm:h-72">
         {result.backdropPath || result.posterPath ? (
           <img
@@ -81,13 +81,15 @@ export function ResultCard({
       </div>
 
       <div className="px-5 pb-5 pt-4">
-        <h2 className="font-display text-2xl font-black tracking-tight text-ink">{result.title}</h2>
+        <h2 className="spray-glow font-display -rotate-1 text-2xl font-black tracking-tight text-ink">
+          {result.title}
+        </h2>
         <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[11px] font-bold uppercase tracking-wider text-ink-2">
           {result.year && <span>{result.year}</span>}
           <span>{result.mediaType}</span>
           {runtimeLabel && <span>{runtimeLabel}</span>}
           {rating && (
-            <span className="text-red-ink rounded bg-red px-1.5 py-0.5">
+            <span className="text-red-ink rotate-2 rounded bg-red px-1.5 py-0.5">
               ★ {rating.value.toFixed(1)} {rating.label}
             </span>
           )}
