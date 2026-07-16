@@ -7,6 +7,7 @@ import { useDeviceFetch } from "./use-device-fetch";
 
 const TMDB_IMG = "https://image.tmdb.org/t/p";
 type SortKey = "title" | "year";
+type MediaTypeFilter = "any" | "movie" | "tv";
 
 interface SearchResult {
   tmdbId: number;
@@ -23,6 +24,7 @@ export function WatchlistScreen({ onImportAgain }: { onImportAgain: () => void }
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<SortKey>("title");
+  const [mediaTypeFilter, setMediaTypeFilter] = useState<MediaTypeFilter>("any");
   const [manualQuery, setManualQuery] = useState("");
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [searching, setSearching] = useState(false);
@@ -83,13 +85,15 @@ export function WatchlistScreen({ onImportAgain }: { onImportAgain: () => void }
   }
 
   const visible = useMemo(() => {
-    const filtered = items.filter((i) => i.title.toLowerCase().includes(query.toLowerCase()));
+    const filtered = items
+      .filter((i) => i.title.toLowerCase().includes(query.toLowerCase()))
+      .filter((i) => mediaTypeFilter === "any" || i.mediaType === mediaTypeFilter);
     const sorted = [...filtered].sort((a, b) => {
       if (sort === "year") return (b.year ?? 0) - (a.year ?? 0);
       return a.title.localeCompare(b.title);
     });
     return sorted;
-  }, [items, query, sort]);
+  }, [items, query, sort, mediaTypeFilter]);
 
   return (
     <div className="mx-auto w-full max-w-xl px-6 pb-12 pt-16">
@@ -163,7 +167,33 @@ export function WatchlistScreen({ onImportAgain }: { onImportAgain: () => void }
         )}
       </form>
 
-      <div className="mt-4 flex gap-2">
+      <div
+        role="group"
+        aria-label="Movie or TV show"
+        className="mt-4 flex w-full gap-2 rounded-xl border-2 border-rule bg-paper-2 p-1"
+      >
+        {(
+          [
+            ["any", "Any"],
+            ["movie", "Movie"],
+            ["tv", "TV Show"],
+          ] as const
+        ).map(([value, label]) => (
+          <button
+            key={value}
+            type="button"
+            aria-pressed={mediaTypeFilter === value}
+            onClick={() => setMediaTypeFilter(value)}
+            className={`btn-press flex-1 rounded-lg py-2 text-[13px] font-bold transition-colors ${
+              mediaTypeFilter === value ? "bg-red text-red-ink" : "text-ink-2 hover:text-ink"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      <div className="mt-3 flex gap-2">
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}

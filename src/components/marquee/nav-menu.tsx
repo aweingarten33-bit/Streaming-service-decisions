@@ -3,13 +3,14 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
-export type Tab = "home" | "watchlist" | "explore" | "settings";
+export type Tab = "home" | "watchlist" | "explore" | "settings" | "about";
 
 const ITEMS: { key: Tab; label: string; num: string }[] = [
   { key: "home", label: "HOME", num: "01" },
   { key: "watchlist", label: "WATCHLIST", num: "02" },
   { key: "explore", label: "EXPLORE", num: "03" },
   { key: "settings", label: "SETTINGS", num: "04" },
+  { key: "about", label: "ABOUT", num: "05" },
 ];
 
 const EASE = [0.76, 0, 0.24, 1] as const;
@@ -125,11 +126,11 @@ export function NavMenu({ tab, onChange }: { tab: Tab; onChange: (tab: Tab) => v
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ duration: 0.8, ease: EASE }}
-              className="pointer-events-auto absolute inset-y-0 left-0 flex w-[88vw] flex-col justify-center overflow-hidden border-r-[4px] border-red bg-[#0f0f0f] md:w-[60vw]"
+              className="pointer-events-auto absolute inset-y-0 left-0 flex w-[88vw] flex-col items-stretch justify-center overflow-hidden border-r-[4px] border-red bg-[#0f0f0f] md:w-[60vw]"
             >
               <div className="absolute inset-0 bg-[image:var(--spray-noise)] opacity-20" />
 
-              <nav className="relative z-10 flex flex-col gap-4 px-5 md:gap-10 md:px-16">
+              <nav className="relative z-10 flex max-h-full w-full flex-col gap-2 overflow-y-auto px-5 py-6 md:gap-6 md:px-16">
                 {ITEMS.map(({ key, label, num }, i) => (
                   <motion.div
                     key={key}
@@ -151,7 +152,7 @@ export function NavMenu({ tab, onChange }: { tab: Tab; onChange: (tab: Tab) => v
                     <div className="relative overflow-hidden">
                       <motion.div
                         whileTap={{ scale: 0.95 }}
-                        className={`font-display text-[11vw] leading-[0.95] tracking-tighter uppercase transition-colors duration-300 sm:text-6xl md:text-7xl lg:text-8xl ${
+                        className={`font-display text-[8.5vw] leading-[0.95] tracking-tighter uppercase transition-colors duration-300 sm:text-5xl md:text-6xl lg:text-7xl ${
                           tab === key ? "text-red" : "text-white"
                         } group-hover:text-red`}
                       >
@@ -170,9 +171,9 @@ export function NavMenu({ tab, onChange }: { tab: Tab; onChange: (tab: Tab) => v
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.5, delay: 0.8 }}
-                  className="relative mt-12 border-t-2 border-white/20 pt-8 md:mt-24"
+                  className="relative mt-6 shrink-0 border-t-2 border-white/20 pt-6 md:mt-10"
                 >
-                  <p className="scrawl text-xl" style={{ color: "#fff" }}>
+                  <p className="scrawl text-lg" style={{ color: "#fff" }}>
                     No decision paralysis. Just press play.
                   </p>
                 </motion.div>

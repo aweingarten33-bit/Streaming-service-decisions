@@ -7,6 +7,7 @@ import type { DecideIntent } from "@/lib/marquee/intent";
 import { useDeviceFetch } from "./use-device-fetch";
 import { PromptSelector } from "./prompt-selector";
 import { ResultCard, type DecideResult } from "./result-card";
+import { CouchWatcher } from "@/components/fx/couch-watcher";
 
 type DecideState =
   | { kind: "idle" }
@@ -178,25 +179,42 @@ export function Home({
   }
 
   return (
-    <div className="relative mx-auto flex w-full max-w-xl flex-col items-center px-6 pb-12 pt-16">
-      {/* the hero moment -- torn notebook pages stacked and taped down,
-          like the reference's layered "STREAM DECIDE" card, instead of
-          the headline just floating on bare paper */}
-      <div className="relative mb-2 w-full">
-        <div className="bg-paper-3 absolute inset-2 -z-10 -rotate-2 rounded-sm" />
-        <div className="bg-paper-2 shadow-stamp absolute inset-1 -z-10 rotate-1 rounded-sm border-2 border-rule" />
-        <div className="tape-strip pointer-events-none absolute -top-3 left-1/2 z-10 h-5 w-20 -translate-x-1/2 rotate-2" />
+    <div className="wall-texture brick-texture relative mx-auto flex w-full max-w-xl flex-col items-center overflow-hidden px-6 pb-12 pt-16">
+      {/* torn tape posters behind the title, exactly like the reference's Home hero */}
+      <div className="bg-muted/60 tape-strip absolute top-0 left-1/2 -z-10 h-48 w-full max-w-md -translate-x-1/2 rotate-[-3deg] opacity-70" />
+      <div className="bg-muted/40 tape-strip absolute top-10 left-1/2 -z-10 h-32 w-full max-w-sm -translate-x-[40%] rotate-[2deg] opacity-60" />
 
-        <div className="relative px-4 pt-6 pb-5">
-          <h1 className="spray-glow stagger-in font-display text-center text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
-            {"WTF are you in the mood for?"}
-          </h1>
-        </div>
+      <div className="stagger-in relative mb-6">
+        <span className="relative z-10 px-4 py-2 font-mono text-sm font-bold tracking-[0.3em] text-ink uppercase">
+          No scrolling. No second-guessing.
+        </span>
+        <div className="tape-strip absolute inset-0 -z-10" />
       </div>
-      <div className="drip-edge stencil-rule stagger-in stagger-in-1 mx-auto mt-4 w-10" />
-      {teaser && (
-        <p className="stagger-in stagger-in-2 mt-3 text-center text-sm text-ink-2">{teaser}</p>
-      )}
+
+      <h1 className="spray-glow stagger-in stagger-in-1 font-display relative mb-2 text-center text-6xl leading-[0.85] tracking-tighter text-ink uppercase sm:text-7xl">
+        <span className="block">WTF</span>
+        <span className="relative block">
+          Mood?
+          <span className="font-scrawl absolute -top-4 -right-8 rotate-12 text-4xl text-red opacity-90 sm:-right-12 sm:text-5xl">
+            X
+          </span>
+        </span>
+      </h1>
+
+      <div className="stagger-in stagger-in-2 mb-2 flex flex-col items-center gap-2">
+        <p className="bg-paper-3/50 px-2 py-1 font-mono text-xs font-bold tracking-widest text-ink uppercase">
+          Stop browsing // start watching
+        </p>
+        {teaser ? (
+          <p className="scrawl -rotate-2 text-lg text-ink">{teaser}</p>
+        ) : (
+          <p className="scrawl -rotate-2 text-lg text-ink">
+            no decision paralysis. just press play.
+          </p>
+        )}
+      </div>
+
+      <CouchWatcher className="stagger-in stagger-in-2 text-ink/90 mt-2 opacity-90" size={130} />
 
       <div
         role="group"
@@ -224,31 +242,37 @@ export function Home({
         ))}
       </div>
 
-      <div className="stagger-in stagger-in-3 mt-3 w-full space-y-3">
-        <PromptSelector language={language} onSelect={setPrompt} />
-        <div className="grid grid-cols-3 gap-2">
-          {[
+      <div
+        role="group"
+        aria-label="Who's watching"
+        className="stagger-in stagger-in-2 mt-2 flex w-full gap-2 rounded-xl border-2 border-rule bg-paper-2 p-1"
+      >
+        {(
+          [
             ["solo", "Solo"],
             ["two", "For two"],
             ["group", "Group"],
-          ].map(([value, label]) => (
-            <button
-              key={value}
-              type="button"
-              onClick={() => setGroupMode(value as typeof groupMode)}
-              className={`btn-press rounded-full border-2 px-3 py-2 text-xs font-bold ${
-                groupMode === value
-                  ? "border-rule bg-red text-red-ink"
-                  : "border-rule bg-paper-2 text-ink-2"
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+          ] as const
+        ).map(([value, label]) => (
+          <button
+            key={value}
+            type="button"
+            aria-pressed={groupMode === value}
+            onClick={() => setGroupMode(value)}
+            className={`btn-press flex-1 rounded-lg py-2 text-[13px] font-bold transition-colors ${
+              groupMode === value ? "bg-red text-red-ink" : "text-ink-2 hover:text-ink"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      <div className="stagger-in stagger-in-3 mt-6 w-full space-y-3">
         <p className="scrawl text-center text-base text-ink/60">
-          Choose from the dropdown above, or just type how you feel below.
+          Pick your mood below, or just type how you feel.
         </p>
+        <PromptSelector language={language} onSelect={setPrompt} />
         <form
           onSubmit={(e) => {
             e.preventDefault();
