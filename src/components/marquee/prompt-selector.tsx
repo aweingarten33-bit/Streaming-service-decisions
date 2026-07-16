@@ -34,7 +34,7 @@ export function PromptSelector({
           <div className="relative z-10 max-h-[75vh] w-full max-w-xl overflow-y-auto rounded-t-3xl border-t border-white/10 bg-[#0e0e14] pb-6 pt-3 shadow-2xl motion-reduce:transition-none">
             <div className="mx-auto mb-2 h-1 w-10 rounded-full bg-white/20" />
             <div className="flex items-center justify-between px-5 py-2">
-              <h2 className="font-display text-sm text-white/50">Choose Your Mood</h2>
+              <h2 className="font-display text-sm text-white/50">Please Choose Your Mood</h2>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
@@ -59,6 +59,9 @@ export function PromptSelector({
                 </button>
               ))}
             </div>
+            <p className="px-5 pt-4 text-center text-[13px] text-white/40">
+              Not feeling any of these? Close this and just type how you feel.
+            </p>
           </div>
         </div>
       )}
