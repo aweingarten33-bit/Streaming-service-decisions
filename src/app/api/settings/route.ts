@@ -6,12 +6,13 @@ export async function GET(req: NextRequest) {
   const deviceId = getDeviceId(req);
   if (!deviceId) return NextResponse.json({ error: "Missing device id." }, { status: 400 });
 
-  const { data } = await getSupabase()
+  const { data, error } = await getSupabase()
     .from("user_settings")
     .select("language")
     .eq("device_id", deviceId)
     .maybeSingle();
 
+  if (error) return NextResponse.json({ error: "Could not load settings." }, { status: 500 });
   return NextResponse.json({ language: data?.language ?? "unfiltered" });
 }
 

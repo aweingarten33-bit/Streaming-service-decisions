@@ -15,7 +15,11 @@ export async function GET(req: NextRequest) {
   const deviceId = getDeviceId(req);
   if (!deviceId) return NextResponse.json({ error: "Missing device id." }, { status: 400 });
 
-  const candidates = (await getWatchlistCandidates(deviceId)).filter((c) => c.status !== "watched");
+  const allCandidates = await getWatchlistCandidates(deviceId).catch(() => null);
+  if (allCandidates === null) {
+    return NextResponse.json({ error: "Could not load your list." }, { status: 500 });
+  }
+  const candidates = allCandidates.filter((c) => c.status !== "watched");
   if (candidates.length === 0) {
     return NextResponse.json({ result: null });
   }
