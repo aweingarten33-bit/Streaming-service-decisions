@@ -1,6 +1,16 @@
 [
   {
     "date": "2026-07-16",
+    "scope": "app",
+    "macrostructure": "existing app screens (multi-page redesign, design.md-locked)",
+    "theme": "custom",
+    "theme_axes": "dark / roman-serif / chromatic-other (chromatic-gold ~78°)",
+    "vibe": "stencil-cut rebellion, spotlit restraint, envelope-reveal glamour",
+    "enrichment": "spotlight-glow (Home result reveal, Onboarding import summary)",
+    "brief": "Marquee · full-app redesign, all 8 screens, locked to design.md (Banksy x Apple x the Academy Awards)"
+  },
+  {
+    "date": "2026-07-16",
     "macrostructure": "existing app screens (redesign)",
     "theme": "custom",
     "theme_axes": "dark / roman-serif / chromatic-other (chromatic-gold ~78°)",

@@ -94,35 +94,36 @@ export function WatchlistScreen({ onImportAgain }: { onImportAgain: () => void }
   return (
     <div className="mx-auto w-full max-w-xl px-6 pb-28 pt-16">
       <div className="flex items-center justify-between">
-        <h1 className="font-display text-2xl font-semibold text-[#F5EEDC]">My Watchlist</h1>
+        <h1 className="font-display text-2xl font-semibold text-ink">My Watchlist</h1>
         <button
           type="button"
           onClick={onImportAgain}
-          className="flex items-center gap-1.5 rounded-full border border-white/15 px-3 py-1.5 text-xs font-medium text-white/70"
+          className="btn-press flex items-center gap-1.5 rounded-full border border-rule px-3 py-1.5 text-xs font-medium text-ink-2"
         >
           <RotateCcw size={12} /> Import
         </button>
       </div>
+      <div className="stencil-rule mt-4" />
 
       <form
         onSubmit={(e) => {
           e.preventDefault();
           searchManualTitle(manualQuery);
         }}
-        className="mt-5 rounded-2xl border border-white/10 bg-white/5 p-3"
+        className="mt-5 rounded-2xl border border-rule bg-ink/5 p-3"
       >
-        <p className="text-xs font-medium uppercase tracking-wider text-white/40">Add a title</p>
+        <p className="text-xs font-medium uppercase tracking-wider text-ink/40">Add a title</p>
         <div className="mt-2 flex gap-2">
           <input
             value={manualQuery}
             onChange={(e) => setManualQuery(e.target.value)}
             placeholder="Search movie or show..."
-            className="min-w-0 flex-1 rounded-xl border border-white/10 bg-black/20 px-4 py-2.5 text-[14px] text-white placeholder:text-white/30 focus:border-[#E3B24B]/40 focus:outline-none"
+            className="min-w-0 flex-1 rounded-xl border border-rule bg-paper/50 px-4 py-2.5 text-[14px] text-ink placeholder:text-ink/30 focus:border-gold/40 focus:outline-none"
           />
           <button
             type="submit"
             disabled={searching}
-            className="rounded-xl bg-gradient-to-br from-[#f2ca6d] to-[#c8933a] px-4 text-sm font-semibold text-[#181104] disabled:opacity-50"
+            className="btn-press rounded-xl bg-gold px-4 text-sm font-semibold text-gold-ink disabled:opacity-50"
           >
             Search
           </button>
@@ -134,7 +135,7 @@ export function WatchlistScreen({ onImportAgain }: { onImportAgain: () => void }
                 key={`${result.mediaType}:${result.tmdbId}`}
                 type="button"
                 onClick={() => addManualTitle(result)}
-                className="flex w-full items-center gap-3 rounded-xl bg-black/20 p-2 text-left hover:bg-white/10"
+                className="btn-press flex w-full items-center gap-3 rounded-xl bg-paper/50 p-2 text-left hover:bg-ink/10"
               >
                 {result.posterPath ? (
                   <img
@@ -143,17 +144,17 @@ export function WatchlistScreen({ onImportAgain }: { onImportAgain: () => void }
                     className="h-14 w-10 rounded object-cover"
                   />
                 ) : (
-                  <div className="h-14 w-10 rounded bg-white/10" />
+                  <div className="h-14 w-10 rounded bg-ink/10" />
                 )}
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-medium text-[#F5EEDC]">
+                  <span className="block truncate text-sm font-medium text-ink">
                     {result.title}
                   </span>
-                  <span className="font-mono text-[11px] uppercase tracking-wider text-white/40">
+                  <span className="font-mono text-[11px] uppercase tracking-wider text-ink/40">
                     {result.year ?? ""} · {result.mediaType}
                   </span>
                 </span>
-                <Plus size={16} className="text-[#E3B24B]" />
+                <Plus size={16} className="text-gold" />
               </button>
             ))}
           </div>
@@ -165,28 +166,28 @@ export function WatchlistScreen({ onImportAgain }: { onImportAgain: () => void }
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search your list..."
-          className="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-[14px] text-white placeholder:text-white/30 focus:border-[#E3B24B]/40 focus:outline-none"
+          className="flex-1 rounded-xl border border-rule bg-ink/5 px-4 py-2.5 text-[14px] text-ink placeholder:text-ink/30 focus:border-gold/40 focus:outline-none"
         />
         <select
           value={sort}
           onChange={(e) => setSort(e.target.value as SortKey)}
-          className="rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-[13px] text-white/70 focus:outline-none"
+          className="rounded-xl border border-rule bg-ink/5 px-3 py-2.5 text-[13px] text-ink-2 focus:outline-none"
         >
           <option value="title">Title</option>
           <option value="year">Year</option>
         </select>
       </div>
 
-      {loading && <p className="mt-8 text-center text-sm text-white/30">Loading...</p>}
+      {loading && <p className="mt-8 text-center text-sm text-ink/30">Loading...</p>}
       {!loading && visible.length === 0 && (
-        <p className="mt-8 text-center text-sm text-white/30">Nothing here yet.</p>
+        <p className="mt-8 text-center text-sm text-ink/30">Nothing here yet.</p>
       )}
 
       <div className="mt-4 space-y-2">
         {visible.map((item) => (
           <div
             key={item.id}
-            className={`flex items-center gap-3 rounded-xl bg-white/5 p-2 ${item.status === "watched" ? "opacity-50" : ""}`}
+            className={`flex items-center gap-3 rounded-xl bg-ink/5 p-2 ${item.status === "watched" ? "opacity-50" : ""}`}
           >
             {item.posterPath ? (
               <img
@@ -195,11 +196,11 @@ export function WatchlistScreen({ onImportAgain }: { onImportAgain: () => void }
                 className="h-16 w-11 flex-none rounded object-cover"
               />
             ) : (
-              <div className="h-16 w-11 flex-none rounded bg-white/10" />
+              <div className="h-16 w-11 flex-none rounded bg-ink/10" />
             )}
             <div className="min-w-0 flex-1">
-              <p className="truncate text-[14px] font-medium text-[#F5EEDC]">{item.title}</p>
-              <p className="font-mono text-[11px] text-white/40">
+              <p className="truncate text-[14px] font-medium text-ink">{item.title}</p>
+              <p className="font-mono text-[11px] text-ink/40">
                 {item.year ?? ""} · {item.mediaType}
                 {item.status === "watched" ? " · watched" : ""}
               </p>
@@ -208,10 +209,8 @@ export function WatchlistScreen({ onImportAgain }: { onImportAgain: () => void }
               type="button"
               onClick={() => toggleWatched(item)}
               aria-label={item.status === "watched" ? "Mark unwatched" : "Mark watched"}
-              className={`grid h-8 w-8 flex-none place-items-center rounded-full ${
-                item.status === "watched"
-                  ? "bg-[#E3B24B]/20 text-[#E3B24B]"
-                  : "bg-white/5 text-white/40"
+              className={`btn-press grid h-8 w-8 flex-none place-items-center rounded-full ${
+                item.status === "watched" ? "bg-gold/20 text-gold" : "bg-ink/5 text-ink/40"
               }`}
             >
               <Check size={15} />
@@ -220,7 +219,7 @@ export function WatchlistScreen({ onImportAgain }: { onImportAgain: () => void }
               type="button"
               onClick={() => remove(item)}
               aria-label="Remove"
-              className="grid h-8 w-8 flex-none place-items-center rounded-full bg-white/5 text-white/40"
+              className="btn-press grid h-8 w-8 flex-none place-items-center rounded-full bg-ink/5 text-ink/40"
             >
               <X size={15} />
             </button>

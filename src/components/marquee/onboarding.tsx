@@ -44,15 +44,15 @@ export function Onboarding({ onDone, onCancel }: { onDone: () => void; onCancel:
   if (result) {
     if (reviewing) {
       return (
-        <div className="flex min-h-screen flex-col bg-[#08080c] px-6 py-16">
-          <h1 className="font-display text-2xl font-semibold text-[#F5EEDC]">The weird ones</h1>
-          <p className="mt-2 text-sm text-white/50">
+        <div className="flex min-h-screen flex-col bg-paper px-6 py-16">
+          <h1 className="font-display text-2xl font-semibold text-ink">The weird ones</h1>
+          <p className="mt-2 text-sm text-ink-2">
             Couldn't confidently match these to a real title. You can add them manually later from
             My Watchlist.
           </p>
           <div className="mt-6 space-y-2">
             {result.needHelp.map((title, i) => (
-              <div key={i} className="rounded-xl bg-white/5 px-4 py-3 text-sm text-white/70">
+              <div key={i} className="rounded-xl bg-ink/5 px-4 py-3 text-sm text-ink-2">
                 {title}
               </div>
             ))}
@@ -60,7 +60,7 @@ export function Onboarding({ onDone, onCancel }: { onDone: () => void; onCancel:
           <button
             type="button"
             onClick={onDone}
-            className="mt-8 w-full rounded-xl bg-gradient-to-br from-[#f2ca6d] to-[#c8933a] py-3 text-sm font-semibold text-[#181104]"
+            className="btn-press mt-8 w-full rounded-xl bg-gold py-3 text-sm font-semibold text-gold-ink"
           >
             {ONBOARDING.pickSomething}
           </button>
@@ -69,15 +69,18 @@ export function Onboarding({ onDone, onCancel }: { onDone: () => void; onCancel:
     }
 
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-[#08080c] px-6 text-center">
-        <h1 className="font-display text-2xl font-semibold text-[#F5EEDC]">
-          {importSummary(result.imported, result.duplicates, result.needHelp.length)}
-        </h1>
+      <div className="flex min-h-screen flex-col items-center justify-center bg-paper px-6 text-center">
+        <div className="envelope-reveal spotlight-glow">
+          <h1 className="font-display text-2xl font-semibold text-ink">
+            {importSummary(result.imported, result.duplicates, result.needHelp.length)}
+          </h1>
+          <div className="stencil-rule mx-auto mt-4 w-16" />
+        </div>
         <div className="mt-8 w-full max-w-xs space-y-2">
           <button
             type="button"
             onClick={onDone}
-            className="w-full rounded-xl bg-gradient-to-br from-[#f2ca6d] to-[#c8933a] py-3 text-sm font-semibold text-[#181104]"
+            className="btn-press w-full rounded-xl bg-gold py-3 text-sm font-semibold text-gold-ink"
           >
             {ONBOARDING.pickSomething}
           </button>
@@ -85,7 +88,7 @@ export function Onboarding({ onDone, onCancel }: { onDone: () => void; onCancel:
             <button
               type="button"
               onClick={() => setReviewing(true)}
-              className="w-full rounded-xl border border-white/15 py-3 text-sm font-medium text-white/70"
+              className="btn-press w-full rounded-xl border border-rule py-3 text-sm font-medium text-ink-2"
             >
               {ONBOARDING.reviewWeirdOnes(result.needHelp.length)}
             </button>
@@ -96,13 +99,13 @@ export function Onboarding({ onDone, onCancel }: { onDone: () => void; onCancel:
   }
 
   return (
-    <div className="relative flex min-h-screen flex-col items-center justify-center bg-[#08080c] px-6 text-center">
+    <div className="relative flex min-h-screen flex-col items-center justify-center bg-paper px-6 text-center">
       {!importing && (
         <button
           type="button"
           onClick={onCancel}
           aria-label="Back"
-          className="absolute left-4 top-6 grid h-9 w-9 place-items-center rounded-full bg-white/5 text-white/60"
+          className="btn-press absolute left-4 top-6 grid h-9 w-9 place-items-center rounded-full bg-ink/5 text-ink-2"
         >
           <ChevronLeft size={18} />
         </button>
@@ -121,17 +124,15 @@ export function Onboarding({ onDone, onCancel }: { onDone: () => void; onCancel:
       />
 
       {importing ? (
-        <p className="text-sm text-white/60" role="status" aria-live="polite">
+        <p className="text-sm text-ink-2" role="status" aria-live="polite">
           Importing your watchlist…
         </p>
       ) : (
         <>
-          <h1 className="font-display text-3xl font-semibold text-[#F5EEDC]">
-            {ONBOARDING.headline}
-          </h1>
-          <p className="mt-3 max-w-xs text-sm text-white/60">{ONBOARDING.supporting}</p>
-          <p className="mt-3 max-w-xs text-xs text-white/40">{ONBOARDING.whyCsv}</p>
-          <p className="mt-2 max-w-xs text-xs font-medium text-[#E3B24B]/80">
+          <h1 className="font-display text-3xl font-semibold text-ink">{ONBOARDING.headline}</h1>
+          <p className="mt-3 max-w-xs text-sm text-ink-2">{ONBOARDING.supporting}</p>
+          <p className="mt-3 max-w-xs text-xs text-ink/40">{ONBOARDING.whyCsv}</p>
+          <p className="mt-2 max-w-xs text-xs font-medium text-gold/80">
             {ONBOARDING.browserOnlyWarning}
           </p>
 
@@ -140,23 +141,23 @@ export function Onboarding({ onDone, onCancel }: { onDone: () => void; onCancel:
               href={ONBOARDING.imdbWatchlistUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="block w-full rounded-xl bg-gradient-to-br from-[#f2ca6d] to-[#c8933a] py-3 text-center text-sm font-semibold text-[#181104]"
+              className="btn-press block w-full rounded-xl bg-gold py-3 text-center text-sm font-semibold text-gold-ink"
             >
               {ONBOARDING.primaryAction}
             </a>
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="w-full rounded-xl border border-white/15 py-3 text-sm font-medium text-white/70"
+              className="btn-press w-full rounded-xl border border-rule py-3 text-sm font-medium text-ink-2"
             >
               {ONBOARDING.secondaryAction}
             </button>
           </div>
 
-          <ol className="mt-8 w-full max-w-xs space-y-2 text-left text-sm text-white/50">
+          <ol className="mt-8 w-full max-w-xs space-y-2 text-left text-sm text-ink-2">
             {ONBOARDING.steps.map((step, i) => (
               <li key={i} className="flex gap-2">
-                <span className="text-[#E3B24B]">{i + 1}.</span>
+                <span className="text-gold">{i + 1}.</span>
                 {step}
               </li>
             ))}

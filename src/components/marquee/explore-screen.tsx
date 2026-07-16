@@ -130,26 +130,26 @@ export function ExploreScreen({ language }: { language: Language }) {
 
   return (
     <div className="mx-auto w-full max-w-xl px-6 pb-28 pt-16">
-      <h1 className="font-display text-2xl font-semibold text-[#F5EEDC]">{copy.headline}</h1>
+      <h1 className="font-display text-2xl font-semibold text-ink">{copy.headline}</h1>
 
       <form
         onSubmit={(e) => {
           e.preventDefault();
           runSearch(query);
         }}
-        className="mt-4 flex items-center gap-2 rounded-2xl border border-white/15 bg-black/40 px-3 py-2 backdrop-blur-xl transition-colors focus-within:border-[#E3B24B]/50"
+        className="mt-4 flex items-center gap-2 rounded-2xl border border-rule bg-paper/70 px-3 py-2 backdrop-blur-xl transition-colors focus-within:border-gold/50"
       >
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={copy.searchPlaceholder}
-          className="min-w-0 flex-1 bg-transparent py-2.5 text-[15px] text-[#F5EEDC] placeholder:text-white/40 focus:outline-none"
+          className="min-w-0 flex-1 bg-transparent py-2.5 text-[15px] text-ink placeholder:text-ink/40 focus:outline-none"
         />
         <button
           type="submit"
           disabled={state.kind === "loading"}
           aria-label="Search"
-          className="grid h-10 w-10 flex-none place-items-center rounded-xl bg-gradient-to-br from-[#f2ca6d] to-[#c8933a] text-[#181104] transition-transform hover:brightness-110 disabled:opacity-50"
+          className="btn-press grid h-10 w-10 flex-none place-items-center rounded-xl bg-gold text-gold-ink hover:brightness-110 disabled:opacity-50"
         >
           <Search size={18} />
         </button>
@@ -164,7 +164,7 @@ export function ExploreScreen({ language }: { language: Language }) {
               setQuery(category.query);
               runSearch(category.query);
             }}
-            className="rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-medium text-white/70"
+            className="btn-press rounded-full border border-rule bg-ink/5 px-3 py-1.5 text-xs font-medium text-ink-2"
           >
             {category.label}
           </button>
@@ -173,19 +173,19 @@ export function ExploreScreen({ language }: { language: Language }) {
 
       <div className="mt-6">
         {state.kind === "loading" && (
-          <p className="text-center text-sm text-white/50" role="status" aria-live="polite">
+          <p className="text-center text-sm text-ink-2" role="status" aria-live="polite">
             Searching...
           </p>
         )}
 
         {state.kind === "empty" && (
-          <p className="rounded-2xl border border-white/10 bg-white/5 px-5 py-6 text-center text-sm text-white/70">
+          <p className="rounded-2xl border border-rule bg-ink/5 px-5 py-6 text-center text-sm text-ink-2">
             {copy.noResults}
           </p>
         )}
 
         {state.kind === "error" && (
-          <p className="rounded-2xl border border-white/10 bg-white/5 px-5 py-6 text-center text-sm text-red-300/90">
+          <p className="rounded-2xl border border-rule bg-ink/5 px-5 py-6 text-center text-sm text-red-300/90">
             {state.message}
           </p>
         )}
@@ -193,20 +193,18 @@ export function ExploreScreen({ language }: { language: Language }) {
         {state.kind === "results" && (
           <div className="space-y-2">
             {state.results.map((result) => (
-              <div key={result.url} className="rounded-xl border border-white/10 bg-white/5 p-4">
-                <p className="text-[11px] uppercase tracking-wider text-white/40">IMDb</p>
-                <p className="mt-1 text-[15px] font-medium text-[#F5EEDC]">{result.title}</p>
+              <div key={result.url} className="rounded-xl border border-rule bg-ink/5 p-4">
+                <p className="text-[11px] uppercase tracking-wider text-ink/40">IMDb</p>
+                <p className="mt-1 text-[15px] font-medium text-ink">{result.title}</p>
                 {result.description && (
-                  <p className="mt-1 line-clamp-2 text-[13px] text-white/50">
-                    {result.description}
-                  </p>
+                  <p className="mt-1 line-clamp-2 text-[13px] text-ink-2">{result.description}</p>
                 )}
                 <div className="mt-3 flex gap-2">
                   <a
                     href={result.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-gradient-to-br from-[#f2ca6d] to-[#c8933a] px-3 py-2 text-[13px] font-semibold text-[#181104]"
+                    className="btn-press flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-gold px-3 py-2 text-[13px] font-semibold text-gold-ink"
                   >
                     <ExternalLink size={14} />
                     {copy.openInImdb}
@@ -216,7 +214,7 @@ export function ExploreScreen({ language }: { language: Language }) {
                     onClick={() => saveList(result)}
                     disabled={savedUrls.has(result.url)}
                     aria-label={savedUrls.has(result.url) ? copy.saved : copy.save}
-                    className="grid h-9 w-9 flex-none place-items-center rounded-lg border border-white/15 text-white/70 disabled:text-[#E3B24B]"
+                    className="btn-press grid h-9 w-9 flex-none place-items-center rounded-lg border border-rule text-ink-2 disabled:text-gold"
                   >
                     <Bookmark
                       size={15}
@@ -226,7 +224,7 @@ export function ExploreScreen({ language }: { language: Language }) {
                 </div>
               </div>
             ))}
-            <p className="pt-1 text-center text-[11px] text-white/30">
+            <p className="pt-1 text-center text-[11px] text-ink/30">
               Results via Google Custom Search
             </p>
           </div>
@@ -234,30 +232,29 @@ export function ExploreScreen({ language }: { language: Language }) {
       </div>
 
       <div className="mt-10">
-        <p className="font-mono text-[11px] uppercase tracking-wider text-white/40">
+        <p className="font-mono text-[11px] uppercase tracking-wider text-ink/40">
           {copy.savedListsTitle}
         </p>
+        <div className="stencil-rule mt-3" />
         {saved.length === 0 ? (
-          <p className="mt-3 text-sm text-white/40">{copy.noSavedLists}</p>
+          <p className="mt-3 text-sm text-ink/40">{copy.noSavedLists}</p>
         ) : (
           <div className="mt-3 space-y-2">
             {saved.map((item) => {
               const outcome = importResults[item.id];
               return (
-                <div key={item.id} className="rounded-xl bg-white/5 p-3">
+                <div key={item.id} className="rounded-xl bg-ink/5 p-3">
                   <div className="flex items-center gap-3">
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-[14px] font-medium text-[#F5EEDC]">
-                        {item.title}
-                      </p>
-                      <p className="truncate font-mono text-[11px] text-white/40">{item.url}</p>
+                      <p className="truncate text-[14px] font-medium text-ink">{item.title}</p>
+                      <p className="truncate font-mono text-[11px] text-ink/40">{item.url}</p>
                     </div>
                     <button
                       type="button"
                       onClick={() => importSavedList(item.id)}
                       disabled={importingId === item.id}
                       aria-label="Add this list's titles to my watchlist"
-                      className="grid h-8 w-8 flex-none place-items-center rounded-full bg-white/5 text-white/40 disabled:opacity-50"
+                      className="btn-press grid h-8 w-8 flex-none place-items-center rounded-full bg-ink/5 text-ink/40 disabled:opacity-50"
                     >
                       <ListPlus size={14} />
                     </button>
@@ -266,7 +263,7 @@ export function ExploreScreen({ language }: { language: Language }) {
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label={copy.openInImdb}
-                      className="grid h-8 w-8 flex-none place-items-center rounded-full bg-white/5 text-white/40"
+                      className="btn-press grid h-8 w-8 flex-none place-items-center rounded-full bg-ink/5 text-ink/40"
                     >
                       <ExternalLink size={14} />
                     </a>
@@ -274,16 +271,16 @@ export function ExploreScreen({ language }: { language: Language }) {
                       type="button"
                       onClick={() => removeSaved(item.id)}
                       aria-label="Remove"
-                      className="grid h-8 w-8 flex-none place-items-center rounded-full bg-white/5 text-white/40"
+                      className="btn-press grid h-8 w-8 flex-none place-items-center rounded-full bg-ink/5 text-ink/40"
                     >
                       &times;
                     </button>
                   </div>
                   {importingId === item.id && (
-                    <p className="mt-2 text-xs text-white/40">Adding this list's titles…</p>
+                    <p className="mt-2 text-xs text-ink/40">Adding this list's titles…</p>
                   )}
                   {outcome && importingId !== item.id && (
-                    <p className="mt-2 text-xs text-white/50">
+                    <p className="mt-2 text-xs text-ink-2">
                       {"error" in outcome
                         ? outcome.error
                         : importSummary(

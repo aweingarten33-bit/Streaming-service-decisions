@@ -13,13 +13,13 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Hallmark · macrostructure: existing app screens (redesign, not greenfield)
+/* Hallmark · macrostructure: existing app screens (redesign, not greenfield) · designed-as-app
  * theme: custom · vibe: "stencil-cut rebellion, spotlit restraint, envelope-reveal glamour"
  * paper: oklch(9% 0.015 75) · accent: oklch(72% 0.13 78)
  * display: Playfair Display (roman only) · body: Archivo · mono: JetBrains Mono
  * axes: dark / roman-serif / chromatic-other (chromatic-gold ~78°)
- * studied: no · context: explicit · v0.8.0
- * pre-emit critique: P4 H4 E4 S4 R4 V4
+ * studied: no · context: explicit · design-system: design.md · v0.8.0
+ * pre-emit critique: P4 H5 E5 S4 R4 V4
  */
 
 @theme inline {
@@ -120,12 +120,36 @@
     font-family: var(--font-display), Georgia, serif;
   }
 
-  /* the one central move: a hairline gold rule that "cuts" a section open --
-     Banksy's single stencil-edge, used once per reveal, never decoratively
-     repeated. */
+  /* the one central structural move: a dashed gold "cut here" line --
+     Banksy's stencil-edge made literal, like a perforation a shape was
+     just torn out along. Used once per screen, at its single most
+     decisive moment -- never decoratively repeated. */
   .stencil-rule {
-    height: 1px;
-    background: var(--gold);
+    height: 2px;
+    background-image: repeating-linear-gradient(
+      90deg,
+      var(--gold) 0,
+      var(--gold) 10px,
+      transparent 10px,
+      transparent 15px
+    );
+  }
+
+  /* the one central atmosphere move: a soft gold bloom from above, like a
+     single stage spotlight finding the one thing that matters. Reserved for
+     a screen's single hero reveal moment -- never the whole page. */
+  .spotlight-glow {
+    position: relative;
+    isolation: isolate;
+  }
+  .spotlight-glow::before {
+    content: "";
+    position: absolute;
+    inset: -15% -20% auto -20%;
+    height: 90%;
+    background: radial-gradient(ellipse at 50% 0%, rgb(209 153 54 / 22%), transparent 70%);
+    pointer-events: none;
+    z-index: -1;
   }
 
   /* the envelope-reveal -- one deliberate motion, not a suite of them. A
@@ -143,9 +167,26 @@
       transform: translateY(0);
     }
   }
+
+  /* the one shared tactile signature -- every primary/secondary button gets
+     the same quiet press feedback, nothing more elaborate. */
+  .btn-press {
+    transition:
+      transform 0.15s cubic-bezier(0.16, 1, 0.3, 1),
+      filter 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .btn-press:active {
+    transform: scale(0.97);
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .envelope-reveal {
       animation: none;
+    }
+    .btn-press,
+    .btn-press:active {
+      transition: none;
+      transform: none;
     }
   }
 }

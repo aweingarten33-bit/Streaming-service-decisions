@@ -25,7 +25,7 @@ export function AppShell() {
   }, []);
 
   if (hasWatchlist === null) {
-    return <div className="min-h-screen bg-[#08080c]" />;
+    return <div className="min-h-screen bg-paper" />;
   }
 
   // Opt-in only -- reached via "Get My IMDb Watchlist" from Home's empty
@@ -45,7 +45,7 @@ export function AppShell() {
   }
 
   return (
-    <div className="min-h-screen bg-[#08080c]">
+    <div className="min-h-screen bg-paper">
       {tab === "home" && <Home language={language} onNeedsImport={() => setShowOnboarding(true)} />}
       {tab === "watchlist" && <WatchlistScreen onImportAgain={() => setShowOnboarding(true)} />}
       {tab === "explore" && <ExploreScreen language={language} />}

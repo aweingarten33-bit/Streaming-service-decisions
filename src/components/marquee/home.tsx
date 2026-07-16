@@ -202,7 +202,7 @@ export function Home({
             type="button"
             aria-pressed={mediaTypeFilter === value}
             onClick={() => setMediaTypeFilter(value)}
-            className={`flex-1 rounded-lg py-2 text-[13px] font-medium transition-colors ${
+            className={`btn-press flex-1 rounded-lg py-2 text-[13px] font-medium transition-colors ${
               mediaTypeFilter === value ? "bg-gold/15 text-ink" : "text-ink-2 hover:text-ink"
             }`}
           >
@@ -223,7 +223,7 @@ export function Home({
               key={value}
               type="button"
               onClick={() => setGroupMode(value as typeof groupMode)}
-              className={`rounded-full border px-3 py-2 text-xs font-medium ${
+              className={`btn-press rounded-full border px-3 py-2 text-xs font-medium ${
                 groupMode === value
                   ? "border-gold/60 bg-gold/15 text-ink"
                   : "border-rule bg-ink/5 text-ink-2"
@@ -253,7 +253,7 @@ export function Home({
             type="submit"
             disabled={state.kind === "loading"}
             aria-label="Send"
-            className="grid h-10 w-10 flex-none place-items-center rounded-xl bg-gold text-gold-ink transition-transform hover:brightness-110 disabled:opacity-50"
+            className="btn-press grid h-10 w-10 flex-none place-items-center rounded-xl bg-gold text-gold-ink hover:brightness-110 disabled:opacity-50"
           >
             <ArrowUp size={18} />
           </button>
@@ -270,7 +270,7 @@ export function Home({
         )}
 
         {state.kind === "result" && (
-          <div className="envelope-reveal">
+          <div className="envelope-reveal spotlight-glow">
             <ResultCard
               result={state.result}
               intent={state.intent}
@@ -292,7 +292,7 @@ export function Home({
                     key={reason}
                     type="button"
                     onClick={() => rejectWithReason(reason)}
-                    className="rounded-xl border border-rule bg-paper/50 px-3 py-2 text-xs font-medium text-ink-2"
+                    className="btn-press rounded-xl border border-rule bg-paper/50 px-3 py-2 text-xs font-medium text-ink-2"
                   >
                     {reason}
                   </button>
@@ -308,7 +308,7 @@ export function Home({
             <button
               type="button"
               onClick={onNeedsImport}
-              className="mt-4 rounded-xl bg-gold px-5 py-2.5 text-sm font-semibold text-gold-ink"
+              className="btn-press mt-4 rounded-xl bg-gold px-5 py-2.5 text-sm font-semibold text-gold-ink"
             >
               {copy.emptyWatchlistAction}
             </button>
@@ -322,7 +322,7 @@ export function Home({
               <button
                 type="button"
                 onClick={() => decide(lastPrompt.current, true)}
-                className="mt-4 rounded-xl bg-gold px-5 py-2.5 text-sm font-semibold text-gold-ink"
+                className="btn-press mt-4 rounded-xl bg-gold px-5 py-2.5 text-sm font-semibold text-gold-ink"
               >
                 {copy.relaxAction}
               </button>

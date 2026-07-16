@@ -138,7 +138,7 @@ export function ResultCard({
           href={watchUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-3 block w-full rounded-xl bg-gold py-3.5 text-center text-[15px] font-semibold text-gold-ink transition-transform hover:brightness-110"
+          className="btn-press mt-3 block w-full rounded-xl bg-gold py-3.5 text-center text-[15px] font-semibold text-gold-ink hover:brightness-110"
         >
           {copy.primaryActionLabel}
         </a>
@@ -147,21 +147,21 @@ export function ResultCard({
           <button
             type="button"
             onClick={onGiveMeAnother}
-            className="rounded-xl border border-rule bg-ink/5 py-2.5 text-xs font-medium text-ink-2 transition-colors hover:bg-ink/10"
+            className="btn-press rounded-xl border border-rule bg-ink/5 py-2.5 text-xs font-medium text-ink-2 transition-colors hover:bg-ink/10"
           >
             {copy.giveMeAnother}
           </button>
           <button
             type="button"
             onClick={onNotTonight}
-            className="rounded-xl border border-rule bg-ink/5 py-2.5 text-xs font-medium text-ink-2 transition-colors hover:bg-ink/10"
+            className="btn-press rounded-xl border border-rule bg-ink/5 py-2.5 text-xs font-medium text-ink-2 transition-colors hover:bg-ink/10"
           >
             {copy.notTonight}
           </button>
           <button
             type="button"
             onClick={onMarkWatched}
-            className="rounded-xl border border-rule bg-ink/5 py-2.5 text-xs font-medium text-ink-2 transition-colors hover:bg-ink/10"
+            className="btn-press rounded-xl border border-rule bg-ink/5 py-2.5 text-xs font-medium text-ink-2 transition-colors hover:bg-ink/10"
           >
             {copy.markWatched}
           </button>

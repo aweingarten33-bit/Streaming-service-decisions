@@ -13,7 +13,7 @@ export function BottomNav({ tab, onChange }: { tab: Tab; onChange: (tab: Tab) =>
   ];
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-white/10 bg-[#08080c]/95 backdrop-blur-xl">
+    <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-rule bg-paper/95 backdrop-blur-xl">
       <div className="mx-auto flex max-w-xl">
         {items.map(({ key, label, icon: Icon }) => (
           <button
@@ -21,8 +21,8 @@ export function BottomNav({ tab, onChange }: { tab: Tab; onChange: (tab: Tab) =>
             type="button"
             onClick={() => onChange(key)}
             aria-current={tab === key ? "page" : undefined}
-            className={`flex flex-1 flex-col items-center gap-1 py-3 text-[11px] font-medium transition-colors ${
-              tab === key ? "text-[#E3B24B]" : "text-white/40"
+            className={`btn-press flex flex-1 flex-col items-center gap-1 py-3 text-[11px] font-medium transition-colors ${
+              tab === key ? "text-gold" : "text-ink/40"
             }`}
           >
             <Icon size={20} />
