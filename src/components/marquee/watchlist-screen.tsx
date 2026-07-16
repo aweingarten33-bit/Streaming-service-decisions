@@ -107,7 +107,7 @@ export function WatchlistScreen({ onImportAgain }: { onImportAgain: () => void }
           <RotateCcw size={12} /> Import
         </button>
       </div>
-      <div className="drip-edge stencil-rule mt-4" />
+      <div className="stencil-rule mt-4" />
 
       <form
         onSubmit={(e) => {

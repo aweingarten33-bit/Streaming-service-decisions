@@ -27,8 +27,6 @@ export function Hero() {
 
   useEffect(() => {
     setWebglAvailable(detectWebGL());
-    // First-ever visit is the only time this page is shown -- see EntryGate.
-    localStorage.setItem("marquee-seen-welcome", "1");
   }, []);
 
   return (

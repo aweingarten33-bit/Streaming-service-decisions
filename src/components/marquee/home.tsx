@@ -184,42 +184,26 @@ export function Home({
       <div className="bg-muted/60 tape-strip absolute top-0 left-1/2 -z-10 h-48 w-full max-w-md -translate-x-1/2 rotate-[-3deg] opacity-70" />
       <div className="bg-muted/40 tape-strip absolute top-10 left-1/2 -z-10 h-32 w-full max-w-sm -translate-x-[40%] rotate-[2deg] opacity-60" />
 
-      <div className="stagger-in relative mb-6">
-        <span className="relative z-10 px-4 py-2 font-mono text-sm font-bold tracking-[0.3em] text-ink uppercase">
-          No scrolling. No second-guessing.
-        </span>
-        <div className="tape-strip absolute inset-0 -z-10" />
-      </div>
-
       <h1 className="spray-glow stagger-in stagger-in-1 font-display relative mb-2 text-center text-6xl leading-[0.85] tracking-tighter text-ink uppercase sm:text-7xl">
-        <span className="block">WTF</span>
-        <span className="relative block">
-          Mood?
-          <span className="font-scrawl absolute -top-4 -right-8 rotate-12 text-4xl text-red opacity-90 sm:-right-12 sm:text-5xl">
-            X
-          </span>
-        </span>
+        Marquee
       </h1>
+
+      <CouchWatcher className="stagger-in stagger-in-2 text-ink/90 mt-2 opacity-90" size={130} />
 
       <div className="stagger-in stagger-in-2 mb-2 flex flex-col items-center gap-2">
         <p className="bg-paper-3/50 px-2 py-1 font-mono text-xs font-bold tracking-widest text-ink uppercase">
           Stop browsing // start watching
         </p>
-        {teaser ? (
-          <p className="scrawl -rotate-2 text-lg text-ink">{teaser}</p>
-        ) : (
-          <p className="scrawl -rotate-2 text-lg text-ink">
-            no decision paralysis. just press play.
-          </p>
-        )}
+        {teaser && <p className="scrawl -rotate-2 text-lg text-ink">{teaser}</p>}
       </div>
 
-      <CouchWatcher className="stagger-in stagger-in-2 text-ink/90 mt-2 opacity-90" size={130} />
-
+      <p className="scrawl stagger-in stagger-in-2 mt-6 text-center text-base text-ink/60">
+        What do you wanna search for?
+      </p>
       <div
         role="group"
         aria-label="Movie or TV show"
-        className="stagger-in stagger-in-2 mt-6 flex w-full gap-2 rounded-xl border-2 border-rule bg-paper-2 p-1"
+        className="stagger-in stagger-in-2 mt-2 flex w-full gap-2 rounded-xl border-2 border-rule bg-paper-2 p-1"
       >
         {(
           [
@@ -242,6 +226,9 @@ export function Home({
         ))}
       </div>
 
+      <p className="scrawl stagger-in stagger-in-2 mt-4 text-center text-base text-ink/60">
+        Who&apos;s watching?
+      </p>
       <div
         role="group"
         aria-label="Who's watching"
@@ -270,7 +257,7 @@ export function Home({
 
       <div className="stagger-in stagger-in-3 mt-6 w-full space-y-3">
         <p className="scrawl text-center text-base text-ink/60">
-          Pick your mood below, or just type how you feel.
+          * Pick your mood below, or just type how you feel.
         </p>
         <PromptSelector language={language} onSelect={setPrompt} />
         <form

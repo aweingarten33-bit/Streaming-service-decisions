@@ -137,7 +137,7 @@ export function ExploreScreen({ language }: { language: Language }) {
           e.preventDefault();
           runSearch(query);
         }}
-        className="drip-edge wall-texture mt-4 flex items-center gap-2 rounded-2xl border border-rule bg-paper/70 px-3 py-2 backdrop-blur-xl transition-colors focus-within:border-red/50"
+        className="wall-texture mt-4 flex items-center gap-2 rounded-2xl border border-rule bg-paper/70 px-3 py-2 backdrop-blur-xl transition-colors focus-within:border-red/50"
       >
         <input
           value={query}

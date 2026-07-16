@@ -12,7 +12,7 @@ export function SettingsScreen({
   return (
     <div className="mx-auto w-full max-w-xl px-6 pb-12 pt-16">
       <h1 className="spray-glow font-display text-2xl font-semibold text-ink">Settings</h1>
-      <div className="drip-edge stencil-rule mt-4" />
+      <div className="stencil-rule mt-4" />
 
       <div className="mt-6">
         <p className="font-mono text-[11px] uppercase tracking-wider text-ink/40">Language</p>
