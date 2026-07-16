@@ -179,7 +179,7 @@ export function Home({
   }
 
   return (
-    <div className="wall-texture brick-texture relative mx-auto flex w-full max-w-xl flex-col items-center overflow-hidden px-6 pb-12 pt-16">
+    <div className="wall-texture brick-texture relative mx-auto flex w-full max-w-xl flex-col items-center overflow-hidden px-6 pt-24 pb-12">
       {/* torn tape posters behind the title, exactly like the reference's Home hero */}
       <div className="bg-muted/60 tape-strip absolute top-0 left-1/2 -z-10 h-48 w-full max-w-md -translate-x-1/2 rotate-[-3deg] opacity-70" />
       <div className="bg-muted/40 tape-strip absolute top-10 left-1/2 -z-10 h-32 w-full max-w-sm -translate-x-[40%] rotate-[2deg] opacity-60" />
