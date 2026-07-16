@@ -29,6 +29,8 @@ function candidate(overrides: Partial<WatchlistCandidate>): WatchlistCandidate {
     backdropPath: null,
     streamingProviders: [],
     tmdbRating: 6,
+    overview: null,
+    trailerKey: null,
     ...overrides,
   };
 }

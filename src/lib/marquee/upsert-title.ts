@@ -22,6 +22,8 @@ export async function upsertTitle(tmdbId: number, mediaType: ResolvedMediaType):
       streaming_providers: streamingProviders,
       tmdb_rating: details.voteAverage,
       tmdb_vote_count: details.voteCount,
+      overview: details.overview,
+      trailer_key: details.trailerKey,
       updated_at: new Date().toISOString(),
     },
     { onConflict: "tmdb_id,media_type" },

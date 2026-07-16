@@ -22,6 +22,8 @@ interface WatchlistItemRow {
     backdrop_path: string | null;
     streaming_providers: string[];
     tmdb_rating: number | null;
+    overview: string | null;
+    trailer_key: string | null;
   } | null;
 }
 
@@ -43,7 +45,7 @@ export async function getWatchlistCandidates(deviceId: string): Promise<Watchlis
     .from("watchlist_items")
     .select(
       `id, tmdb_id, media_type, status,
-       titles!inner ( title, year, genres, runtime, poster_path, backdrop_path, streaming_providers, tmdb_rating )`,
+       titles!inner ( title, year, genres, runtime, poster_path, backdrop_path, streaming_providers, tmdb_rating, overview, trailer_key )`,
     )
     .eq("device_id", deviceId);
 
@@ -64,5 +66,7 @@ export async function getWatchlistCandidates(deviceId: string): Promise<Watchlis
       backdropPath: row.titles!.backdrop_path,
       streamingProviders: row.titles!.streaming_providers,
       tmdbRating: row.titles!.tmdb_rating,
+      overview: row.titles!.overview,
+      trailerKey: row.titles!.trailer_key,
     }));
 }

@@ -15,6 +15,9 @@ export interface DecideResult {
   posterPath: string | null;
   backdropPath: string | null;
   streamingProviders: string[];
+  tmdbRating: number | null;
+  overview: string | null;
+  trailerKey: string | null;
   explanation: string;
 }
 
@@ -71,10 +74,13 @@ export function ResultCard({
 
       <div className="px-5 pb-5 pt-4">
         <h2 className="font-display text-2xl font-semibold text-[#F5EEDC]">{result.title}</h2>
-        <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 font-mono text-[11px] uppercase tracking-wider text-white/50">
+        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[11px] uppercase tracking-wider text-white/50">
           {result.year && <span>{result.year}</span>}
           <span>{result.mediaType}</span>
           {runtimeLabel && <span>{runtimeLabel}</span>}
+          {result.tmdbRating != null && (
+            <span className="text-[#E3B24B]">★ {result.tmdbRating.toFixed(1)}</span>
+          )}
         </div>
 
         {result.streamingProviders.length > 0 && (
@@ -83,7 +89,22 @@ export function ResultCard({
           </p>
         )}
 
+        {result.overview && (
+          <p className="mt-3 text-[13px] leading-relaxed text-white/50">{result.overview}</p>
+        )}
+
         <p className="mt-3 text-[15px] leading-relaxed text-white/80">{result.explanation}</p>
+
+        {result.trailerKey && (
+          <a
+            href={`https://www.youtube.com/watch?v=${result.trailerKey}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-2 inline-block text-xs font-medium text-white/40 underline-offset-4 hover:text-white/70 hover:underline"
+          >
+            ▶ Watch Trailer
+          </a>
+        )}
 
         {matchedBits.length > 0 && (
           <div className="mt-2">
