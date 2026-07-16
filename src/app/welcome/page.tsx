@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { WebglHero } from "@/components/landing/webgl-hero";
+import { Hero } from "@/components/landing/hero";
 
 export const metadata: Metadata = {
   title: "Marquee — Stop scrolling. Start watching.",
@@ -8,5 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default function WelcomePage() {
-  return <WebglHero />;
+  return <Hero />;
 }
