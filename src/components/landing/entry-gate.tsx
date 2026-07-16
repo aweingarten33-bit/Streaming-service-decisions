@@ -1,16 +1,27 @@
 "use client";
 
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 
-/** Every load of "/" goes through the WebGL /welcome intro first -- it
- * redirects immediately, so `children` never actually renders here. */
-export function EntryGate({ children: _children }: { children: ReactNode }) {
+// Module-level, not storage-backed: resets on every real page load/reload
+// (new JS execution), but survives the client-side navigation back from
+// /welcome after clicking "Enter" -- so the splash reappears on every
+// reload without bouncing the user right back to it the moment they enter.
+let redirectedThisLoad = false;
+
+export function EntryGate({ children }: { children: ReactNode }) {
   const router = useRouter();
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    if (redirectedThisLoad) {
+      setReady(true);
+      return;
+    }
+    redirectedThisLoad = true;
     router.replace("/welcome");
   }, [router]);
 
-  return null;
+  if (!ready) return null;
+  return <>{children}</>;
 }
