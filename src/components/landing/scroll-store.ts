@@ -9,10 +9,12 @@ export interface ScrollStore {
   progress: number;
   /** Fractional camera-waypoint index, derived from progress. */
   section: number;
+  /** 0..1, set on hover of the primary CTA -- a small energy response in the finale light. */
+  hoverBoost: number;
 }
 
 export function createScrollStore(): ScrollStore {
-  return { progress: 0, section: 0 };
+  return { progress: 0, section: 0, hoverBoost: 0 };
 }
 
 /**

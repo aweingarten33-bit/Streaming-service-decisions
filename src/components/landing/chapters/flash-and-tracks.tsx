@@ -104,36 +104,35 @@ export function FlashAndTracks({
         />
       </mesh>
 
-      {!mobileTier && (
-        <>
-          <mesh position={[-0.6, 0.02, -10]} rotation={[-Math.PI / 2, 0, 0]}>
-            <planeGeometry args={[0.35, 24]} />
-            <shaderMaterial
-              ref={trackMatARef}
-              vertexShader={TRACK_VERTEX}
-              fragmentShader={TRACK_FRAGMENT}
-              uniforms={trackUniformsA}
-              transparent
-              depthWrite={false}
-              blending={THREE.AdditiveBlending}
-              side={THREE.DoubleSide}
-            />
-          </mesh>
-          <mesh position={[0.6, 0.02, -10]} rotation={[-Math.PI / 2, 0, 0]}>
-            <planeGeometry args={[0.35, 24]} />
-            <shaderMaterial
-              ref={trackMatBRef}
-              vertexShader={TRACK_VERTEX}
-              fragmentShader={TRACK_FRAGMENT}
-              uniforms={trackUniformsB}
-              transparent
-              depthWrite={false}
-              blending={THREE.AdditiveBlending}
-              side={THREE.DoubleSide}
-            />
-          </mesh>
-        </>
-      )}
+      {/* The tracks themselves are cheap (two plane shaders) -- always
+          render them. Only the reflective road's framebuffer cost is
+          gated by mobileTier, above. */}
+      <mesh position={[-0.6, 0.02, -10]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[0.35, 24]} />
+        <shaderMaterial
+          ref={trackMatARef}
+          vertexShader={TRACK_VERTEX}
+          fragmentShader={TRACK_FRAGMENT}
+          uniforms={trackUniformsA}
+          transparent
+          depthWrite={false}
+          blending={THREE.AdditiveBlending}
+          side={THREE.DoubleSide}
+        />
+      </mesh>
+      <mesh position={[0.6, 0.02, -10]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[0.35, 24]} />
+        <shaderMaterial
+          ref={trackMatBRef}
+          vertexShader={TRACK_VERTEX}
+          fragmentShader={TRACK_FRAGMENT}
+          uniforms={trackUniformsB}
+          transparent
+          depthWrite={false}
+          blending={THREE.AdditiveBlending}
+          side={THREE.DoubleSide}
+        />
+      </mesh>
 
       <AtmosphereParticles
         count={mobileTier ? 15 : 35}
