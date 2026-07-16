@@ -12,6 +12,10 @@ export async function POST(req: NextRequest) {
   const prompt: string = typeof body.prompt === "string" ? body.prompt.trim() : "";
   const excludeTmdbIds: number[] = Array.isArray(body.excludeTmdbIds) ? body.excludeTmdbIds : [];
   const relax: boolean = body.relax === true;
+  const mediaType: "movie" | "tv" | "any" | undefined =
+    body.mediaType === "movie" || body.mediaType === "tv" || body.mediaType === "any"
+      ? body.mediaType
+      : undefined;
   const useSavedLists: boolean = body.useSavedLists === true;
   const rejectionReason: string =
     typeof body.rejectionReason === "string" ? body.rejectionReason : "";
@@ -32,7 +36,12 @@ export async function POST(req: NextRequest) {
   const adjustedPrompt = rejectionReason
     ? `${prompt}. Avoid this rejected option because: ${rejectionReason}.`
     : prompt;
-  const intent = await parseIntent(adjustedPrompt);
+
+  const parsed = await parseIntent(adjustedPrompt);
+  // An explicit Movie/TV toggle always wins over whatever the text implies --
+  // the user shouldn't have to phrase their mood to also carry the media
+  // type.
+  const intent = mediaType ? { ...parsed, mediaType } : parsed;
   const choice = chooseOne(intent, candidates, { excludeTmdbIds, relax, tasteSourceText });
 
   if (!choice) {

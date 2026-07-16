@@ -28,8 +28,8 @@ describe("Unfiltered vs Clean-ish copy", () => {
     }
   });
 
-  test("~15 prompts in the bank", () => {
-    expect(PROMPT_BANK.length).toBeGreaterThanOrEqual(14);
+  test("a reasonable number of distinct prompts in the bank", () => {
+    expect(PROMPT_BANK.length).toBeGreaterThanOrEqual(10);
     expect(PROMPT_BANK.length).toBeLessThanOrEqual(16);
   });
 

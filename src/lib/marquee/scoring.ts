@@ -59,6 +59,13 @@ export interface ChooseOptions {
   tasteSourceText?: string[];
 }
 
+/**
+ * Soft bonus from saved Explore Lists metadata (title/description/note the
+ * user chose to save -- never the list's actual contents, per the
+ * never-scrape rule). Substring-matching a candidate's own title against
+ * that text is too noisy to be real signal, so this only rewards a genre or
+ * movie/tv keyword actually appearing in what the user saved.
+ */
 function tasteSourceScore(item: WatchlistCandidate, tasteSourceText: string[] = []): number {
   if (tasteSourceText.length === 0) return 0;
   const haystack = tasteSourceText.join(" ").toLowerCase();
@@ -68,12 +75,7 @@ function tasteSourceScore(item: WatchlistCandidate, tasteSourceText: string[] = 
   }
   if (item.mediaType === "tv" && /\b(tv|show|series|season|episode)\b/.test(haystack)) score += 1;
   if (item.mediaType === "movie" && /\b(movie|film|cinema)\b/.test(haystack)) score += 1;
-  const titleWords = item.title
-    .toLowerCase()
-    .split(/\W+/)
-    .filter((word) => word.length > 3);
-  if (titleWords.some((word) => haystack.includes(word))) score += 1;
-  return Math.min(score, 6);
+  return Math.min(score, 4);
 }
 
 /**
@@ -85,12 +87,9 @@ function tasteSourceScore(item: WatchlistCandidate, tasteSourceText: string[] = 
 export function chooseOne(
   intent: DecideIntent,
   candidates: WatchlistCandidate[],
-  options: ChooseOptions | number[] = {},
-  legacyRelax = false,
+  options: ChooseOptions = {},
 ): ScoredCandidate | null {
-  const excludeTmdbIds = Array.isArray(options) ? options : (options.excludeTmdbIds ?? []);
-  const relax = Array.isArray(options) ? legacyRelax : (options.relax ?? false);
-  const tasteSourceText = Array.isArray(options) ? [] : (options.tasteSourceText ?? []);
+  const { excludeTmdbIds = [], relax = false, tasteSourceText = [] } = options;
   const pool = candidates
     .filter((c) => c.status !== "watched")
     .filter((c) => !excludeTmdbIds.includes(c.tmdbId))
@@ -99,8 +98,7 @@ export function chooseOne(
       (c) =>
         relax ||
         !intent.maxRuntimeMinutes ||
-        !c.runtime ||
-        c.runtime <= intent.maxRuntimeMinutes + 5,
+        (c.runtime != null && c.runtime <= intent.maxRuntimeMinutes + 5),
     );
 
   const scored = pool

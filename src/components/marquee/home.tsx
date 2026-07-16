@@ -16,6 +16,8 @@ type DecideState =
   | { kind: "noMatch"; intent: DecideIntent; relaxed: boolean }
   | { kind: "error"; message: string };
 
+type MediaTypeFilter = "any" | "movie" | "tv";
+
 export function Home({
   language,
   onNeedsImport,
@@ -26,6 +28,7 @@ export function Home({
   const deviceFetch = useDeviceFetch();
   const copy = getCopy(language);
   const [prompt, setPrompt] = useState("");
+  const [mediaTypeFilter, setMediaTypeFilter] = useState<MediaTypeFilter>("any");
   const [state, setState] = useState<DecideState>({ kind: "idle" });
   const [loadingMessage, setLoadingMessage] = useState(copy.loadingMessages[0]);
   const [interstitial, setInterstitial] = useState<string | null>(null);
@@ -34,6 +37,7 @@ export function Home({
   const [pendingRejection, setPendingRejection] = useState<"another" | "idle" | null>(null);
   const lastPrompt = useRef("");
   const excludeIds = useRef<number[]>([]);
+  const lastRejected = useRef<{ tmdbId: number; mediaType: string } | null>(null);
 
   useEffect(() => {
     if (state.kind !== "loading") return;
@@ -65,6 +69,7 @@ export function Home({
           prompt: promptWithGroupMode(text),
           excludeTmdbIds: excludeIds.current,
           relax,
+          mediaType: mediaTypeFilter,
           useSavedLists,
           rejectionReason,
         }),
@@ -100,16 +105,28 @@ export function Home({
   function giveMeAnother() {
     if (state.kind !== "result") return;
     excludeIds.current = [...excludeIds.current, state.result.tmdbId];
+    lastRejected.current = { tmdbId: state.result.tmdbId, mediaType: state.result.mediaType };
     setPendingRejection("another");
   }
 
   function notTonight() {
     if (state.kind !== "result") return;
     excludeIds.current = [...excludeIds.current, state.result.tmdbId];
+    lastRejected.current = { tmdbId: state.result.tmdbId, mediaType: state.result.mediaType };
     setPendingRejection("idle");
   }
 
-  function rejectWithReason(reason: string) {
+  async function rejectWithReason(reason: string) {
+    // "Already seen" isn't just a mood hint for the next pick -- it means
+    // this title really is watched, so mark it for real instead of only
+    // excluding it for this session.
+    if (reason === "Already seen" && lastRejected.current) {
+      await deviceFetch("/api/watchlist", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...lastRejected.current, status: "watched" }),
+      });
+    }
     if (Math.random() < 0.4) {
       const lines = copy.giveMeAnotherInterstitials;
       setInterstitial(lines[Math.floor(Math.random() * lines.length)]);
@@ -141,7 +158,35 @@ export function Home({
         {"WTF are you in the mood for?"}
       </h1>
 
-      <div className="mt-8 w-full space-y-3">
+      <div
+        role="group"
+        aria-label="Movie or TV show"
+        className="mt-6 flex w-full gap-2 rounded-xl border border-white/10 bg-white/5 p-1"
+      >
+        {(
+          [
+            ["any", "Any"],
+            ["movie", "Movie"],
+            ["tv", "TV Show"],
+          ] as const
+        ).map(([value, label]) => (
+          <button
+            key={value}
+            type="button"
+            aria-pressed={mediaTypeFilter === value}
+            onClick={() => setMediaTypeFilter(value)}
+            className={`flex-1 rounded-lg py-2 text-[13px] font-medium transition-colors ${
+              mediaTypeFilter === value
+                ? "bg-[#E3B24B]/15 text-[#F5EEDC]"
+                : "text-white/50 hover:text-white/80"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      <div className="mt-3 w-full space-y-3">
         <PromptSelector language={language} onSelect={setPrompt} />
         <div className="grid grid-cols-3 gap-2">
           {[
@@ -220,23 +265,18 @@ export function Home({
           <div className="mt-3 rounded-2xl border border-white/10 bg-white/5 p-4">
             <p className="text-sm font-medium text-[#F5EEDC]">What was wrong with that one?</p>
             <div className="mt-3 grid grid-cols-2 gap-2">
-              {[
-                "Too heavy",
-                "Too long",
-                "Wrong vibe",
-                "Not for the room",
-                "Already seen",
-                "Not on my services",
-              ].map((reason) => (
-                <button
-                  key={reason}
-                  type="button"
-                  onClick={() => rejectWithReason(reason)}
-                  className="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-xs font-medium text-white/70"
-                >
-                  {reason}
-                </button>
-              ))}
+              {["Too heavy", "Too long", "Wrong vibe", "Not for the room", "Already seen"].map(
+                (reason) => (
+                  <button
+                    key={reason}
+                    type="button"
+                    onClick={() => rejectWithReason(reason)}
+                    className="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-xs font-medium text-white/70"
+                  >
+                    {reason}
+                  </button>
+                ),
+              )}
             </div>
           </div>
         )}
