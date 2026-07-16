@@ -14,18 +14,16 @@
 @custom-variant dark (&:is(.dark *));
 
 /* Hallmark · macrostructure: existing app screens (redesign, not greenfield) · designed-as-app
- * theme: custom (v3 -- actual Banksy: black/white/red stencil, heavy motion.
- * v1 was restrained dark+gold, v2 tried bichromatic red+gold "poster" --
- * both rejected. User explicitly asked for Banksy specifically, plus a lot
- * of animation, not a quiet single reveal.)
- * vibe: "stencil spray-painted on a concrete wall -- one accent color, hard
- * black edges, real movement everywhere"
- * paper: cool off-white concrete · ink: true black · accent: stencil-red (the ONLY accent -- Banksy's work is never bichromatic)
+ * theme: custom (v4 -- Banksy stencil, same structure/motion as v3, palette
+ * inverted to jet-black/neon-white/neon-grey/neon-red per explicit request
+ * to match the /welcome splash's cinematic dark mood app-wide.)
+ * vibe: "a stencil on a black wall, lit by a marquee sign at night"
+ * paper: jet black · ink: neon white · ink-2/muted: neon grey · accent: neon red (still the ONLY accent)
  * display: Playfair Display 900 (roman only) · body: Archivo · mono: JetBrains Mono
- * axes: light / high-contrast-serif / chromatic-red
- * studied: no · context: explicit · design-system: design.md · v3
- * pre-emit critique: P4 H4 E4 S2 R3 V5 (Restraint dropped further, on
- * purpose -- "a lot of animation" was an explicit, repeated request.)
+ * axes: dark / high-contrast-serif / chromatic-red
+ * studied: no · context: explicit · design-system: design.md · v4
+ * pre-emit critique: P4 H4 E4 S2 R3 V5 (same structural discipline as v3,
+ * only the palette direction flipped.)
  */
 
 @theme inline {
@@ -67,26 +65,25 @@
 }
 
 :root {
-  color-scheme: light;
+  color-scheme: dark;
 
-  /* ===== v3: real Banksy -- a stencil spray-painted on a concrete wall.
-     Cool off-white "concrete" paper, true-black ink, thick black borders
-     everywhere, and exactly ONE accent color (red) -- Banksy's work is
-     never bichromatic, it's always black/white plus one hit of color.
-     Kept as hex, not oklch: this app's Grain overlay uses
-     mix-blend-mode: multiply, and that combination with oklch()-declared
-     colors renders as solid black in real Chromium -- confirmed earlier
-     by testing. ===== */
-  --paper: #ece9e2;
-  --paper-2: #dedad0;
-  --paper-3: #cac5b7;
-  --ink: #0a0a0a;
-  --ink-2: #4a483f;
-  --rule: #0a0a0a;
-  --muted: #7d7a6d;
-  --red: #d81e2c;
-  --red-ink: #f5f0e6;
-  --focus-ring: #d81e2c;
+  /* ===== v4: the same Banksy stencil, palette inverted to jet-black/neon --
+     a stencil on a black wall lit by a marquee sign at night, matching the
+     /welcome splash's mood. Jet-black paper, neon-white ink, neon-grey
+     secondary/muted text, and still exactly ONE accent color (neon red) --
+     never bichromatic. Kept as hex, not oklch: this app's Grain overlay
+     uses mix-blend-mode, and oklch()-declared colors render as solid black
+     in real Chromium when blended -- confirmed earlier by testing. ===== */
+  --paper: #0a0a0a;
+  --paper-2: #151515;
+  --paper-3: #202020;
+  --ink: #f5f5f5;
+  --ink-2: #9d9d9d;
+  --rule: #f5f5f5;
+  --muted: #6e6e6e;
+  --red: #ff2438;
+  --red-ink: #f5f5f5;
+  --focus-ring: #ff2438;
 
   --background: var(--paper);
   --foreground: var(--ink);
@@ -183,8 +180,8 @@
     inset: -20% -25% auto -25%;
     height: 120%;
     background:
-      radial-gradient(rgb(216 30 44 / 55%) 1.5px, transparent 1.8px),
-      radial-gradient(rgb(216 30 44 / 35%) 1px, transparent 1.4px);
+      radial-gradient(rgb(255 36 56 / 55%) 1.5px, transparent 1.8px),
+      radial-gradient(rgb(255 36 56 / 35%) 1px, transparent 1.4px);
     background-size:
       22px 22px,
       13px 13px;
