@@ -1,37 +1,38 @@
 @import "tailwindcss" source(none);
 @source "../";
 @import "tw-animate-css";
-@import "@fontsource/nova-mono/400.css";
-@import "@fontsource/archivo/400.css";
-@import "@fontsource/archivo/500.css";
-@import "@fontsource/archivo/600.css";
-@import "@fontsource/archivo/700.css";
-@import "@fontsource/jetbrains-mono/400.css";
-@import "@fontsource/jetbrains-mono/500.css";
+@import "@fontsource/archivo-black/400.css";
+@import "@fontsource/anton/400.css";
+@import "@fontsource/inter/300.css";
+@import "@fontsource/inter/400.css";
+@import "@fontsource/inter/500.css";
+@import "@fontsource/inter/600.css";
+@import "@fontsource/space-mono/400.css";
+@import "@fontsource/space-mono/700.css";
 
 @custom-variant dark (&:is(.dark *));
 
 /* Hallmark · macrostructure: existing app screens (redesign, not greenfield) · designed-as-app
- * theme: custom (v5 -- Banksy graffiti/street-art: same jet-black/neon
- * palette as v4, display type swapped from Playfair Display to Nova Mono
- * (an OCR-A-style monospace -- the widely-cited "Fight Club" title-card
- * font family), used loud and uppercase everywhere a headline appears,
- * explicitly not hidden. Added a hamburger nav menu replacing the bottom
- * tab bar: a diagonal skewed wipe reveal (matching a provided reference
- * video) with a spray-paint reveal on the wordmark.)
- * vibe: "a stencil on a black wall, lit by a marquee sign at night"
- * paper: jet black · ink: neon white · ink-2/muted: neon grey · accent: neon red (still the ONLY accent)
- * display: Nova Mono (OCR-A style, uppercase, wide tracking) · body: Archivo · mono: JetBrains Mono
- * axes: dark / mono-technical-display / chromatic-red
- * studied: no · context: explicit (reference video provided) · design-system: design.md · v5
- * pre-emit critique: P4 H4 E4 S2 R3 V5 (same structural discipline as v3/v4,
- * display type + nav mechanism changed on explicit instruction.)
+ * theme: custom (v6 -- ported 1:1 from a user-supplied reference
+ * implementation ("StreamDecide"), not designed fresh. Warm dark palette
+ * (not jet-black/neon), display type Archivo Black/Anton, body Inter,
+ * mono Space Mono. A reusable spray-noise SVG turbulence texture and a
+ * spray-stroke SVG displacement filter (see layout.tsx) are the two
+ * signature techniques carried over -- straight borders/underlines run
+ * through the filter so they read as an actual rough spray stroke.)
+ * vibe: "an underground gallery show, spray-painted concrete, warm bulb light"
+ * paper: near-black warm brown · ink: warm cream · muted: warm grey-brown · accent: burnt-orange/rust (still the ONLY accent)
+ * display: Archivo Black / Anton (loud, condensed, all-caps) · body: Inter · mono: Space Mono
+ * axes: dark / warm-editorial / chromatic-rust
+ * studied: yes (reference code provided, ported exactly) · context: explicit · design-system: design.md · v6
+ * pre-emit critique: P4 H4 E4 S3 R3 V4 (palette/type/texture all pinned to
+ * the reference rather than invented -- less room for drift than v1-v5.)
  */
 
 @theme inline {
-  --font-display: "Nova Mono", "JetBrains Mono", ui-monospace, monospace;
-  --font-sans: "Archivo", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --font-display: "Archivo Black", "Anton", sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Space Mono", ui-monospace, monospace;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -69,23 +70,25 @@
 :root {
   color-scheme: dark;
 
-  /* ===== v4: the same Banksy stencil, palette inverted to jet-black/neon --
-     a stencil on a black wall lit by a marquee sign at night, matching the
-     /welcome splash's mood. Jet-black paper, neon-white ink, neon-grey
-     secondary/muted text, and still exactly ONE accent color (neon red) --
-     never bichromatic. Kept as hex, not oklch: this app's Grain overlay
-     uses mix-blend-mode, and oklch()-declared colors render as solid black
-     in real Chromium when blended -- confirmed earlier by testing. ===== */
-  --paper: #0a0a0a;
-  --paper-2: #151515;
-  --paper-3: #202020;
-  --ink: #f5f5f5;
-  --ink-2: #9d9d9d;
-  --rule: #f5f5f5;
-  --muted: #6e6e6e;
-  --red: #ff2438;
-  --red-ink: #f5f5f5;
-  --focus-ring: #ff2438;
+  /* ===== v6: ported from the "StreamDecide" reference -- exact hex
+     computed from its HSL tokens (hsl(20 5% 4%) background, hsl(36 23% 87%)
+     foreground, etc), except --red which uses its literal --accent-raw
+     (#c4522a) rather than my HSL-derived approximation. Warm dark, not
+     jet-black: browns/creams instead of true neutrals, one burnt-orange/
+     rust accent. Kept as hex, not oklch: this app's Grain overlay uses
+     mix-blend-mode, and oklch()-declared colors render as solid black in
+     real Chromium when blended -- confirmed earlier by testing. ===== */
+  --paper: #0b0a0a;
+  --paper-2: #131211;
+  --paper-3: #201e1d;
+  --ink: #e5dfd6;
+  --ink-2: #cec2b1;
+  --rule: #3d3734;
+  --muted: #8a7e75;
+  --red: #c4522a;
+  --red-ink: #f9f8f6;
+  --focus-ring: #c4522a;
+  --spray-noise: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
 
   --background: var(--paper);
   --foreground: var(--ink);
@@ -231,8 +234,8 @@
     inset: -20% -25% auto -25%;
     height: 120%;
     background:
-      radial-gradient(rgb(255 36 56 / 55%) 1.5px, transparent 1.8px),
-      radial-gradient(rgb(255 36 56 / 35%) 1px, transparent 1.4px);
+      radial-gradient(rgb(196 82 42 / 55%) 1.5px, transparent 1.8px),
+      radial-gradient(rgb(196 82 42 / 35%) 1px, transparent 1.4px);
     background-size:
       22px 22px,
       13px 13px;

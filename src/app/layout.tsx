@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 
 import "./globals.css";
 import { Grain } from "@/components/fx/grain";
+import { SprayFilters } from "@/components/fx/spray-filters";
 
 export const metadata: Metadata = {
   title: "Marquee",
@@ -18,13 +19,14 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0a0a0a",
+  themeColor: "#0b0a0a",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <body className="bg-background text-foreground antialiased">
+        <SprayFilters />
         <Grain />
         <main>{children}</main>
       </body>
