@@ -69,6 +69,24 @@ export function extractFromJsonLd(html: string): { ids: string[]; numberOfItems:
   return { ids, numberOfItems };
 }
 
+// Scoped to IMDb's actual current list-item container class (confirmed via
+// a real scraping guide targeting IMDb specifically, not guessed) instead of
+// scanning the whole page -- avoids picking up unrelated title links from
+// "more like this" widgets or footer content the way extractFromHrefs can.
+const LIST_ITEM_PATTERN = /<li[^>]*class="[^"]*ipc-metadata-list-summary-item[^"]*"[^>]*>/gi;
+
+export function extractFromListItems(html: string): string[] {
+  const ids: string[] = [];
+  const itemStarts = [...html.matchAll(LIST_ITEM_PATTERN)].map((m) => m.index);
+  for (let i = 0; i < itemStarts.length; i++) {
+    const start = itemStarts[i];
+    const end = itemStarts[i + 1] ?? html.length;
+    const id = html.slice(start, end).match(/\/title\/(tt\d+)\//)?.[1];
+    if (id) ids.push(id);
+  }
+  return ids;
+}
+
 export function extractFromHrefs(html: string): string[] {
   const ids: string[] = [];
   for (const match of html.matchAll(/\/title\/(tt\d+)\//g)) {
@@ -99,16 +117,24 @@ export async function scrapeImdbListIds(listUrl: string): Promise<string[]> {
   const html = await fetchListPage(listUrl);
   const { ids: jsonLdIds, numberOfItems } = extractFromJsonLd(html);
 
-  let ids = jsonLdIds.length > 0 ? jsonLdIds : extractFromHrefs(html).slice(0, MAX_TITLES);
-  if (jsonLdIds.length === 0) {
-    console.warn(
-      `imdb-list-scrape: no JSON-LD found for ${listUrl}, fell back to raw href scan -- verify results look right.`,
-    );
+  let ids: string[];
+  if (jsonLdIds.length > 0) {
+    ids = jsonLdIds;
+  } else {
+    const listItemIds = extractFromListItems(html);
+    if (listItemIds.length > 0) {
+      ids = listItemIds;
+    } else {
+      console.warn(
+        `imdb-list-scrape: no JSON-LD or list-item markup found for ${listUrl}, fell back to raw href scan -- verify results look right.`,
+      );
+      ids = extractFromHrefs(html).slice(0, MAX_TITLES);
+    }
   }
 
   // Only chase pagination when the JSON-LD strategy told us there's more --
-  // the href fallback has no reliable "total" to compare against, so it
-  // never triggers a second page.
+  // that's the only signal here with a real total to aim for, so the two
+  // fallback strategies just return whatever's on page 1.
   for (let page = 2; jsonLdIds.length > 0 && numberOfItems && ids.length < numberOfItems; page++) {
     if (page > MAX_PAGES || ids.length >= MAX_TITLES) break;
     const pageUrl = new URL(listUrl);

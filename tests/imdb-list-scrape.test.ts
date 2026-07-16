@@ -2,8 +2,18 @@ import { afterEach, describe, expect, test } from "bun:test";
 import {
   extractFromHrefs,
   extractFromJsonLd,
+  extractFromListItems,
   scrapeImdbListIds,
 } from "@/lib/pipeline/imdb-list-scrape";
+
+function listItemHtml(ids: string[]): string {
+  return ids
+    .map(
+      (id) =>
+        `<li class="ipc-metadata-list-summary-item foo-bar"><a href="/title/${id}/">Title</a></li>`,
+    )
+    .join("\n");
+}
 
 function itemListHtml(ids: string[], numberOfItems: number): string {
   const itemListElement = ids.map((id, i) => ({
@@ -64,6 +74,20 @@ describe("extractFromJsonLd", () => {
   });
 });
 
+describe("extractFromListItems", () => {
+  test("pulls one id per list-item container, ignoring links outside any item", () => {
+    const html = `
+      <a href="/title/tt9999999/">unrelated recommendation widget above the list</a>
+      ${listItemHtml(["tt0111161", "tt0068646"])}
+    `;
+    expect(extractFromListItems(html)).toEqual(["tt0111161", "tt0068646"]);
+  });
+
+  test("returns an empty array when no list-item containers are present", () => {
+    expect(extractFromListItems("<html><body>nothing here</body></html>")).toEqual([]);
+  });
+});
+
 describe("extractFromHrefs", () => {
   test("finds every title href on the page, in document order, including duplicates", () => {
     const html = `
@@ -111,7 +135,17 @@ describe("scrapeImdbListIds", () => {
     expect(calls).toBe(2); // page 1, then one repeat page that adds nothing new, then stop
   });
 
-  test("falls back to href scanning when there's no JSON-LD at all", async () => {
+  test("falls back to list-item scoped extraction when there's no JSON-LD but list markup exists", async () => {
+    globalThis.fetch = (async () =>
+      new Response(listItemHtml(["tt0111161", "tt0068646"]), {
+        status: 200,
+      })) as unknown as typeof fetch;
+
+    const ids = await scrapeImdbListIds("https://www.imdb.com/list/ls123/");
+    expect(ids).toEqual(["tt0111161", "tt0068646"]);
+  });
+
+  test("falls back to a raw href scan when neither JSON-LD nor list-item markup is present", async () => {
     globalThis.fetch = (async () =>
       new Response(`<a href="/title/tt0111161/">A</a><a href="/title/tt0068646/">B</a>`, {
         status: 200,
