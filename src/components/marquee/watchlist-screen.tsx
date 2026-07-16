@@ -118,12 +118,12 @@ export function WatchlistScreen({ onImportAgain }: { onImportAgain: () => void }
             value={manualQuery}
             onChange={(e) => setManualQuery(e.target.value)}
             placeholder="Search movie or show..."
-            className="min-w-0 flex-1 rounded-xl border border-rule bg-paper/50 px-4 py-2.5 text-[14px] text-ink placeholder:text-ink/30 focus:border-gold/40 focus:outline-none"
+            className="min-w-0 flex-1 rounded-xl border border-rule bg-paper/50 px-4 py-2.5 text-[14px] text-ink placeholder:text-ink/30 focus:border-red/40 focus:outline-none"
           />
           <button
             type="submit"
             disabled={searching}
-            className="btn-press rounded-xl bg-gold px-4 text-sm font-semibold text-gold-ink disabled:opacity-50"
+            className="btn-press rounded-xl bg-red px-4 text-sm font-semibold text-red-ink disabled:opacity-50"
           >
             Search
           </button>
@@ -154,7 +154,7 @@ export function WatchlistScreen({ onImportAgain }: { onImportAgain: () => void }
                     {result.year ?? ""} · {result.mediaType}
                   </span>
                 </span>
-                <Plus size={16} className="text-gold" />
+                <Plus size={16} className="text-red" />
               </button>
             ))}
           </div>
@@ -166,7 +166,7 @@ export function WatchlistScreen({ onImportAgain }: { onImportAgain: () => void }
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search your list..."
-          className="flex-1 rounded-xl border border-rule bg-ink/5 px-4 py-2.5 text-[14px] text-ink placeholder:text-ink/30 focus:border-gold/40 focus:outline-none"
+          className="flex-1 rounded-xl border border-rule bg-ink/5 px-4 py-2.5 text-[14px] text-ink placeholder:text-ink/30 focus:border-red/40 focus:outline-none"
         />
         <select
           value={sort}
@@ -210,7 +210,7 @@ export function WatchlistScreen({ onImportAgain }: { onImportAgain: () => void }
               onClick={() => toggleWatched(item)}
               aria-label={item.status === "watched" ? "Mark unwatched" : "Mark watched"}
               className={`btn-press grid h-8 w-8 flex-none place-items-center rounded-full ${
-                item.status === "watched" ? "bg-gold/20 text-gold" : "bg-ink/5 text-ink/40"
+                item.status === "watched" ? "bg-red/20 text-red" : "bg-ink/5 text-ink/40"
               }`}
             >
               <Check size={15} />

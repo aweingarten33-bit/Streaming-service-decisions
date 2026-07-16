@@ -66,8 +66,8 @@ export function ResultCard({
   }
 
   return (
-    <div className="w-full overflow-hidden rounded-3xl border border-rule bg-paper-2/80 backdrop-blur-xl">
-      <div className="relative h-56 w-full sm:h-72">
+    <div className="shadow-stamp w-full overflow-hidden rounded-3xl border-2 border-rule bg-paper-2">
+      <div className="relative h-56 w-full border-b-2 border-rule sm:h-72">
         {result.backdropPath || result.posterPath ? (
           <img
             src={`${TMDB_IMG}/w1280${result.backdropPath ?? result.posterPath}`}
@@ -75,26 +75,26 @@ export function ResultCard({
             className="h-full w-full object-cover"
           />
         ) : (
-          <div className="h-full w-full bg-gradient-to-br from-paper-2 to-paper" />
+          <div className="h-full w-full bg-gradient-to-br from-paper-3 to-paper-2" />
         )}
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-paper via-paper/20 to-transparent" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-paper-2 via-transparent to-transparent" />
       </div>
 
       <div className="px-5 pb-5 pt-4">
-        <h2 className="font-display text-2xl font-semibold text-ink">{result.title}</h2>
-        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[11px] uppercase tracking-wider text-ink-2">
+        <h2 className="font-display text-2xl font-black tracking-tight text-ink">{result.title}</h2>
+        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[11px] font-bold uppercase tracking-wider text-ink-2">
           {result.year && <span>{result.year}</span>}
           <span>{result.mediaType}</span>
           {runtimeLabel && <span>{runtimeLabel}</span>}
           {rating && (
-            <span className="text-gold">
+            <span className="text-red-ink rounded bg-red px-1.5 py-0.5">
               ★ {rating.value.toFixed(1)} {rating.label}
             </span>
           )}
         </div>
 
         {result.streamingProviders.length > 0 && (
-          <p className="mt-2 font-mono text-[11px] uppercase tracking-wider text-gold">
+          <p className="mt-2 font-mono text-[11px] font-bold uppercase tracking-wider text-red">
             On {result.streamingProviders.slice(0, 3).join(" · ")}
           </p>
         )}
@@ -138,30 +138,30 @@ export function ResultCard({
           href={watchUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="btn-press mt-3 block w-full rounded-xl bg-gold py-3.5 text-center text-[15px] font-semibold text-gold-ink hover:brightness-110"
+          className="btn-press shadow-stamp-sm mt-3 block w-full rounded-xl border-2 border-rule bg-red py-3.5 text-center text-[15px] font-black uppercase tracking-wide text-red-ink hover:brightness-110"
         >
           {copy.primaryActionLabel}
         </a>
 
-        <div className="mt-2 grid grid-cols-3 gap-2">
+        <div className="mt-3 grid grid-cols-3 gap-2">
           <button
             type="button"
             onClick={onGiveMeAnother}
-            className="btn-press rounded-xl border border-rule bg-ink/5 py-2.5 text-xs font-medium text-ink-2 transition-colors hover:bg-ink/10"
+            className="btn-press rounded-xl border-2 border-rule bg-paper py-2.5 text-xs font-bold text-ink-2 transition-colors hover:bg-paper-3"
           >
             {copy.giveMeAnother}
           </button>
           <button
             type="button"
             onClick={onNotTonight}
-            className="btn-press rounded-xl border border-rule bg-ink/5 py-2.5 text-xs font-medium text-ink-2 transition-colors hover:bg-ink/10"
+            className="btn-press rounded-xl border-2 border-rule bg-paper py-2.5 text-xs font-bold text-ink-2 transition-colors hover:bg-paper-3"
           >
             {copy.notTonight}
           </button>
           <button
             type="button"
             onClick={onMarkWatched}
-            className="btn-press rounded-xl border border-rule bg-ink/5 py-2.5 text-xs font-medium text-ink-2 transition-colors hover:bg-ink/10"
+            className="btn-press rounded-xl border-2 border-rule bg-paper py-2.5 text-xs font-bold text-ink-2 transition-colors hover:bg-paper-3"
           >
             {copy.markWatched}
           </button>

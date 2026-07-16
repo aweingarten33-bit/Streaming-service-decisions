@@ -22,7 +22,7 @@ export function BottomNav({ tab, onChange }: { tab: Tab; onChange: (tab: Tab) =>
             onClick={() => onChange(key)}
             aria-current={tab === key ? "page" : undefined}
             className={`btn-press flex flex-1 flex-col items-center gap-1 py-3 text-[11px] font-medium transition-colors ${
-              tab === key ? "text-gold" : "text-ink/40"
+              tab === key ? "text-red" : "text-ink/40"
             }`}
           >
             <Icon size={20} />

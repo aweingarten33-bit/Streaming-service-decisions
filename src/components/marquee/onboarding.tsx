@@ -60,7 +60,7 @@ export function Onboarding({ onDone, onCancel }: { onDone: () => void; onCancel:
           <button
             type="button"
             onClick={onDone}
-            className="btn-press mt-8 w-full rounded-xl bg-gold py-3 text-sm font-semibold text-gold-ink"
+            className="btn-press mt-8 w-full rounded-xl bg-red py-3 text-sm font-semibold text-red-ink"
           >
             {ONBOARDING.pickSomething}
           </button>
@@ -80,7 +80,7 @@ export function Onboarding({ onDone, onCancel }: { onDone: () => void; onCancel:
           <button
             type="button"
             onClick={onDone}
-            className="btn-press w-full rounded-xl bg-gold py-3 text-sm font-semibold text-gold-ink"
+            className="btn-press w-full rounded-xl bg-red py-3 text-sm font-semibold text-red-ink"
           >
             {ONBOARDING.pickSomething}
           </button>
@@ -132,7 +132,7 @@ export function Onboarding({ onDone, onCancel }: { onDone: () => void; onCancel:
           <h1 className="font-display text-3xl font-semibold text-ink">{ONBOARDING.headline}</h1>
           <p className="mt-3 max-w-xs text-sm text-ink-2">{ONBOARDING.supporting}</p>
           <p className="mt-3 max-w-xs text-xs text-ink/40">{ONBOARDING.whyCsv}</p>
-          <p className="mt-2 max-w-xs text-xs font-medium text-gold/80">
+          <p className="mt-2 max-w-xs text-xs font-medium text-red/80">
             {ONBOARDING.browserOnlyWarning}
           </p>
 
@@ -141,7 +141,7 @@ export function Onboarding({ onDone, onCancel }: { onDone: () => void; onCancel:
               href={ONBOARDING.imdbWatchlistUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="btn-press block w-full rounded-xl bg-gold py-3 text-center text-sm font-semibold text-gold-ink"
+              className="btn-press block w-full rounded-xl bg-red py-3 text-center text-sm font-semibold text-red-ink"
             >
               {ONBOARDING.primaryAction}
             </a>
@@ -157,7 +157,7 @@ export function Onboarding({ onDone, onCancel }: { onDone: () => void; onCancel:
           <ol className="mt-8 w-full max-w-xs space-y-2 text-left text-sm text-ink-2">
             {ONBOARDING.steps.map((step, i) => (
               <li key={i} className="flex gap-2">
-                <span className="text-gold">{i + 1}.</span>
+                <span className="text-red">{i + 1}.</span>
                 {step}
               </li>
             ))}

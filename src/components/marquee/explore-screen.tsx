@@ -137,7 +137,7 @@ export function ExploreScreen({ language }: { language: Language }) {
           e.preventDefault();
           runSearch(query);
         }}
-        className="mt-4 flex items-center gap-2 rounded-2xl border border-rule bg-paper/70 px-3 py-2 backdrop-blur-xl transition-colors focus-within:border-gold/50"
+        className="mt-4 flex items-center gap-2 rounded-2xl border border-rule bg-paper/70 px-3 py-2 backdrop-blur-xl transition-colors focus-within:border-red/50"
       >
         <input
           value={query}
@@ -149,7 +149,7 @@ export function ExploreScreen({ language }: { language: Language }) {
           type="submit"
           disabled={state.kind === "loading"}
           aria-label="Search"
-          className="btn-press grid h-10 w-10 flex-none place-items-center rounded-xl bg-gold text-gold-ink hover:brightness-110 disabled:opacity-50"
+          className="btn-press grid h-10 w-10 flex-none place-items-center rounded-xl bg-red text-red-ink hover:brightness-110 disabled:opacity-50"
         >
           <Search size={18} />
         </button>
@@ -204,7 +204,7 @@ export function ExploreScreen({ language }: { language: Language }) {
                     href={result.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="btn-press flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-gold px-3 py-2 text-[13px] font-semibold text-gold-ink"
+                    className="btn-press flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-red px-3 py-2 text-[13px] font-semibold text-red-ink"
                   >
                     <ExternalLink size={14} />
                     {copy.openInImdb}
@@ -214,7 +214,7 @@ export function ExploreScreen({ language }: { language: Language }) {
                     onClick={() => saveList(result)}
                     disabled={savedUrls.has(result.url)}
                     aria-label={savedUrls.has(result.url) ? copy.saved : copy.save}
-                    className="btn-press grid h-9 w-9 flex-none place-items-center rounded-lg border border-rule text-ink-2 disabled:text-gold"
+                    className="btn-press grid h-9 w-9 flex-none place-items-center rounded-lg border border-rule text-ink-2 disabled:text-red"
                   >
                     <Bookmark
                       size={15}

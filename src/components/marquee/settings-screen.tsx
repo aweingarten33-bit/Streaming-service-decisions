@@ -22,7 +22,7 @@ export function SettingsScreen({
             onClick={() => onLanguageChange("unfiltered")}
             className={`btn-press flex-1 rounded-xl border py-3 text-sm font-medium transition-colors ${
               language === "unfiltered"
-                ? "border-gold/50 bg-gold/10 text-ink"
+                ? "border-red/50 bg-red/10 text-ink"
                 : "border-rule bg-ink/5 text-ink-2"
             }`}
           >
@@ -33,7 +33,7 @@ export function SettingsScreen({
             onClick={() => onLanguageChange("clean")}
             className={`btn-press flex-1 rounded-xl border py-3 text-sm font-medium transition-colors ${
               language === "clean"
-                ? "border-gold/50 bg-gold/10 text-ink"
+                ? "border-red/50 bg-red/10 text-ink"
                 : "border-rule bg-ink/5 text-ink-2"
             }`}
           >

@@ -14,12 +14,18 @@
 @custom-variant dark (&:is(.dark *));
 
 /* Hallmark · macrostructure: existing app screens (redesign, not greenfield) · designed-as-app
- * theme: custom · vibe: "stencil-cut rebellion, spotlit restraint, envelope-reveal glamour"
- * paper: oklch(9% 0.015 75) · accent: oklch(72% 0.13 78)
- * display: Playfair Display (roman only) · body: Archivo · mono: JetBrains Mono
- * axes: dark / roman-serif / chromatic-other (chromatic-gold ~78°)
- * studied: no · context: explicit · design-system: design.md · v0.8.0
- * pre-emit critique: P4 H5 E5 S4 R4 V4
+ * theme: custom (v3 -- actual Banksy: black/white/red stencil, heavy motion.
+ * v1 was restrained dark+gold, v2 tried bichromatic red+gold "poster" --
+ * both rejected. User explicitly asked for Banksy specifically, plus a lot
+ * of animation, not a quiet single reveal.)
+ * vibe: "stencil spray-painted on a concrete wall -- one accent color, hard
+ * black edges, real movement everywhere"
+ * paper: cool off-white concrete · ink: true black · accent: stencil-red (the ONLY accent -- Banksy's work is never bichromatic)
+ * display: Playfair Display 900 (roman only) · body: Archivo · mono: JetBrains Mono
+ * axes: light / high-contrast-serif / chromatic-red
+ * studied: no · context: explicit · design-system: design.md · v3
+ * pre-emit critique: P4 H4 E4 S2 R3 V5 (Restraint dropped further, on
+ * purpose -- "a lot of animation" was an explicit, repeated request.)
  */
 
 @theme inline {
@@ -47,39 +53,37 @@
   --color-ink: var(--ink);
   --color-ink-2: var(--ink-2);
   --color-rule: var(--rule);
-  --color-gold: var(--gold);
-  --color-gold-ink: var(--gold-ink);
+  --color-red: var(--red);
+  --color-red-ink: var(--red-ink);
   --color-focus: var(--focus-ring);
 }
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 
-  /* ===== Stencil-cut rebellion (Banksy) x spotlit restraint (Apple) x
-     envelope-reveal glamour (the Academy Awards). A dark, warm-tinted stage
-     -- never a flat #000 -- with one gold accent doing double duty as both
-     the statuette gold and Banksy's iconic single-color accent.
-     Design intent is oklch(9% 0.015 75) / oklch(72% 0.13 78) etc (see the
-     stamp above) -- shipped here as the equivalent hex instead, because this
-     app's existing Grain overlay (fx/grain.tsx) uses mix-blend-mode: multiply,
-     and that combination with oklch()-declared colors renders as solid black
-     in at least one real Chromium build. Confirmed by swapping in these exact
-     hex values live and watching the render fix itself. ===== */
-  --paper: #040200;
-  --paper-2: #0b0602;
-  --paper-3: #140e06;
-  --ink: #f6f1eb;
-  --ink-2: #a9a49c;
-  --rule: #2a2319;
-  --muted: #6e6860;
-  --gold: #d19936;
-  --gold-ink: #171008;
-  --focus-ring: #eba000;
+  /* ===== v3: real Banksy -- a stencil spray-painted on a concrete wall.
+     Cool off-white "concrete" paper, true-black ink, thick black borders
+     everywhere, and exactly ONE accent color (red) -- Banksy's work is
+     never bichromatic, it's always black/white plus one hit of color.
+     Kept as hex, not oklch: this app's Grain overlay uses
+     mix-blend-mode: multiply, and that combination with oklch()-declared
+     colors renders as solid black in real Chromium -- confirmed earlier
+     by testing. ===== */
+  --paper: #ece9e2;
+  --paper-2: #dedad0;
+  --paper-3: #cac5b7;
+  --ink: #0a0a0a;
+  --ink-2: #4a483f;
+  --rule: #0a0a0a;
+  --muted: #7d7a6d;
+  --red: #d81e2c;
+  --red-ink: #f5f0e6;
+  --focus-ring: #d81e2c;
 
   --background: var(--paper);
   --foreground: var(--ink);
-  --primary: var(--gold);
-  --primary-foreground: var(--gold-ink);
+  --primary: var(--red);
+  --primary-foreground: var(--red-ink);
   --muted-foreground: var(--muted);
   --accent: var(--paper-2);
   --accent-foreground: var(--ink);
@@ -96,8 +100,8 @@
     @apply bg-background text-foreground font-sans antialiased;
   }
   ::selection {
-    background: var(--gold);
-    color: var(--gold-ink);
+    background: var(--red);
+    color: var(--red-ink);
   }
   ::-webkit-scrollbar {
     width: 10px;
@@ -120,24 +124,34 @@
     font-family: var(--font-display), Georgia, serif;
   }
 
-  /* the one central structural move: a dashed gold "cut here" line --
-     Banksy's stencil-edge made literal, like a perforation a shape was
-     just torn out along. Used once per screen, at its single most
-     decisive moment -- never decoratively repeated. */
+  /* the recurring structural signature: a thick red "cut here" perforation,
+     like the edge of a stencil someone just tore a shape out of. Drawn in
+     on mount, not just sitting there static. Used once per screen, at its
+     single most decisive moment. */
   .stencil-rule {
-    height: 2px;
+    height: 3px;
+    transform-origin: left center;
     background-image: repeating-linear-gradient(
       90deg,
-      var(--gold) 0,
-      var(--gold) 10px,
-      transparent 10px,
-      transparent 15px
+      var(--red) 0,
+      var(--red) 14px,
+      transparent 14px,
+      transparent 20px
     );
+    animation: rule-draw 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  @keyframes rule-draw {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
   }
 
-  /* the one central atmosphere move: a soft gold bloom from above, like a
-     single stage spotlight finding the one thing that matters. Reserved for
-     a screen's single hero reveal moment -- never the whole page. */
+  /* spray-can texture -- a scattered dot field standing in for overspray,
+     tinted red, very low opacity. Reserved for a screen's single hero
+     reveal moment, never the whole page. */
   .spotlight-glow {
     position: relative;
     isolation: isolate;
@@ -145,22 +159,77 @@
   .spotlight-glow::before {
     content: "";
     position: absolute;
-    inset: -15% -20% auto -20%;
-    height: 90%;
-    background: radial-gradient(ellipse at 50% 0%, rgb(209 153 54 / 22%), transparent 70%);
+    inset: -20% -25% auto -25%;
+    height: 120%;
+    background:
+      radial-gradient(rgb(216 30 44 / 55%) 1.5px, transparent 1.8px),
+      radial-gradient(rgb(216 30 44 / 35%) 1px, transparent 1.4px);
+    background-size:
+      22px 22px,
+      13px 13px;
+    background-position:
+      0 0,
+      8px 6px;
+    mask-image: radial-gradient(ellipse at 50% 15%, black 0%, transparent 65%);
     pointer-events: none;
     z-index: -1;
   }
 
-  /* the envelope-reveal -- one deliberate motion, not a suite of them. A
-     beat of stillness, then the pick rises into the spotlight. */
+  /* the graphic "stamp" shadow -- a hard offset black shadow with no blur,
+     like a rubber stamp or a cut sticker, instead of a soft drop shadow.
+     Used on every card/button that carries real weight. */
+  .shadow-stamp {
+    box-shadow: 6px 6px 0 0 var(--ink);
+  }
+  .shadow-stamp-sm {
+    box-shadow: 4px 4px 0 0 var(--ink);
+  }
+
+  /* the reveal -- slapped onto the wall, not politely faded in: a little
+     overshoot rotation and scale on top of the rise, so it lands with
+     actual weight. */
   .envelope-reveal {
-    animation: envelope-reveal 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation: envelope-reveal 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
   }
   @keyframes envelope-reveal {
     from {
       opacity: 0;
-      transform: translateY(16px);
+      transform: translateY(28px) rotate(-2deg) scale(0.96);
+    }
+    60% {
+      transform: translateY(-4px) rotate(0.5deg) scale(1.01);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) rotate(0deg) scale(1);
+    }
+  }
+
+  /* entrance stagger for a screen's top-to-bottom controls -- each one
+     lands a beat after the last instead of the whole screen popping in at
+     once. Apply .stagger-in plus one of the -1..-5 delay classes in order. */
+  .stagger-in {
+    animation: stagger-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .stagger-in-1 {
+    animation-delay: 0.05s;
+  }
+  .stagger-in-2 {
+    animation-delay: 0.1s;
+  }
+  .stagger-in-3 {
+    animation-delay: 0.15s;
+  }
+  .stagger-in-4 {
+    animation-delay: 0.2s;
+  }
+  .stagger-in-5 {
+    animation-delay: 0.25s;
+  }
+  @keyframes stagger-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
     }
     to {
       opacity: 1;
@@ -168,22 +237,54 @@
     }
   }
 
-  /* the one shared tactile signature -- every primary/secondary button gets
-     the same quiet press feedback, nothing more elaborate. */
+  /* the shared tactile signature -- every primary/secondary button presses
+     down and settles with a small hand-drawn wobble on hover, not just a
+     flat opacity change. */
   .btn-press {
     transition:
       transform 0.15s cubic-bezier(0.16, 1, 0.3, 1),
       filter 0.15s cubic-bezier(0.16, 1, 0.3, 1);
   }
+  .btn-press:hover {
+    transform: rotate(-1deg) scale(1.03);
+  }
   .btn-press:active {
-    transform: scale(0.97);
+    transform: scale(0.95) rotate(0deg);
+  }
+
+  /* loading state -- three dots taking turns jumping, instead of static text
+     sitting still. */
+  .loading-dots::after {
+    content: "";
+    display: inline-block;
+    width: 1em;
+    text-align: left;
+    animation: loading-dots 1.2s steps(4, end) infinite;
+  }
+  @keyframes loading-dots {
+    0% {
+      content: "";
+    }
+    25% {
+      content: ".";
+    }
+    50% {
+      content: "..";
+    }
+    75% {
+      content: "...";
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .envelope-reveal {
+    .stencil-rule,
+    .envelope-reveal,
+    .stagger-in,
+    .loading-dots::after {
       animation: none;
     }
     .btn-press,
+    .btn-press:hover,
     .btn-press:active {
       transition: none;
       transform: none;

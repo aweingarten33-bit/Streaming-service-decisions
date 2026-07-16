@@ -18,7 +18,7 @@ export function PromptSelector({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="btn-press flex w-full items-center justify-between gap-2 rounded-xl border border-rule bg-ink/5 px-4 py-3 text-left text-[14px] text-ink-2 transition-colors hover:border-gold/40 hover:text-ink"
+        className="btn-press flex w-full items-center justify-between gap-2 rounded-xl border border-rule bg-ink/5 px-4 py-3 text-left text-[14px] text-ink-2 transition-colors hover:border-red/40 hover:text-ink"
       >
         <span className="truncate">Choose Your Mood</span>
         <ChevronDown size={16} className="flex-none text-ink/40" />
