@@ -245,6 +245,9 @@ export function Home({
           />
           Let saved IMDb lists influence this pick
         </label>
+        <p className="text-center text-xs text-white/40">
+          Choose from the dropdown above, or just type how you feel below.
+        </p>
         <form
           onSubmit={(e) => {
             e.preventDefault();

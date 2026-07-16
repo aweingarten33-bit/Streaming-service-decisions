@@ -59,9 +59,6 @@ export function PromptSelector({
                 </button>
               ))}
             </div>
-            <p className="px-5 pt-4 text-center text-[13px] text-white/40">
-              Not feeling any of these? Close this and just type how you feel.
-            </p>
           </div>
         </div>
       )}
