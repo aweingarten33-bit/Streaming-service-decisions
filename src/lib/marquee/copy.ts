@@ -186,6 +186,24 @@ export function getExploreCopy(language: Language): ExploreCopySet {
   return language === "clean" ? EXPLORE_CLEAN : EXPLORE_UNFILTERED;
 }
 
+// Deterministic fallback lines for the Home teaser -- used when there's no
+// API key or the call fails, keyed loosely to watchlist size so it's not
+// completely disconnected from reality even without a live call.
+export function fallbackTeaser(activeCount: number, language: Language): string {
+  const unfilteredLines = [
+    `${activeCount} things you swore you'd watch. Let's fix one.`,
+    `Your list has ${activeCount} unwatched titles judging you silently.`,
+    `${activeCount} options. Zero decisions made yet.`,
+  ];
+  const cleanLines = [
+    `${activeCount} things you swore you'd watch. Let's fix one.`,
+    `Your list has ${activeCount} unwatched titles waiting on you.`,
+    `${activeCount} options. Zero decisions made yet.`,
+  ];
+  const lines = language === "clean" ? cleanLines : unfilteredLines;
+  return lines[activeCount % lines.length];
+}
+
 export function importSummary(imported: number, duplicates: number, needHelp: number): string {
   const parts = [`Done. ${imported} title${imported === 1 ? "" : "s"} imported.`];
   if (duplicates > 0) parts.push(`${duplicates} duplicate${duplicates === 1 ? "" : "s"} ignored.`);

@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import {
+  fallbackTeaser,
   getCopy,
   getExploreCopy,
   getPrompt,
@@ -67,6 +68,19 @@ describe("Explore Lists copy (Unfiltered vs Clean-ish)", () => {
   test("both languages share the same Open List in IMDb action label", () => {
     expect(getExploreCopy("unfiltered").openInImdb).toBe("Open List in IMDb");
     expect(getExploreCopy("clean").openInImdb).toBe("Open List in IMDb");
+  });
+});
+
+describe("fallbackTeaser", () => {
+  test("mentions the active count and never throws for any count", () => {
+    for (const count of [0, 1, 5, 47]) {
+      const text = fallbackTeaser(count, "unfiltered");
+      expect(text).toContain(String(count));
+    }
+  });
+
+  test("clean-ish variant has no profanity", () => {
+    expect(/shit|fuck/i.test(fallbackTeaser(12, "clean"))).toBe(false);
   });
 });
 
