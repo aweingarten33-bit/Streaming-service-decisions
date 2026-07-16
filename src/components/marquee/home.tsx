@@ -37,7 +37,7 @@ export function Home({
   const [pendingRejection, setPendingRejection] = useState<"another" | "idle" | null>(null);
   const lastPrompt = useRef("");
   const excludeIds = useRef<number[]>([]);
-  const lastRejected = useRef<{ tmdbId: number; mediaType: "movie" | "tv" } | null>(null);
+  const lastRejected = useRef<{ tmdbId: number; mediaType: string } | null>(null);
 
   useEffect(() => {
     if (state.kind !== "loading") return;
