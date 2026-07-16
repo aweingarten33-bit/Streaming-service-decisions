@@ -33,6 +33,10 @@ export function WebglHero() {
   const lenisRef = useLenis(!reducedMotion && !mobileTier);
 
   useEffect(() => {
+    localStorage.setItem("marquee-seen-welcome", "1");
+  }, []);
+
+  useEffect(() => {
     const wrapper = wrapperRef.current;
     if (!wrapper) return;
 
