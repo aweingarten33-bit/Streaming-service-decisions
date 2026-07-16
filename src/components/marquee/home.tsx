@@ -178,7 +178,7 @@ export function Home({
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-xl flex-col items-center px-6 pb-28 pt-16">
+    <div className="mx-auto flex w-full max-w-xl flex-col items-center px-6 pb-12 pt-16">
       <h1 className="stagger-in font-display text-center text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
         {"WTF are you in the mood for?"}
       </h1>

@@ -8,7 +8,7 @@ import { Home } from "./home";
 import { WatchlistScreen } from "./watchlist-screen";
 import { ExploreScreen } from "./explore-screen";
 import { SettingsScreen } from "./settings-screen";
-import { BottomNav, type Tab } from "./bottom-nav";
+import { NavMenu, type Tab } from "./nav-menu";
 
 export function AppShell() {
   const deviceFetch = useDeviceFetch();
@@ -50,7 +50,7 @@ export function AppShell() {
       {tab === "watchlist" && <WatchlistScreen onImportAgain={() => setShowOnboarding(true)} />}
       {tab === "explore" && <ExploreScreen language={language} />}
       {tab === "settings" && <SettingsScreen language={language} onLanguageChange={setLanguage} />}
-      <BottomNav tab={tab} onChange={setTab} />
+      <NavMenu tab={tab} onChange={setTab} />
     </div>
   );
 }

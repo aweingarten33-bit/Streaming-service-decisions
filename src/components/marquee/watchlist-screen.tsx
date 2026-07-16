@@ -92,7 +92,7 @@ export function WatchlistScreen({ onImportAgain }: { onImportAgain: () => void }
   }, [items, query, sort]);
 
   return (
-    <div className="mx-auto w-full max-w-xl px-6 pb-28 pt-16">
+    <div className="mx-auto w-full max-w-xl px-6 pb-12 pt-16">
       <div className="flex items-center justify-between">
         <h1 className="font-display text-2xl font-semibold text-ink">My Watchlist</h1>
         <button

@@ -129,7 +129,7 @@ export function ExploreScreen({ language }: { language: Language }) {
   const savedUrls = new Set(saved.map((s) => s.url));
 
   return (
-    <div className="mx-auto w-full max-w-xl px-6 pb-28 pt-16">
+    <div className="mx-auto w-full max-w-xl px-6 pb-12 pt-16">
       <h1 className="font-display text-2xl font-semibold text-ink">{copy.headline}</h1>
 
       <form

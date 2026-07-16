@@ -1,9 +1,7 @@
 @import "tailwindcss" source(none);
 @source "../";
 @import "tw-animate-css";
-@import "@fontsource/playfair-display/400.css";
-@import "@fontsource/playfair-display/700.css";
-@import "@fontsource/playfair-display/900.css";
+@import "@fontsource/nova-mono/400.css";
 @import "@fontsource/archivo/400.css";
 @import "@fontsource/archivo/500.css";
 @import "@fontsource/archivo/600.css";
@@ -14,20 +12,24 @@
 @custom-variant dark (&:is(.dark *));
 
 /* Hallmark · macrostructure: existing app screens (redesign, not greenfield) · designed-as-app
- * theme: custom (v4 -- Banksy stencil, same structure/motion as v3, palette
- * inverted to jet-black/neon-white/neon-grey/neon-red per explicit request
- * to match the /welcome splash's cinematic dark mood app-wide.)
+ * theme: custom (v5 -- Banksy graffiti/street-art: same jet-black/neon
+ * palette as v4, display type swapped from Playfair Display to Nova Mono
+ * (an OCR-A-style monospace -- the widely-cited "Fight Club" title-card
+ * font family), used loud and uppercase everywhere a headline appears,
+ * explicitly not hidden. Added a hamburger nav menu replacing the bottom
+ * tab bar: a diagonal skewed wipe reveal (matching a provided reference
+ * video) with a spray-paint reveal on the wordmark.)
  * vibe: "a stencil on a black wall, lit by a marquee sign at night"
  * paper: jet black · ink: neon white · ink-2/muted: neon grey · accent: neon red (still the ONLY accent)
- * display: Playfair Display 900 (roman only) · body: Archivo · mono: JetBrains Mono
- * axes: dark / high-contrast-serif / chromatic-red
- * studied: no · context: explicit · design-system: design.md · v4
- * pre-emit critique: P4 H4 E4 S2 R3 V5 (same structural discipline as v3,
- * only the palette direction flipped.)
+ * display: Nova Mono (OCR-A style, uppercase, wide tracking) · body: Archivo · mono: JetBrains Mono
+ * axes: dark / mono-technical-display / chromatic-red
+ * studied: no · context: explicit (reference video provided) · design-system: design.md · v5
+ * pre-emit critique: P4 H4 E4 S2 R3 V5 (same structural discipline as v3/v4,
+ * display type + nav mechanism changed on explicit instruction.)
  */
 
 @theme inline {
-  --font-display: "Playfair Display", Georgia, serif;
+  --font-display: "Nova Mono", "JetBrains Mono", ui-monospace, monospace;
   --font-sans: "Archivo", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
 
@@ -140,6 +142,55 @@
 @layer utilities {
   .font-display {
     font-family: var(--font-display), Georgia, serif;
+  }
+
+  /* the spray-paint moment -- a wordmark arriving out of focus/mist and
+     resolving into a sharp stencil, instead of just fading in. Reserved for
+     the nav menu's wordmark reveal, never a whole page. */
+  .spray-reveal {
+    animation: spray-reveal 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  @keyframes spray-reveal {
+    from {
+      opacity: 0;
+      filter: blur(10px);
+      transform: scale(1.06);
+    }
+    60% {
+      opacity: 1;
+      filter: blur(2px);
+    }
+    to {
+      opacity: 1;
+      filter: blur(0);
+      transform: scale(1);
+    }
+  }
+
+  /* a single paint drip under a graffiti element -- gravity-drawn, not
+     symmetrical. Reserved for the nav menu wordmark, one hit only. */
+  .paint-drip {
+    position: relative;
+  }
+  .paint-drip::after {
+    content: "";
+    position: absolute;
+    left: 8%;
+    top: 100%;
+    width: 3px;
+    height: 0;
+    background: var(--red);
+    animation: drip-down 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.6s both;
+  }
+  @keyframes drip-down {
+    from {
+      height: 0;
+      opacity: 0.9;
+    }
+    to {
+      height: 22px;
+      opacity: 0.7;
+    }
   }
 
   /* the recurring structural signature: a thick red "cut here" perforation,
@@ -298,8 +349,15 @@
     .stencil-rule,
     .envelope-reveal,
     .stagger-in,
-    .loading-dots::after {
+    .loading-dots::after,
+    .spray-reveal,
+    .paint-drip::after {
       animation: none;
+    }
+    .spray-reveal {
+      opacity: 1;
+      filter: none;
+      transform: none;
     }
     .btn-press,
     .btn-press:hover,
