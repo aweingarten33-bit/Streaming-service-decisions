@@ -44,6 +44,14 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
 
   /* Named theme tokens -- reference these by name, never inline a raw
      oklch()/hex value in a component. */
@@ -90,6 +98,19 @@
   --border: var(--rule);
   --input: var(--rule);
   --ring: var(--focus-ring);
+
+  /* shadcn/ui primitives (Button, Dialog, Card, ...) need these tokens too.
+     Mapped onto the existing Banksy palette, not shadcn's default grays --
+     accent stays single-hit red, so destructive reuses --red rather than
+     introducing a second accent color. */
+  --card: var(--paper-2);
+  --card-foreground: var(--ink);
+  --popover: var(--paper-2);
+  --popover-foreground: var(--ink);
+  --secondary: var(--paper);
+  --secondary-foreground: var(--ink-2);
+  --destructive: var(--red);
+  --destructive-foreground: var(--red-ink);
 }
 
 @layer base {
