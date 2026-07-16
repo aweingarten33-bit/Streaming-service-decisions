@@ -21,7 +21,7 @@ const VERTEX_SHADER = `
     pos.x += cos(uTime * 0.1 + aPhase * 1.3) * 0.25;
 
     vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
-    gl_PointSize = aSize * (300.0 / -mvPosition.z);
+    gl_PointSize = aSize * (80.0 / -mvPosition.z);
     gl_Position = projectionMatrix * mvPosition;
   }
 `;
