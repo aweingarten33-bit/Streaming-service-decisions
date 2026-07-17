@@ -134,23 +134,7 @@
     overscroll-behavior-y: none;
   }
   body {
-    @apply bg-background text-foreground font-sans antialiased;
-    /* graph-paper grid, the reference's signature backdrop texture */
-    background-image:
-      repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 27px,
-        rgb(0 0 0 / 6%) 27px,
-        rgb(0 0 0 / 6%) 28px
-      ),
-      repeating-linear-gradient(
-        90deg,
-        transparent,
-        transparent 27px,
-        rgb(0 0 0 / 6%) 27px,
-        rgb(0 0 0 / 6%) 28px
-      );
+    @apply bg-background text-foreground font-sans antialiased grid-paper;
   }
   ::selection {
     background: var(--red);
@@ -170,6 +154,29 @@
   ::-webkit-scrollbar-thumb:hover {
     background: var(--muted);
   }
+}
+
+/* graph-paper grid, the reference's signature backdrop texture. Shared
+   between `body` and the fixed header's own backdrop so the grid reads as
+   one continuous surface instead of stopping in a flat band behind the
+   header. A `@utility` (not a plain class in `@layer utilities`) so it's
+   usable both as a className and via `@apply`. */
+@utility grid-paper {
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 27px,
+      rgb(0 0 0 / 6%) 27px,
+      rgb(0 0 0 / 6%) 28px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 27px,
+      rgb(0 0 0 / 6%) 27px,
+      rgb(0 0 0 / 6%) 28px
+    );
 }
 
 @layer utilities {
