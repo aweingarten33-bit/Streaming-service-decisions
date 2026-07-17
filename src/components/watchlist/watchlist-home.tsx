@@ -105,15 +105,22 @@ export function WatchlistHome() {
   const started = turns.length > 0;
 
   return (
-    <div className="relative min-h-screen bg-[#08080c]">
+    <div className="relative min-h-dvh bg-[#08080c]">
       <button
         onClick={() => setShowList(true)}
-        className="fixed right-4 top-4 z-10 flex items-center gap-1.5 rounded-full border border-white/15 bg-black/40 px-3.5 py-2 text-xs font-medium text-white/80 backdrop-blur-md transition-colors hover:border-[#E3B24B]/50 hover:text-[#F5EEDC]"
+        style={{ top: "calc(env(safe-area-inset-top, 0px) + 1rem)" }}
+        className="fixed right-4 z-10 flex items-center gap-1.5 rounded-full border border-white/15 bg-black/40 px-3.5 py-2 text-xs font-medium text-white/80 backdrop-blur-md transition-colors hover:border-[#E3B24B]/50 hover:text-[#F5EEDC]"
       >
         <ListVideo size={14} /> My List
       </button>
 
-      <div className="mx-auto flex min-h-screen w-full max-w-xl flex-col items-center px-6 pb-40 pt-24">
+      <div
+        style={{
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + 6rem)",
+          paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 10rem)",
+        }}
+        className="mx-auto flex min-h-dvh w-full max-w-xl flex-col items-center px-6"
+      >
         <h1 className="font-display text-4xl font-semibold tracking-tight text-[#F5EEDC] sm:text-5xl">
           What are you in the mood for?
         </h1>
@@ -203,7 +210,10 @@ export function WatchlistHome() {
       </div>
 
       {started && (
-        <div className="fixed inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black/90 to-transparent pb-6 pt-10">
+        <div
+          style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 1.5rem)" }}
+          className="fixed inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black/90 to-transparent pt-10"
+        >
           <form
             onSubmit={(e) => {
               e.preventDefault();
