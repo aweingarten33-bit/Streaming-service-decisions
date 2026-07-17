@@ -2,7 +2,7 @@
 
 export function AboutScreen() {
   return (
-    <div className="wall-texture relative mx-auto w-full max-w-xl px-6 pb-12 pt-16">
+    <div className="wall-texture relative mx-auto w-full max-w-xl px-6 pt-24 pb-12">
       <span className="font-scrawl -rotate-2 inline-block text-3xl text-red">Manifesto</span>
 
       <h1 className="spray-glow font-display mt-2 text-5xl leading-[0.9] tracking-tighter text-ink uppercase sm:text-6xl">

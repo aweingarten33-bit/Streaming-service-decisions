@@ -47,15 +47,23 @@ export function NavMenu({ tab, onChange }: { tab: Tab; onChange: (tab: Tab) => v
 
   return (
     <>
-      <header className="pointer-events-none fixed inset-x-0 top-0 z-[70]">
+      <header
+        className={`pointer-events-none fixed inset-x-0 top-0 z-[70] transition-colors ${
+          open ? "" : "bg-paper/85 border-rule/10 border-b backdrop-blur-md"
+        }`}
+      >
         <div className="flex items-center justify-between p-5">
-          <button
-            type="button"
-            onClick={() => select("home")}
-            className={`pointer-events-auto font-display text-xl tracking-tighter uppercase transition-colors ${open ? "text-white" : "text-ink"}`}
-          >
-            Marquee
-          </button>
+          {open ? (
+            <button
+              type="button"
+              onClick={() => select("home")}
+              className="stencil-box pointer-events-auto bg-paper text-ink font-display rounded-md px-3 py-1 text-xl tracking-tighter uppercase"
+            >
+              Marquee
+            </button>
+          ) : (
+            <span />
+          )}
 
           <button
             type="button"

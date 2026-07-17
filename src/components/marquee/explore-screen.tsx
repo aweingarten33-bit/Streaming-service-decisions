@@ -129,7 +129,7 @@ export function ExploreScreen({ language }: { language: Language }) {
   const savedUrls = new Set(saved.map((s) => s.url));
 
   return (
-    <div className="mx-auto w-full max-w-xl px-6 pb-12 pt-16">
+    <div className="mx-auto w-full max-w-xl px-6 pt-24 pb-12">
       <h1 className="spray-glow font-display text-2xl font-semibold text-ink">{copy.headline}</h1>
 
       <form
@@ -137,7 +137,7 @@ export function ExploreScreen({ language }: { language: Language }) {
           e.preventDefault();
           runSearch(query);
         }}
-        className="drip-edge wall-texture mt-4 flex items-center gap-2 rounded-2xl border border-rule bg-paper/70 px-3 py-2 backdrop-blur-xl transition-colors focus-within:border-red/50"
+        className="wall-texture mt-4 flex items-center gap-2 rounded-2xl border border-rule bg-paper/70 px-3 py-2 backdrop-blur-xl transition-colors focus-within:border-red/50"
       >
         <input
           value={query}
@@ -233,11 +233,11 @@ export function ExploreScreen({ language }: { language: Language }) {
         )}
       </div>
 
-      <div className="mt-10">
+      <div className="mt-6">
         <p className="font-mono text-[11px] uppercase tracking-wider text-ink/40">
           {copy.savedListsTitle}
         </p>
-        <div className="stencil-rule mt-3" />
+        <div className="stencil-rule mt-1.5" />
         {saved.length === 0 ? (
           <p className="scrawl mt-3 text-base text-ink/40">{copy.noSavedLists}</p>
         ) : (

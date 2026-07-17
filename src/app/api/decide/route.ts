@@ -24,7 +24,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Tell me what you're in the mood for." }, { status: 400 });
   }
 
-  const candidates = await getWatchlistCandidates(deviceId);
+  const candidates = await getWatchlistCandidates(deviceId).catch(() => null);
+  if (candidates === null) {
+    return NextResponse.json({ error: "Could not load your list." }, { status: 500 });
+  }
   if (candidates.length === 0) {
     return NextResponse.json({ emptyWatchlist: true });
   }

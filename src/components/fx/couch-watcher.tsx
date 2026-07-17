@@ -24,9 +24,6 @@ export function CouchWatcher({
       <rect x="16" y="28" width="54" height="30" fill="#e3170a" opacity="0.15" />
       <rect x="36" y="66" width="14" height="8" fill={fill} />
       <rect x="26" y="74" width="34" height="4" fill={fill} />
-      {/* antenna */}
-      <path d="M30,20 L20,4" stroke={fill} strokeWidth="3" strokeLinecap="round" />
-      <circle cx="20" cy="4" r="3" fill="#e3170a" />
 
       {/* couch */}
       <rect x="95" y="70" width="120" height="14" rx="4" fill={fill} />

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { RotateCcw, Check, X, Plus } from "lucide-react";
 import type { WatchlistCandidate } from "@/lib/marquee/types";
 import { useDeviceFetch } from "./use-device-fetch";
@@ -28,6 +28,7 @@ export function WatchlistScreen({ onImportAgain }: { onImportAgain: () => void }
   const [manualQuery, setManualQuery] = useState("");
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [searching, setSearching] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   function refresh() {
     deviceFetch("/api/watchlist")
@@ -39,6 +40,12 @@ export function WatchlistScreen({ onImportAgain }: { onImportAgain: () => void }
   useEffect(() => {
     refresh();
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
   }, []);
 
   async function toggleWatched(item: WatchlistCandidate) {
@@ -58,6 +65,16 @@ export function WatchlistScreen({ onImportAgain }: { onImportAgain: () => void }
     const data = await res.json();
     setSearchResults(data.results ?? []);
     setSearching(false);
+  }
+
+  function onManualQueryChange(text: string) {
+    setManualQuery(text);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (text.trim().length < 2) {
+      setSearchResults([]);
+      return;
+    }
+    debounceRef.current = setTimeout(() => searchManualTitle(text), 350);
   }
 
   async function addManualTitle(result: SearchResult) {
@@ -96,7 +113,7 @@ export function WatchlistScreen({ onImportAgain }: { onImportAgain: () => void }
   }, [items, query, sort, mediaTypeFilter]);
 
   return (
-    <div className="mx-auto w-full max-w-xl px-6 pb-12 pt-16">
+    <div className="mx-auto w-full max-w-xl px-6 pt-24 pb-12">
       <div className="flex items-center justify-between">
         <h1 className="spray-glow font-display text-2xl font-semibold text-ink">My Watchlist</h1>
         <button
@@ -104,10 +121,13 @@ export function WatchlistScreen({ onImportAgain }: { onImportAgain: () => void }
           onClick={onImportAgain}
           className="btn-press flex items-center gap-1.5 rounded-full border border-rule px-3 py-1.5 text-xs font-medium text-ink-2"
         >
-          <RotateCcw size={12} /> Import
+          <RotateCcw size={12} /> Import IMDb List
         </button>
       </div>
-      <div className="drip-edge stencil-rule mt-4" />
+      <p className="scrawl -rotate-1 mt-2 text-sm text-ink/60">
+        Find your IMDb list and bring it here in one go -- or add titles by hand below.
+      </p>
+      <div className="stencil-rule mt-4" />
 
       <form
         onSubmit={(e) => {
@@ -122,7 +142,7 @@ export function WatchlistScreen({ onImportAgain }: { onImportAgain: () => void }
         <div className="mt-2 flex gap-2">
           <input
             value={manualQuery}
-            onChange={(e) => setManualQuery(e.target.value)}
+            onChange={(e) => onManualQueryChange(e.target.value)}
             placeholder="Search movie or show..."
             className="min-w-0 flex-1 rounded-xl border border-rule bg-paper/50 px-4 py-2.5 text-[14px] text-ink placeholder:text-ink/30 focus:border-red/40 focus:outline-none"
           />
@@ -134,6 +154,7 @@ export function WatchlistScreen({ onImportAgain }: { onImportAgain: () => void }
             Search
           </button>
         </div>
+        {searching && <p className="mt-2 text-xs text-ink/40">Searching…</p>}
         {searchResults.length > 0 && (
           <div className="mt-3 space-y-2">
             {searchResults.slice(0, 5).map((result) => (
