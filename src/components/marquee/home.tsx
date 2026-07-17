@@ -178,35 +178,35 @@ export function Home({
   }
 
   return (
-    <div className="wall-texture brick-texture relative mx-auto flex w-full max-w-xl flex-col items-center overflow-hidden px-6 pt-24 pb-12">
+    <div className="wall-texture brick-texture relative mx-auto flex w-full max-w-xl flex-col items-center overflow-hidden px-6 pt-24 pb-6">
       {/* torn tape posters behind the title, exactly like the reference's Home hero */}
       <div className="bg-muted/60 tape-strip absolute top-0 left-1/2 -z-10 h-48 w-full max-w-md -translate-x-1/2 rotate-[-3deg] opacity-70" />
       <div className="bg-muted/40 tape-strip absolute top-10 left-1/2 -z-10 h-32 w-full max-w-sm -translate-x-[40%] rotate-[2deg] opacity-60" />
 
-      <h1 className="spray-glow stagger-in stagger-in-1 font-display relative mb-2 text-center text-6xl leading-[0.85] tracking-tighter text-ink uppercase sm:text-7xl">
+      <h1 className="spray-glow stagger-in stagger-in-1 font-display relative mb-1 text-center text-5xl leading-[0.85] tracking-tighter text-ink uppercase sm:text-6xl">
         Marquee
       </h1>
 
       <img
         src="/images/couch-watcher.png"
         alt=""
-        className="stagger-in stagger-in-2 mt-2 w-full max-w-xs"
+        className="stagger-in stagger-in-2 mt-1 w-full max-w-[230px]"
       />
 
-      <div className="stagger-in stagger-in-2 mb-2 flex flex-col items-center gap-2">
-        <p className="bg-paper-3/50 px-2 py-1 font-mono text-xs font-bold tracking-widest text-ink uppercase">
+      <div className="stagger-in stagger-in-2 mt-1 mb-1 flex flex-col items-center gap-1">
+        <p className="bg-paper-3/50 px-2 py-0.5 font-mono text-xs font-bold tracking-widest text-ink uppercase">
           Stop browsing // start watching
         </p>
         {teaser && <p className="scrawl -rotate-2 text-lg text-ink">{teaser}</p>}
       </div>
 
-      <p className="scrawl stagger-in stagger-in-2 mt-6 text-center text-base text-ink/60">
+      <p className="scrawl stagger-in stagger-in-2 mt-2 text-center text-sm text-ink/60">
         What do you wanna search for?
       </p>
       <div
         role="group"
         aria-label="Movie or TV show"
-        className="stagger-in stagger-in-2 mt-2 flex w-full gap-2 rounded-xl border-2 border-rule bg-paper-2 p-1"
+        className="stagger-in stagger-in-2 mt-1.5 flex w-full gap-2 rounded-xl border-2 border-rule bg-paper-2 p-1"
       >
         {(
           [
@@ -220,7 +220,7 @@ export function Home({
             type="button"
             aria-pressed={mediaTypeFilter === value}
             onClick={() => setMediaTypeFilter(value)}
-            className={`btn-press flex-1 rounded-lg py-2 text-[13px] font-bold transition-colors ${
+            className={`btn-press flex-1 rounded-lg py-1.5 text-[13px] font-bold transition-colors ${
               mediaTypeFilter === value ? "bg-red text-red-ink" : "text-ink-2 hover:text-ink"
             }`}
           >
@@ -229,13 +229,13 @@ export function Home({
         ))}
       </div>
 
-      <p className="scrawl stagger-in stagger-in-2 mt-4 text-center text-base text-ink/60">
+      <p className="scrawl stagger-in stagger-in-2 mt-2 text-center text-sm text-ink/60">
         Who&apos;s watching?
       </p>
       <div
         role="group"
         aria-label="Who's watching"
-        className="stagger-in stagger-in-2 mt-2 flex w-full gap-2 rounded-xl border-2 border-rule bg-paper-2 p-1"
+        className="stagger-in stagger-in-2 mt-1.5 flex w-full gap-2 rounded-xl border-2 border-rule bg-paper-2 p-1"
       >
         {(
           [
@@ -249,7 +249,7 @@ export function Home({
             type="button"
             aria-pressed={groupMode === value}
             onClick={() => setGroupMode(value)}
-            className={`btn-press flex-1 rounded-lg py-2 text-[13px] font-bold transition-colors ${
+            className={`btn-press flex-1 rounded-lg py-1.5 text-[13px] font-bold transition-colors ${
               groupMode === value ? "bg-red text-red-ink" : "text-ink-2 hover:text-ink"
             }`}
           >
@@ -258,9 +258,9 @@ export function Home({
         ))}
       </div>
 
-      <div className="stagger-in stagger-in-3 mt-6 w-full space-y-3">
-        <p className="scrawl text-center text-base text-ink/60">
-          * Pick your mood below, or just type how you feel.
+      <div className="stagger-in stagger-in-3 mt-2 w-full space-y-1.5">
+        <p className="scrawl text-center text-sm text-ink/60">
+          * Pick your mood below, or type how you feel.
         </p>
         <PromptSelector language={language} onSelect={setPrompt} />
         <form

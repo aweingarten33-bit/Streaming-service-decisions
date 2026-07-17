@@ -40,7 +40,7 @@ export function Hero() {
           muted
           loop
           playsInline
-          className="absolute inset-0 h-full w-full object-contain"
+          className="absolute inset-0 h-full w-full object-contain opacity-70"
           style={{ objectPosition: "center 25%" }}
         >
           <source src="/videos/hero-bg.mp4" type="video/mp4" />
