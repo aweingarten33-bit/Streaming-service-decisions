@@ -49,7 +49,7 @@ export function NavMenu({ tab, onChange }: { tab: Tab; onChange: (tab: Tab) => v
     <>
       <header
         className={`pointer-events-none fixed inset-x-0 top-0 z-[70] transition-colors ${
-          open ? "" : "bg-paper/85 border-rule/10 border-b backdrop-blur-md"
+          open ? "" : "bg-paper grid-paper border-rule/10 border-b"
         }`}
       >
         <div className="flex items-center justify-between p-5">

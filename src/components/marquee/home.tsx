@@ -7,7 +7,6 @@ import type { DecideIntent } from "@/lib/marquee/intent";
 import { useDeviceFetch } from "./use-device-fetch";
 import { PromptSelector } from "./prompt-selector";
 import { ResultCard, type DecideResult } from "./result-card";
-import { CouchWatcher } from "@/components/fx/couch-watcher";
 
 type DecideState =
   | { kind: "idle" }
@@ -188,7 +187,11 @@ export function Home({
         Marquee
       </h1>
 
-      <CouchWatcher className="stagger-in stagger-in-2 text-ink/90 mt-2 opacity-90" size={130} />
+      <img
+        src="/images/couch-watcher.png"
+        alt=""
+        className="stagger-in stagger-in-2 mt-2 w-full max-w-xs"
+      />
 
       <div className="stagger-in stagger-in-2 mb-2 flex flex-col items-center gap-2">
         <p className="bg-paper-3/50 px-2 py-1 font-mono text-xs font-bold tracking-widest text-ink uppercase">
